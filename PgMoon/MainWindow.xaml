@@ -1,12 +1,174 @@
-﻿<Window x:Class="PgMoon.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:PgMoon"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
-    <Grid>
-        
+﻿<Popup x:Class="PgMoon.MainWindow"
+       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+       xmlns:sys="clr-namespace:System;assembly=mscorlib"
+       xmlns:conv="clr-namespace:Converters"
+       xmlns:app="clr-namespace:PgMoon"
+       Opened="OnOpened">
+    <Popup.Resources>
+        <conv:MoonPhaseToStringConverter x:Key="convMoonPhaseToString"/>
+        <RoutedUICommand x:Key="LoadAtStartupCommand"/>
+        <RoutedUICommand x:Key="CloseCommand"/>
+        <RoutedUICommand x:Key="ExitCommand"/>
+    </Popup.Resources>
+    <Popup.CommandBindings>
+        <CommandBinding Command="{StaticResource LoadAtStartupCommand}" Executed="OnLoadAtStartup"/>
+        <CommandBinding Command="{StaticResource CloseCommand}" Executed="OnClose"/>
+        <CommandBinding Command="{StaticResource ExitCommand}" Executed="OnExit"/>
+    </Popup.CommandBindings>
+    <Grid Width="200" Height="70" Background="#555555">
+        <Grid.Resources>
+            <Style TargetType="{x:Type TextBlock}">
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="FontSize" Value="14"/>
+            </Style>
+            <ControlTemplate x:Key="templateprogress" TargetType="ProgressBar">
+                <Grid Name="TemplateRoot" SnapsToDevicePixels="True">
+                    <Grid.Resources>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1" x:Key="brushMagic1">
+                            <GradientStop Color="#FFFFFFFF" Offset="0.5385" />
+                            <GradientStop Color="#FFFFFFFF" Offset="0.5385" />
+                        </LinearGradientBrush>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1" x:Key="brushMagic2">
+                            <GradientStop Color="#FFFFFFFF" Offset="0.05" />
+                            <GradientStop Color="#FFFFFFFF" Offset="0.25" />
+                        </LinearGradientBrush>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0" x:Key="brushGlowRect">
+                            <GradientStop Color="#FFFFFFFF" Offset="0" />
+                            <GradientStop Color="#FFFFFFFF" Offset="0.4" />
+                            <GradientStop Color="#FFFFFFFF" Offset="0.6" />
+                            <GradientStop Color="#FFFFFFFF" Offset="1" />
+                        </LinearGradientBrush>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0" x:Key="brushLeftDark">
+                            <GradientStop Color="#0C000000" Offset="0" />
+                            <GradientStop Color="#20000000" Offset="0.3" />
+                            <GradientStop Color="#00000000" Offset="1" />
+                        </LinearGradientBrush>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0" x:Key="brushRightDark">
+                            <GradientStop Color="#00000000" Offset="0" />
+                            <GradientStop Color="#20000000" Offset="0.7" />
+                            <GradientStop Color="#0C000000" Offset="1" />
+                        </LinearGradientBrush>
+                        <RadialGradientBrush RadiusX="1" RadiusY="1" x:Key="brushRadialLeftLight" RelativeTransform="1,0,0,1,0.5,0.5">
+                            <GradientStop Color="#60FFFFC4" Offset="0" />
+                            <GradientStop Color="#00FFFFC4" Offset="1" />
+                        </RadialGradientBrush>
+                        <LinearGradientBrush StartPoint="0,1" EndPoint="0,0" x:Key="brushCenterLight">
+                            <GradientStop Color="#60FFFFC4" Offset="0" />
+                            <GradientStop Color="#00FFFFC4" Offset="1" />
+                        </LinearGradientBrush>
+                        <RadialGradientBrush RadiusX="1" RadiusY="1" x:Key="brushRadial1" RelativeTransform="1,0,0,1,-0.5,0.5">
+                            <GradientStop Color="#60FFFFC4" Offset="0" />
+                            <GradientStop Color="#00FFFFC4" Offset="1" />
+                        </RadialGradientBrush>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1" x:Key="brushHighlight1">
+                            <GradientStop Color="#90FFFFFF" Offset="0.5385" />
+                            <GradientStop Color="#00FFFFFF" Offset="0.5385" />
+                        </LinearGradientBrush>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1" x:Key="brushHighlight2">
+                            <GradientStop Color="#80FFFFFF" Offset="0.05" />
+                            <GradientStop Color="#00FFFFFF" Offset="0.25" />
+                        </LinearGradientBrush>
+                    </Grid.Resources>
+                    <Rectangle RadiusX="2" RadiusY="2" Fill="{TemplateBinding Panel.Background}" />
+                    <Border CornerRadius="2,2,2,2" Margin="1,1,1,1" Background="{StaticResource ResourceKey=brushMagic1}" />
+                    <Border BorderThickness="1,0,1,1" BorderBrush="#80FFFFFF" Margin="1,1,1,1" Background="{StaticResource ResourceKey=brushMagic2}" />
+                    <Rectangle Name="PART_Track" Margin="1,1,1,1" />
+                    <Decorator Name="PART_Indicator" Margin="1,1,1,1" HorizontalAlignment="Left">
+                        <Grid Name="Foreground">
+                            <Rectangle Fill="{TemplateBinding TextElement.Foreground}" Name="Indicator"/>
+                            <Grid Name="Animation" ClipToBounds="True">
+                                <Rectangle Name="PART_GlowRect" Width="100" Margin="-100,0,0,0" HorizontalAlignment="Left" Fill="{StaticResource ResourceKey=brushGlowRect}" />
+                            </Grid>
+                            <Grid Name="Overlay">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition MaxWidth="15" />
+                                    <ColumnDefinition Width="0.1*" />
+                                    <ColumnDefinition MaxWidth="15" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <Rectangle RadiusX="1"
+                                   RadiusY="1"
+                                   Name="LeftDark"
+                                   Margin="1,1,0,1"
+                                   Grid.RowSpan="2"
+                                   Fill="{StaticResource ResourceKey=brushLeftDark}" />
+                                <Rectangle RadiusX="1"
+                                   RadiusY="1"
+                                   Name="RightDark"
+                                   Margin="0,1,1,1"
+                                   Grid.Column="2"
+                                   Grid.RowSpan="2"
+                                   Fill="{StaticResource ResourceKey=brushRightDark}" />
+                                <Rectangle Name="LeftLight"
+                                   Grid.Column="0"
+                                   Grid.Row="2"
+                                   Fill="{StaticResource ResourceKey=brushRadialLeftLight}" />
+                                <Rectangle Name="CenterLight"
+                                   Grid.Column="1"
+                                   Grid.Row="2"
+                                   Fill="{StaticResource ResourceKey=brushCenterLight}" />
+                                <Rectangle Name="RightLight"
+                                   Grid.Column="2"
+                                   Grid.Row="2"
+                                   Fill="{StaticResource ResourceKey=brushRadial1}" />
+                                <Border Name="Highlight1"
+                                Grid.ColumnSpan="3"
+                                Grid.RowSpan="2"
+                                Background="{StaticResource ResourceKey=brushHighlight1}" />
+                                <Border Name="Highlight2"
+                                Grid.ColumnSpan="3"
+                                Grid.RowSpan="2"
+                                Background="{StaticResource ResourceKey=brushHighlight2}" />
+                            </Grid>
+                        </Grid>
+                    </Decorator>
+                    <Border BorderThickness="{TemplateBinding Border.BorderThickness}" CornerRadius="2,2,2,2" BorderBrush="{TemplateBinding Border.BorderBrush}" />
+                </Grid>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="ProgressBar.Orientation" Value="Vertical">
+                        <Setter Property="FrameworkElement.LayoutTransform" TargetName="TemplateRoot">
+                            <Setter.Value>
+                                <RotateTransform Angle="-90" />
+                            </Setter.Value>
+                        </Setter>
+                    </Trigger>
+                    <Trigger Property="ProgressBar.IsIndeterminate" Value="True">
+                        <Setter Property="UIElement.Visibility" TargetName="LeftDark" Value="Collapsed" />
+                        <Setter Property="UIElement.Visibility" TargetName="RightDark" Value="Collapsed" />
+                        <Setter Property="UIElement.Visibility" TargetName="LeftLight" Value="Collapsed" />
+                        <Setter Property="UIElement.Visibility" TargetName="CenterLight" Value="Collapsed" />
+                        <Setter Property="UIElement.Visibility" TargetName="RightLight" Value="Collapsed" />
+                        <Setter Property="UIElement.Visibility" TargetName="Indicator" Value="Collapsed" />
+                    </Trigger>
+                    <Trigger Property="ProgressBar.IsIndeterminate" Value="False">
+                        <Setter Property="Panel.Background" TargetName="Animation" Value="#80B5FFA9" />
+                    </Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+            <Style TargetType="ProgressBar">
+                <Setter Property="Template" Value="{StaticResource ResourceKey=templateprogress}" />
+            </Style>
+        </Grid.Resources>
+        <Grid Margin="5,5,5,5">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Row="0" Text="{Binding MoonPhase, Converter={StaticResource convMoonPhaseToString}}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <Border Grid.Row="1" BorderBrush="White" BorderThickness="1" Height="7" Margin="0,5,0,0">
+                <ProgressBar Foreground="Black" Background="White" Value="{Binding MoonPhaseProgress}" Minimum="0" Maximum="100"/>
+            </Border>
+            <TextBlock Grid.Row="2" Text="{Binding MoonPhaseTimeLeft}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,5,0,0"/>
+            <Button Grid.Row="0" HorizontalAlignment="Right" VerticalAlignment="Top" Command="{StaticResource CloseCommand}" BorderThickness="0">
+                <Border BorderBrush="White" BorderThickness="2" Background="Black" Width="7" Height="7"/>
+            </Button>
+        </Grid>
     </Grid>
-</Window>
+</Popup>
