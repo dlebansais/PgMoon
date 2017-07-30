@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Forms;
@@ -11,13 +13,26 @@ namespace PgMoon
         static Taskbar()
         {
             UpdateLocation();
+
+            SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
+            SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
+        }
+
+        private static void OnDisplaySettingsChanged(object sender, EventArgs e)
+        {
+            UpdateLocation();
+        }
+
+        private static void OnUserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
+        {
+            if (e.Category == UserPreferenceCategory.Desktop)
+                UpdateLocation();
         }
 
         public static void UpdateLocation()
         {
             TaskbarHandle = IntPtr.Zero;
             CurrentScreen = null;
-            FirstScreen = null;
 
             IntPtr hwnd;
             if (GetSystemTrayHandle(out hwnd))
@@ -27,24 +42,39 @@ namespace PgMoon
                 RECT TrayRect, NotificationAreaRect, IconAreaRect;
                 if (GetSystemTrayRect(out TrayRect, out NotificationAreaRect, out IconAreaRect))
                 {
+                    System.Drawing.Rectangle TrayDrawingRect = new System.Drawing.Rectangle(TrayRect.Left, TrayRect.Top, TrayRect.Right - TrayRect.Left, TrayRect.Bottom - TrayRect.Top);
+                    Dictionary<Screen, int> AreaTable = new Dictionary<Screen, int>();
+
                     foreach (Screen s in Screen.AllScreens)
                     {
-                        if (FirstScreen == null)
-                            FirstScreen = s;
+                        System.Drawing.Rectangle ScreenDrawingRect = s.Bounds;
+                        ScreenDrawingRect.Intersect(TrayDrawingRect);
+                        int IntersectionArea = ScreenDrawingRect.Width * ScreenDrawingRect.Height;
 
-                        if (s.Bounds.Contains(TrayRect.Left, TrayRect.Top))
+                        //System.Diagnostics.Debug.Print(s.DeviceName + ": " + IntersectionArea);
+                        AreaTable.Add(s, IntersectionArea);
+                    }
+
+                    Screen SelectedScreen = null;
+                    int SmallestPositiveArea = 0;
+
+                    foreach (KeyValuePair<Screen, int> Entry in AreaTable)
+                    {
+                        if (SelectedScreen == null || (Entry.Value > 0 && (SmallestPositiveArea == 0 || SmallestPositiveArea > Entry.Value)))
                         {
-                            CurrentScreen = s;
-                            break;
+                            SelectedScreen = Entry.Key;
+                            SmallestPositiveArea = Entry.Value;
                         }
                     }
+
+                    CurrentScreen = SelectedScreen;
+                    //System.Diagnostics.Debug.Print("Selected: " + CurrentScreen.DeviceName);
                 }
             }
         }
 
         private static IntPtr TaskbarHandle;
         public static Screen CurrentScreen;
-        public static Screen FirstScreen;
         #endregion
 
         // From a position, and a window size, all in screen coordinates, return the position the window should take

@@ -94,17 +94,30 @@ namespace PgMoon
         {
             ContextMenu Result = new ContextMenu();
 
-            MenuItem ExitMenu = LoadNotificationMenuItem("Exit", "ExitCommand");
-            MenuItem LoadAtStartup = LoadNotificationMenuItem("Load at startup", "LoadAtStartupCommand");
-
-            if (IsElevated)
+            MenuItem LoadAtStartup;
+            string ExeName = Assembly.GetExecutingAssembly().Location;
+            if (Scheduler.IsTaskActive(ExeName))
             {
-                string ExeName = Assembly.GetExecutingAssembly().Location;
-                if (Scheduler.IsTaskActive(ExeName))
+                if (IsElevated)
+                {
+                    LoadAtStartup = LoadNotificationMenuItem("Load at startup", "LoadAtStartupCommand");
                     LoadAtStartup.IsChecked = true;
+                }
+                else
+                {
+                    LoadAtStartup = LoadNotificationMenuItem("Remove from startup", "LoadAtStartupCommand");
+                    LoadAtStartup.Icon = LoadBitmap("UAC-16.png");
+                }
             }
             else
-                LoadAtStartup.Icon = LoadBitmap("UAC-16.png");
+            {
+                LoadAtStartup = LoadNotificationMenuItem("Load at startup", "LoadAtStartupCommand");
+
+                if (!IsElevated)
+                    LoadAtStartup.Icon = LoadBitmap("UAC-16.png");
+            }
+
+            MenuItem ExitMenu = LoadNotificationMenuItem("Exit", "ExitCommand");
 
             AddContextMenu(Result, LoadAtStartup, true);
             AddContextMenuSeparator(Result);
@@ -140,28 +153,36 @@ namespace PgMoon
         #region Events
         private void OnOpened(object sender, EventArgs e)
         {
-            System.Drawing.Point FormsMousePosition = System.Windows.Forms.Control.MousePosition;
-            Point MousePosition = new Point(FormsMousePosition.X, FormsMousePosition.Y);
+            if (Taskbar.CurrentScreen != null)
+            {
+                System.Drawing.Point FormsMousePosition = System.Windows.Forms.Control.MousePosition;
+                Point MousePosition = new Point(FormsMousePosition.X, FormsMousePosition.Y);
 
-            Rect WorkArea = SystemParameters.WorkArea;
+                Rect WorkArea = SystemParameters.WorkArea;
 
-            double WorkScreenWidth = WorkArea.Right - WorkArea.Left;
-            double WorkScreenHeight = WorkArea.Bottom - WorkArea.Top;
-            double CurrentScreenWidth = Taskbar.CurrentScreen.Bounds.Right - Taskbar.CurrentScreen.Bounds.Left;
-            double CurrentScreenHeight = Taskbar.CurrentScreen.Bounds.Bottom - Taskbar.CurrentScreen.Bounds.Top;
+                double WorkScreenWidth = WorkArea.Right - WorkArea.Left;
+                double WorkScreenHeight = WorkArea.Bottom - WorkArea.Top;
+                double CurrentScreenWidth = Taskbar.CurrentScreen.Bounds.Right - Taskbar.CurrentScreen.Bounds.Left;
+                double CurrentScreenHeight = Taskbar.CurrentScreen.Bounds.Bottom - Taskbar.CurrentScreen.Bounds.Top;
 
-            double RatioX = WorkScreenWidth / CurrentScreenWidth;
-            double RatioY = WorkScreenHeight / CurrentScreenHeight;
+                double RatioX = WorkScreenWidth / CurrentScreenWidth;
+                double RatioY = WorkScreenHeight / CurrentScreenHeight;
 
-            FrameworkElement MainChild = Child as FrameworkElement;
-            Size PopupSize = new Size((int)(MainChild.Width / RatioX), (int)(MainChild.Height / RatioY));
+                FrameworkElement MainChild = Child as FrameworkElement;
+                Size PopupSize = new Size((int)(MainChild.Width / RatioX), (int)(MainChild.Height / RatioY));
 
-            Point RelativePosition = Taskbar.GetRelativePosition(MousePosition, PopupSize);
+                Point RelativePosition = Taskbar.GetRelativePosition(MousePosition, PopupSize);
 
-            RelativePosition = new Point(RelativePosition.X * RatioX, RelativePosition.Y * RatioY);
+                RelativePosition = new Point(RelativePosition.X * RatioX, RelativePosition.Y * RatioY);
 
-            HorizontalOffset = RelativePosition.X;
-            VerticalOffset = RelativePosition.Y;
+                HorizontalOffset = RelativePosition.X;
+                VerticalOffset = RelativePosition.Y;
+            }
+            else
+            {
+                HorizontalOffset = 0;
+                VerticalOffset = 0;
+            }
 
             HwndSource source = (HwndSource)HwndSource.FromVisual(Child);
             SetWindowPos(source.Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE);
@@ -189,7 +210,14 @@ namespace PgMoon
                     InstallLoad(IsChecked);
             }
             else
-                MessageBox.Show("To have this program loaded at startup, please exit and restart it as administrator.", "Administrator privileges required", MessageBoxButton.OK, MessageBoxImage.Information);
+            {
+                string ExeName = Assembly.GetExecutingAssembly().Location;
+
+                if (Scheduler.IsTaskActive(ExeName))
+                    MessageBox.Show("To remove this program from startup, please exit and restart it as administrator. Then uncheck \"Load at startup\".", "Administrator privileges required", MessageBoxButton.OK, MessageBoxImage.Information);
+                else
+                    MessageBox.Show("To have this program loaded at startup, please exit and restart it as administrator.", "Administrator privileges required", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
 
         private void OnExit(object sender, ExecutedRoutedEventArgs e)
