@@ -51,23 +51,51 @@ namespace PgMoon
 
         public bool ToggleChecked(ICommand Command, out bool IsChecked)
         {
-            foreach (KeyValuePair<ToolStripMenuItem, ICommand> Entry in CommandTable)
-                if (Entry.Value == Command)
-                {
-                    ToolStripMenuItem MenuItem = Entry.Key;
-                    IsChecked = !MenuItem.Checked;
-                    MenuItem.Checked = IsChecked;
-                    return true;
-                }
+            ToolStripMenuItem MenuItem;
+            if (GetMenuItemFromCommand(Command, out MenuItem))
+            {
+                IsChecked = !MenuItem.Checked;
+                MenuItem.Checked = IsChecked;
+                return true;
+            }
 
             IsChecked = false;
             return false;
+        }
+
+        public void Check(ICommand Command, bool IsChecked)
+        {
+            ToolStripMenuItem MenuItem;
+            if (GetMenuItemFromCommand(Command, out MenuItem))
+                MenuItem.Checked = IsChecked;
+        }
+
+        public void SetText(ICommand Command, string Text)
+        {
+            ToolStripMenuItem MenuItem;
+            if (GetMenuItemFromCommand(Command, out MenuItem))
+                MenuItem.Text = Text;
         }
 
         public void UpdateToolTipText(string ToolTipText)
         {
             NotifyIcon.Text = ToolTipText;
         }
+
+        private bool GetMenuItemFromCommand(ICommand Command, out ToolStripMenuItem MenuItem)
+        {
+            foreach (KeyValuePair<ToolStripMenuItem, ICommand> Entry in CommandTable)
+                if (Entry.Value == Command)
+                {
+                    MenuItem = Entry.Key;
+                    return true;
+                }
+
+            MenuItem = null;
+            return false;
+        }
+
+        public event EventHandler MenuOpening;
         #endregion
 
         #region Events
@@ -97,6 +125,10 @@ namespace PgMoon
                         else
                             LastClosedTime = DateTime.MinValue;
                     }
+                    break;
+
+                case MouseButtons.Right:
+                    MenuOpening.Invoke(this, new EventArgs());
                     break;
             }
         }

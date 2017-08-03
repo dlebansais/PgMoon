@@ -2,7 +2,6 @@
 {
     public enum MoonPhases
     {
-        Unknown,
         NewMoon,
         WaxingCrescentMoon,
         FirstQuarterMoon,

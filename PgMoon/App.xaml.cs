@@ -17,11 +17,13 @@ namespace PgMoon
                     InstanceEvent.Close();
                     InstanceEvent = null;
                     Shutdown();
+                    return;
                 }
             }
             catch
             {
                 Shutdown();
+                return;
             }
 
             Taskbar.UpdateLocation();

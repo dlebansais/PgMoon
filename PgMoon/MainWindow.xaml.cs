@@ -1,15 +1,13 @@
 ﻿using Converters;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
 using System.IO;
-using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
-using System.Text;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -29,7 +27,9 @@ namespace PgMoon
             DataContext = this;
 
             Placement = PlacementMode.Absolute;
+            InitSettings();
             InitMoonPhase();
+            InitDarkChapel();
             InitTaskbarIcon();
         }
 
@@ -50,14 +50,73 @@ namespace PgMoon
         }
         #endregion
 
+        #region Settings
+        private void InitSettings()
+        {
+            try
+            {
+                RegistryKey Key = Registry.CurrentUser.OpenSubKey(@"Software", true);
+                Key = Key.CreateSubKey("Project Gorgon Tools");
+                SettingKey = Key.CreateSubKey("PgMoon");
+            }
+            catch
+            {
+            }
+        }
+
+        private object GetSettingKey(string ValueName)
+        {
+            if (SettingKey == null)
+                return null;
+
+            try
+            {
+                return SettingKey.GetValue(ValueName);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private void SetSettingKey(string ValueName, object Value, RegistryValueKind Kind)
+        {
+            if (SettingKey == null)
+                return;
+
+            try
+            {
+                SettingKey.SetValue(ValueName, Value, Kind);
+            }
+            catch
+            {
+            }
+        }
+
+        private RegistryKey SettingKey = null;
+        #endregion
+
         #region Taskbar Icon
         private void InitTaskbarIcon()
         {
+            MenuHeaderTable = new Dictionary<ICommand, string>();
+            LoadAtStartupCommand = InitMenuCommand("LoadAtStartupCommand", LoadAtStartupHeader);
+            ShowDarkChapelCommand = InitMenuCommand("ShowDarkChapelCommand", "Show Dark Chapel");
+            ExitCommand = InitMenuCommand("ExitCommand", "Exit");
+
             System.Drawing.Icon Icon = LoadIcon("Taskbar.ico");
-            string ToolTipText = MoonPhaseName();
+            string ToolTipText = MoonPhaseName;
             ContextMenu ContextMenu = LoadContextMenu();
 
             TaskbarIcon = TaskbarIcon.Create(Icon, ToolTipText, ContextMenu, this);
+            TaskbarIcon.MenuOpening += OnMenuOpening;
+        }
+
+        private ICommand InitMenuCommand(string CommandName, string Header)
+        {
+            ICommand Command = FindResource(CommandName) as ICommand;
+            MenuHeaderTable.Add(Command, Header);
+            return Command;
         }
 
         private System.Drawing.Icon LoadIcon(string IconName)
@@ -100,37 +159,51 @@ namespace PgMoon
             {
                 if (IsElevated)
                 {
-                    LoadAtStartup = LoadNotificationMenuItem("Load at startup", "LoadAtStartupCommand");
+                    LoadAtStartup = LoadNotificationMenuItem(LoadAtStartupCommand);
                     LoadAtStartup.IsChecked = true;
                 }
                 else
                 {
-                    LoadAtStartup = LoadNotificationMenuItem("Remove from startup", "LoadAtStartupCommand");
+                    LoadAtStartup = LoadNotificationMenuItem(LoadAtStartupCommand, RemoveFromStartupHeader);
                     LoadAtStartup.Icon = LoadBitmap("UAC-16.png");
                 }
             }
             else
             {
-                LoadAtStartup = LoadNotificationMenuItem("Load at startup", "LoadAtStartupCommand");
+                LoadAtStartup = LoadNotificationMenuItem(LoadAtStartupCommand);
 
                 if (!IsElevated)
                     LoadAtStartup.Icon = LoadBitmap("UAC-16.png");
             }
 
-            MenuItem ExitMenu = LoadNotificationMenuItem("Exit", "ExitCommand");
+            MenuItem ShowDarkChapelMenu = LoadNotificationMenuItem(ShowDarkChapelCommand);
+            ShowDarkChapelMenu.IsChecked = ShowDarkChapel;
+            MenuItem ExitMenu = LoadNotificationMenuItem(ExitCommand);
 
             AddContextMenu(Result, LoadAtStartup, true);
+            AddContextMenuSeparator(Result);
+            AddContextMenu(Result, ShowDarkChapelMenu, true);
             AddContextMenuSeparator(Result);
             AddContextMenu(Result, ExitMenu, true);
 
             return Result;
         }
 
-        private MenuItem LoadNotificationMenuItem(string MenuHeader, string CommandResourceName)
+        private MenuItem LoadNotificationMenuItem(ICommand Command)
+        {
+            MenuItem Result = new MenuItem();
+            Result.Header = MenuHeaderTable[Command];
+            Result.Command = Command;
+            Result.Icon = null;
+
+            return Result;
+        }
+
+        private MenuItem LoadNotificationMenuItem(ICommand Command, string MenuHeader)
         {
             MenuItem Result = new MenuItem();
             Result.Header = MenuHeader;
-            Result.Command = FindResource(CommandResourceName) as RoutedCommand;
+            Result.Command = Command;
             Result.Icon = null;
 
             return Result;
@@ -147,7 +220,29 @@ namespace PgMoon
             Menu.Items.Add(new Separator());
         }
 
+        private void OnMenuOpening(object sender, EventArgs e)
+        {
+            TaskbarIcon SenderIcon = sender as TaskbarIcon;
+            string ExeName = Assembly.GetExecutingAssembly().Location;
+
+            if (IsElevated)
+                SenderIcon.Check(LoadAtStartupCommand, Scheduler.IsTaskActive(ExeName));
+            else
+            {
+                if (Scheduler.IsTaskActive(ExeName))
+                    SenderIcon.SetText(LoadAtStartupCommand, RemoveFromStartupHeader);
+                else
+                    SenderIcon.SetText(LoadAtStartupCommand, LoadAtStartupHeader);
+            }
+        }
+
         public TaskbarIcon TaskbarIcon { get; private set; }
+        private static readonly string LoadAtStartupHeader = "Load at startup";
+        private static readonly string RemoveFromStartupHeader = "Remove from startup";
+        private ICommand LoadAtStartupCommand;
+        private ICommand ShowDarkChapelCommand;
+        private ICommand ExitCommand;
+        private Dictionary<ICommand, string> MenuHeaderTable;
         #endregion
 
         #region Events
@@ -169,7 +264,7 @@ namespace PgMoon
                 double RatioY = WorkScreenHeight / CurrentScreenHeight;
 
                 FrameworkElement MainChild = Child as FrameworkElement;
-                Size PopupSize = new Size((int)(MainChild.Width / RatioX), (int)(MainChild.Height / RatioY));
+                Size PopupSize = new Size((int)(MainChild.ActualWidth / RatioX), (int)(MainChild.ActualHeight / RatioY));
 
                 Point RelativePosition = Taskbar.GetRelativePosition(MousePosition, PopupSize);
 
@@ -214,10 +309,25 @@ namespace PgMoon
                 string ExeName = Assembly.GetExecutingAssembly().Location;
 
                 if (Scheduler.IsTaskActive(ExeName))
-                    MessageBox.Show("To remove this program from startup, please exit and restart it as administrator. Then uncheck \"Load at startup\".", "Administrator privileges required", MessageBoxButton.OK, MessageBoxImage.Information);
+                {
+                    RemoveFromStartupWindow Dlg = new RemoveFromStartupWindow();
+                    Dlg.ShowDialog();
+                }
                 else
-                    MessageBox.Show("To have this program loaded at startup, please exit and restart it as administrator.", "Administrator privileges required", MessageBoxButton.OK, MessageBoxImage.Information);
+                {
+                    LoadAtStartupWindow Dlg = new LoadAtStartupWindow();
+                    Dlg.ShowDialog();
+                }
             }
+        }
+
+        private void OnShowDarkChapel(object sender, ExecutedRoutedEventArgs e)
+        {
+            TaskbarIcon SenderIcon = e.Parameter as TaskbarIcon;
+
+            bool IsChecked;
+            if (SenderIcon.ToggleChecked(e.Command, out IsChecked))
+                ShowDarkChapel = IsChecked;
         }
 
         private void OnExit(object sender, ExecutedRoutedEventArgs e)
@@ -262,89 +372,69 @@ namespace PgMoon
         #region Moon Phase
         private void InitMoonPhase()
         {
-            MoonPhases Phase;
-            float PhaseProgress;
-            if (GetMoonPhaseFromServer(out Phase, out PhaseProgress))
-            {
-                MoonPhase = Phase;
-                MoonPhaseProgress = PhaseProgress;
-            }
+            PhaseCalculator = new PhaseCalculator();
 
             UpdateMoonPhaseTimer = new Timer(new TimerCallback(UpdateMoonPhaseTimerCallback));
             TimeSpan UpdateInterval = TimeSpan.FromMinutes(1);
             UpdateMoonPhaseTimer.Change(UpdateInterval, UpdateInterval);
         }
 
-        public MoonPhases MoonPhase
+        public PhaseCalculator PhaseCalculator { get; private set; }
+
+        public string TimeToNextPhaseText
         {
-            get { return _MoonPhase; }
-            set
-            {
-                if (_MoonPhase != value)
-                {
-                    _MoonPhase = value;
-                    NotifyThisPropertyChanged();
-                }
-            }
+            get { return FriendlyTimeString(PhaseCalculator.TimeToNextPhase, "Changing soon"); }
         }
-        private MoonPhases _MoonPhase;
 
-        public double MoonPhaseProgress
+        public string TimeToFullMoonText
         {
-            get { return _MoonPhaseProgress; }
-            set
-            {
-                if (_MoonPhaseProgress != value)
-                {
-                    _MoonPhaseProgress = value;
-                    NotifyThisPropertyChanged();
-                    NotifyPropertyChanged(nameof(MoonPhaseTimeLeft));
-                }
-            }
+            get { return FriendlyTimeString(PhaseCalculator.TimeToFullMoon, "Soon"); }
         }
-        public string MoonPhaseTimeLeft
+
+        private string FriendlyTimeString(TimeSpan Duration, string SoonText)
         {
-            get
+            string Result = "";
+
+            if (Duration.TotalDays >= 1)
             {
-                if (double.IsNaN(_MoonPhaseProgress) || !(_MoonPhaseProgress >= 0 && _MoonPhaseProgress < 100))
-                    return null;
+                int Days = (int)Duration.TotalDays;
+                Duration -= TimeSpan.FromDays(Days);
 
-                TimeSpan Duration = TimeSpan.FromDays(0.0369125 * _MoonPhaseProgress);
-
-                string Result = "";
-
-                if (Duration.TotalDays >= 1)
-                {
-                    int Days = (int)Duration.TotalDays;
-                    Duration -= TimeSpan.FromDays(Days);
-
-                    if (Days > 1)
-                        Result += Days.ToString() + " days";
-                    else
-                        Result += Days.ToString() + " day";
-                }
-
-                if (Duration.TotalHours >= 1)
-                {
-                    int Hours = (int)Duration.TotalHours;
-                    Duration -= TimeSpan.FromHours(Hours);
-
-                    if (Result.Length > 0)
-                        Result += ", ";
-
-                    if (Hours > 1)
-                        Result += Hours.ToString() + " hours";
-                    else
-                        Result += Hours.ToString() + " hour";
-                }
-
-                if (Result.Length == 0)
-                    return "Changing soon";
+                if (Days > 1)
+                    Result += Days.ToString() + " days";
                 else
-                    return Result + " left";
+                    Result += Days.ToString() + " day";
             }
+
+            if (Duration.TotalHours >= 1)
+            {
+                int Hours = (int)Duration.TotalHours;
+                Duration -= TimeSpan.FromHours(Hours);
+
+                if (Result.Length > 0)
+                    Result += ", ";
+
+                if (Hours > 1)
+                    Result += Hours.ToString() + " hours";
+                else
+                    Result += Hours.ToString() + " hour";
+            }
+
+            if (Result.Length == 0)
+                return SoonText;
+            else
+                return Result + " left";
         }
-        private double _MoonPhaseProgress;
+
+        public bool IsFullMoon
+        {
+            get { return PhaseCalculator.Phase == MoonPhases.FullMoon; }
+        }
+
+        public bool IsNextPhaseFullMoon
+        {
+            get { return ((int)PhaseCalculator.Phase + 1) == (int)MoonPhases.FullMoon; }
+        }
 
         private void UpdateMoonPhaseTimerCallback(object Parameter)
         {
@@ -355,97 +445,49 @@ namespace PgMoon
 
         private void OnUpdateMoonPhase()
         {
-            UpdateMoonPhaseNow();
+            PhaseCalculator.Update();
+            NotifyPropertyChanged(nameof(TimeToNextPhaseText));
+            NotifyPropertyChanged(nameof(TimeToFullMoonText));
+            NotifyPropertyChanged(nameof(IsFullMoon));
+            NotifyPropertyChanged(nameof(IsNextPhaseFullMoon));
+
+            if (TaskbarIcon != null)
+                TaskbarIcon.UpdateToolTipText(MoonPhaseName);
         }
 
-        private void UpdateMoonPhaseNow()
+        private string MoonPhaseName
         {
-            MoonPhases Phase;
-            float PhaseProgress;
-            if (GetMoonPhaseFromServer(out Phase, out PhaseProgress))
-            {
-                MoonPhase = Phase;
-                MoonPhaseProgress = PhaseProgress;
-
-                if (TaskbarIcon != null)
-                    TaskbarIcon.UpdateToolTipText(MoonPhaseName());
-            }
-        }
-
-        private bool GetMoonPhaseFromServer(out MoonPhases Phase, out float PhaseProgress)
-        {
-            Phase = MoonPhases.Unknown;
-            PhaseProgress = float.NaN;
-            bool Success = false;
-
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-
-            HttpWebRequest Request = HttpWebRequest.Create("https://www.timeanddate.com/moon/phases/usa/orlando") as HttpWebRequest;
-            using (WebResponse Response = Request.GetResponse())
-            {
-                using (Stream ResponseStream = Response.GetResponseStream())
-                {
-                    using (StreamReader Reader = new StreamReader(ResponseStream, Encoding.ASCII))
-                    {
-                        string Content = Reader.ReadToEnd();
-
-                        string Pattern = "cur-moon-percent";
-                        int Index = Content.IndexOf(Pattern);
-                        if (Index >= 0)
-                        {
-                            int PhaseIndex = Content.IndexOf("%", Index);
-                            if (PhaseIndex <= Index + Pattern.Length + 5 && Content.Length > 14)
-                            {
-                                string ProgressString = "";
-                                int ProgressIndex = PhaseIndex - 1;
-                                while (ProgressIndex > Index && ((Content[ProgressIndex] >= '0' && Content[ProgressIndex] <= '9') || Content[ProgressIndex] == '.'))
-                                {
-                                    ProgressString = Content[ProgressIndex].ToString() + ProgressString;
-                                    ProgressIndex--;
-                                }
-
-                                PhaseIndex += 16;
-                                if (Content[PhaseIndex] == '>')
-                                {
-                                    int EndPhaseIndex = Content.IndexOf("<", PhaseIndex);
-                                    if (EndPhaseIndex > PhaseIndex && EndPhaseIndex < PhaseIndex + 50)
-                                    {
-                                        string PhaseString = Content.Substring(PhaseIndex + 1, EndPhaseIndex - PhaseIndex - 1);
-                                        PhaseString = PhaseString.Trim();
-                                        if (!PhaseString.Contains("Moon"))
-                                            PhaseString = PhaseString + " Moon";
-
-                                        foreach (KeyValuePair<MoonPhases, string> Entry in MoonPhaseToStringConverter.MoonPhaseTable)
-                                            if (PhaseString == Entry.Value)
-                                            {
-                                                Phase = Entry.Key;
-                                                float.TryParse(ProgressString, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture.NumberFormat, out PhaseProgress);
-                                                Success = true;
-                                                break;
-                                            }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            return Success;
-        }
-
-        private string MoonPhaseName()
-        {
-            string Result;
-            if (MoonPhaseToStringConverter.MoonPhaseTable.ContainsKey(MoonPhase))
-                Result = MoonPhaseToStringConverter.MoonPhaseTable[MoonPhase];
-            else
-                Result = null;
-
-            return Result;
+            get { return MoonPhaseToStringConverter.MoonPhaseTable[PhaseCalculator.Phase]; }
         }
 
         private Timer UpdateMoonPhaseTimer;
+        #endregion
+
+        #region Dark Chapel
+        private void InitDarkChapel()
+        {
+            int? ShowSetting = GetSettingKey(ShowDarkChapelSettingName) as int?;
+            _ShowDarkChapel = (ShowSetting.HasValue ? (ShowSetting.Value != 0): true);
+        }
+
+        public bool ShowDarkChapel
+        {
+            get { return _ShowDarkChapel; }
+            set
+            {
+                if (_ShowDarkChapel != value)
+                {
+                    _ShowDarkChapel = value;
+                    NotifyThisPropertyChanged();
+
+                    int? KeyValue = value ? 1 : 0;
+                    SetSettingKey(ShowDarkChapelSettingName, KeyValue, RegistryValueKind.DWord);
+                }
+            }
+        }
+        private bool _ShowDarkChapel;
+
+        private static readonly string ShowDarkChapelSettingName = "ShowDarkChapel";
         #endregion
 
         #region Implementation of INotifyPropertyChanged
