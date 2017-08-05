@@ -27,9 +27,13 @@ namespace PgMoon
             }
 
             Taskbar.UpdateLocation();
-            MainPopup = new MainWindow();
+            Startup += OnStartup;
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
+        }
 
+        private void OnStartup(object sender, StartupEventArgs e)
+        {
+            MainPopup = new MainWindow();
             Deactivated += OnDeactivated;
             Exit += OnExit;
         }
@@ -53,7 +57,7 @@ namespace PgMoon
             }
         }
 
-        private MainWindow MainPopup;
+        public MainWindow MainPopup { get; private set; }
         private EventWaitHandle InstanceEvent;
     }
 }

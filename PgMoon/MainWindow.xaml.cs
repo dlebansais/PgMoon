@@ -2,12 +2,15 @@
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
+using System.Text;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -30,6 +33,7 @@ namespace PgMoon
             InitSettings();
             InitMoonPhase();
             InitDarkChapel();
+            InitMushroomFarming();
             InitTaskbarIcon();
         }
 
@@ -102,6 +106,7 @@ namespace PgMoon
             MenuHeaderTable = new Dictionary<ICommand, string>();
             LoadAtStartupCommand = InitMenuCommand("LoadAtStartupCommand", LoadAtStartupHeader);
             ShowDarkChapelCommand = InitMenuCommand("ShowDarkChapelCommand", "Show Dark Chapel");
+            ShowMushroomFarmingCommand = InitMenuCommand("ShowMushroomFarmingCommand", "Show Mushrooms");
             ExitCommand = InitMenuCommand("ExitCommand", "Exit");
 
             System.Drawing.Icon Icon = LoadIcon("Taskbar.ico");
@@ -178,11 +183,14 @@ namespace PgMoon
 
             MenuItem ShowDarkChapelMenu = LoadNotificationMenuItem(ShowDarkChapelCommand);
             ShowDarkChapelMenu.IsChecked = ShowDarkChapel;
+            MenuItem ShowMushroomFarmingMenu = LoadNotificationMenuItem(ShowMushroomFarmingCommand);
+            ShowMushroomFarmingMenu.IsChecked = ShowMushroomFarming;
             MenuItem ExitMenu = LoadNotificationMenuItem(ExitCommand);
 
             AddContextMenu(Result, LoadAtStartup, true);
             AddContextMenuSeparator(Result);
             AddContextMenu(Result, ShowDarkChapelMenu, true);
+            AddContextMenu(Result, ShowMushroomFarmingMenu, true);
             AddContextMenuSeparator(Result);
             AddContextMenu(Result, ExitMenu, true);
 
@@ -241,120 +249,9 @@ namespace PgMoon
         private static readonly string RemoveFromStartupHeader = "Remove from startup";
         private ICommand LoadAtStartupCommand;
         private ICommand ShowDarkChapelCommand;
+        private ICommand ShowMushroomFarmingCommand;
         private ICommand ExitCommand;
         private Dictionary<ICommand, string> MenuHeaderTable;
-        #endregion
-
-        #region Events
-        private void OnOpened(object sender, EventArgs e)
-        {
-            if (Taskbar.CurrentScreen != null)
-            {
-                System.Drawing.Point FormsMousePosition = System.Windows.Forms.Control.MousePosition;
-                Point MousePosition = new Point(FormsMousePosition.X, FormsMousePosition.Y);
-
-                Rect WorkArea = SystemParameters.WorkArea;
-
-                double WorkScreenWidth = WorkArea.Right - WorkArea.Left;
-                double WorkScreenHeight = WorkArea.Bottom - WorkArea.Top;
-                double CurrentScreenWidth = Taskbar.CurrentScreen.Bounds.Right - Taskbar.CurrentScreen.Bounds.Left;
-                double CurrentScreenHeight = Taskbar.CurrentScreen.Bounds.Bottom - Taskbar.CurrentScreen.Bounds.Top;
-
-                double RatioX = WorkScreenWidth / CurrentScreenWidth;
-                double RatioY = WorkScreenHeight / CurrentScreenHeight;
-
-                FrameworkElement MainChild = Child as FrameworkElement;
-                Size PopupSize = new Size((int)(MainChild.ActualWidth / RatioX), (int)(MainChild.ActualHeight / RatioY));
-
-                Point RelativePosition = Taskbar.GetRelativePosition(MousePosition, PopupSize);
-
-                RelativePosition = new Point(RelativePosition.X * RatioX, RelativePosition.Y * RatioY);
-
-                HorizontalOffset = RelativePosition.X;
-                VerticalOffset = RelativePosition.Y;
-            }
-            else
-            {
-                HorizontalOffset = 0;
-                VerticalOffset = 0;
-            }
-
-            HwndSource source = (HwndSource)HwndSource.FromVisual(Child);
-            SetWindowPos(source.Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE);
-            SetForegroundWindow(source.Handle);
-        }
-
-        public void OnDeactivated()
-        {
-            IsOpen = false;
-        }
-
-        private void OnClose(object sender, ExecutedRoutedEventArgs e)
-        {
-            IsOpen = false;
-        }
-
-        private void OnLoadAtStartup(object sender, ExecutedRoutedEventArgs e)
-        {
-            TaskbarIcon SenderIcon = e.Parameter as TaskbarIcon;
-
-            if (IsElevated)
-            {
-                bool IsChecked;
-                if (SenderIcon.ToggleChecked(e.Command, out IsChecked))
-                    InstallLoad(IsChecked);
-            }
-            else
-            {
-                string ExeName = Assembly.GetExecutingAssembly().Location;
-
-                if (Scheduler.IsTaskActive(ExeName))
-                {
-                    RemoveFromStartupWindow Dlg = new RemoveFromStartupWindow();
-                    Dlg.ShowDialog();
-                }
-                else
-                {
-                    LoadAtStartupWindow Dlg = new LoadAtStartupWindow();
-                    Dlg.ShowDialog();
-                }
-            }
-        }
-
-        private void OnShowDarkChapel(object sender, ExecutedRoutedEventArgs e)
-        {
-            TaskbarIcon SenderIcon = e.Parameter as TaskbarIcon;
-
-            bool IsChecked;
-            if (SenderIcon.ToggleChecked(e.Command, out IsChecked))
-                ShowDarkChapel = IsChecked;
-        }
-
-        private void OnExit(object sender, ExecutedRoutedEventArgs e)
-        {
-            IsOpen = false;
-
-            using (TaskbarIcon Icon = TaskbarIcon)
-            {
-                TaskbarIcon = null;
-            }
-
-            Application.Current.Shutdown();
-        }
-        #endregion
-
-        #region Window Handle Management
-        [DllImport("User32.dll")]
-        public static extern bool SetForegroundWindow(IntPtr hWnd);
-
-        const int SWP_NOMOVE = 0x0002;
-        const int SWP_NOSIZE = 0x0001;
-        const int SWP_SHOWWINDOW = 0x0040;
-        const int SWP_NOACTIVATE = 0x0010;
-        const int HWND_TOPMOST = -1;
-
-        [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
-        public static extern IntPtr SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int x, int Y, int cx, int cy, int wFlags);
         #endregion
 
         #region Load at startup
@@ -488,6 +385,417 @@ namespace PgMoon
         private bool _ShowDarkChapel;
 
         private static readonly string ShowDarkChapelSettingName = "ShowDarkChapel";
+        #endregion
+
+        #region Mushroom Farming
+        private void InitMushroomFarming()
+        {
+            int? ShowMushroomFarmingSetting = GetSettingKey(ShowMushroomFarmingSettingName) as int?;
+            _ShowMushroomFarming = (ShowMushroomFarmingSetting.HasValue ? (ShowMushroomFarmingSetting.Value != 0) : false);
+            _IsMushroomListLarge = false;
+            int? IsLockedSetting = GetSettingKey(IsLockedSettingName) as int?;
+            _IsLocked = (IsLockedSetting.HasValue ? (IsLockedSetting.Value != 0) : false);
+
+            LoadMushroomInfoList();
+            MushroomInfoList.Add(new MushroomInfo("", null));
+            MushroomInfoList.CollectionChanged += OnMushroomInfoListChanged;
+
+            string ApplicationFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PgJsonParse");
+            MushroomNameFile = Path.Combine(ApplicationFolder, "Mushrooms.txt");
+            UpdateMushroomNameListTimer = new Timer(new TimerCallback(UpdateMushroomNameListTimerCallback));
+            UpdateMushroomNameListTimer.Change(TimeSpan.Zero, Timeout.InfiniteTimeSpan);
+        }
+
+        private void LoadMushroomInfoList()
+        {
+            MushroomInfoList.Clear();
+
+            string MushroomListSetting = GetSettingKey(MushroomListSettingName) as string;
+            if (MushroomListSetting != null)
+            {
+                string[] SplitMushroomListSetting = MushroomListSetting.Split(MushroomListSeparator);
+                foreach (string s in SplitMushroomListSetting)
+                {
+                    string[] Line = s.Split(MushroomSeparator);
+                    if (Line.Length >= 1)
+                    {
+                        string Name = Line[0].Trim();
+                        if (Name.Length > 0)
+                        {
+                            MoonPhases? PreferredPhase;
+                            if (Line.Length >= 2)
+                            {
+                                int PhaseIndex;
+                                if (int.TryParse(Line[1].Trim(), out PhaseIndex) && PhaseIndex >= 0 && PhaseIndex <= (int)MoonPhases.WaningCrescentMoon)
+                                    PreferredPhase = (MoonPhases)PhaseIndex;
+                                else
+                                    PreferredPhase = null;
+                            }
+                            else
+                                PreferredPhase = null;
+
+                            MushroomInfoList.Add(new MushroomInfo(Name, PreferredPhase));
+                        }
+                    }
+                }
+            }
+        }
+
+        private void SaveMushroomInfoList()
+        {
+            string Setting = "";
+
+            foreach (MushroomInfo Info in MushroomInfoList)
+            {
+                if (Info.Name.Length == 0)
+                    continue;
+
+                string Line = Info.Name;
+                if (Info.PreferredPhase.HasValue)
+                    Line += MushroomSeparator + ((int)Info.PreferredPhase).ToString();
+
+                if (Setting.Length > 0)
+                    Setting += MushroomListSeparator;
+                Setting += Line;
+            }
+
+            SetSettingKey(MushroomListSettingName, Setting, RegistryValueKind.String);
+        }
+
+        public bool ShowMushroomFarming
+        {
+            get { return _ShowMushroomFarming; }
+            set
+            {
+                if (_ShowMushroomFarming != value)
+                {
+                    _ShowMushroomFarming = value;
+                    NotifyThisPropertyChanged();
+
+                    int? KeyValue = value ? 1 : 0;
+                    SetSettingKey(ShowMushroomFarmingSettingName, KeyValue, RegistryValueKind.DWord);
+                }
+            }
+        }
+        private bool _ShowMushroomFarming;
+
+        public bool IsMushroomListSmall
+        {
+            get { return MushroomInfoList.Count < 2; }
+        }
+
+        public bool IsMushroomListLarge
+        {
+            get { return _IsMushroomListLarge; }
+            set
+            {
+                if (_IsMushroomListLarge != value)
+                {
+                    _IsMushroomListLarge = value;
+                    NotifyThisPropertyChanged();
+                }
+            }
+        }
+        private bool _IsMushroomListLarge;
+
+        public bool IsLocked
+        {
+            get { return _IsLocked; }
+            set
+            {
+                if (_IsLocked != value)
+                {
+                    _IsLocked = value;
+                    NotifyThisPropertyChanged();
+                }
+            }
+        }
+        private bool _IsLocked;
+
+        private void OnMushroomNameFileChanged(object sender, FileSystemEventArgs e)
+        {
+            UpdateMushroomNameListTimer.Change(TimeSpan.FromSeconds(1), Timeout.InfiniteTimeSpan);
+        }
+
+        private void UpdateMushroomNameListTimerCallback(object Parameter)
+        {
+            Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, new UpdateMushroomNameListHandler(OnUpdateMushroomNameList));
+        }
+
+        private delegate void UpdateMushroomNameListHandler();
+        private void OnUpdateMushroomNameList()
+        {
+            if (MushroomNameList != null)
+                MushroomNameList.Clear();
+
+            if (!File.Exists(MushroomNameFile))
+                return;
+
+            try
+            {
+                using (FileStream fs = new FileStream(MushroomNameFile, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    using (StreamReader sr = new StreamReader(fs, Encoding.ASCII))
+                    {
+                        for (;;)
+                        {
+                            string MushroomName = sr.ReadLine();
+                            if (MushroomName == null || MushroomName.Length == 0)
+                                break;
+
+                            if (MushroomNameList == null)
+                                MushroomNameList = new ObservableCollection<string>();
+
+                            MushroomNameList.Add(MushroomName);
+                        }
+                    }
+                }
+
+                if (MushroomNameList != null && MushroomNameFileWatcher == null)
+                {
+                    string FolderPath = Path.GetDirectoryName(MushroomNameFile);
+                    string FileName = Path.GetFileName(MushroomNameFile);
+                    MushroomNameFileWatcher = new FileSystemWatcher(FolderPath, FileName);
+                    MushroomNameFileWatcher.NotifyFilter = NotifyFilters.LastWrite;
+                    MushroomNameFileWatcher.Changed += new FileSystemEventHandler(OnMushroomNameFileChanged);
+                    MushroomNameFileWatcher.EnableRaisingEvents = true;
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        private void OnMushroomInfoListChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            NotifyPropertyChanged(nameof(IsMushroomListSmall));
+        }
+
+        private static readonly string ShowMushroomFarmingSettingName = "ShowMushroomFarming";
+        private static readonly string MushroomListSettingName = "MushroomList";
+        private static readonly string IsLockedSettingName = "MushroomListLocked";
+        private const int MaxMushroomRows = 40;
+        private const char MushroomListSeparator = '\u2551';
+        private const char MushroomSeparator = '\u2550';
+        public ObservableCollection<MushroomInfo> MushroomInfoList { get; private set; } = new ObservableCollection<MushroomInfo>();
+        private string MushroomNameFile;
+        public ObservableCollection<string> MushroomNameList { get; private set; } = null;
+        private FileSystemWatcher MushroomNameFileWatcher = null;
+        private Timer UpdateMushroomNameListTimer;
+        #endregion
+
+        #region Events
+        private void OnOpened(object sender, EventArgs e)
+        {
+            if (Taskbar.CurrentScreen != null)
+            {
+                System.Drawing.Point FormsMousePosition = System.Windows.Forms.Control.MousePosition;
+                Point MousePosition = new Point(FormsMousePosition.X, FormsMousePosition.Y);
+
+                Rect WorkArea = SystemParameters.WorkArea;
+
+                double WorkScreenWidth = WorkArea.Right - WorkArea.Left;
+                double WorkScreenHeight = WorkArea.Bottom - WorkArea.Top;
+                double CurrentScreenWidth = Taskbar.CurrentScreen.Bounds.Right - Taskbar.CurrentScreen.Bounds.Left;
+                double CurrentScreenHeight = Taskbar.CurrentScreen.Bounds.Bottom - Taskbar.CurrentScreen.Bounds.Top;
+
+                double RatioX = WorkScreenWidth / CurrentScreenWidth;
+                double RatioY = WorkScreenHeight / CurrentScreenHeight;
+
+                FrameworkElement MainChild = Child as FrameworkElement;
+                Size PopupSize = new Size((int)(MainChild.ActualWidth / RatioX), (int)(MainChild.ActualHeight / RatioY));
+
+                Point RelativePosition = Taskbar.GetRelativePosition(MousePosition, PopupSize);
+
+                RelativePosition = new Point(RelativePosition.X * RatioX, RelativePosition.Y * RatioY);
+
+                HorizontalOffset = RelativePosition.X;
+                VerticalOffset = RelativePosition.Y;
+            }
+            else
+            {
+                HorizontalOffset = 0;
+                VerticalOffset = 0;
+            }
+
+            HwndSource source = (HwndSource)HwndSource.FromVisual(Child);
+            SetWindowPos(source.Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE);
+            SetForegroundWindow(source.Handle);
+        }
+
+        private void OnClosed(object sender, EventArgs e)
+        {
+            SaveMushroomInfoList();
+            SetSettingKey(IsLockedSettingName, IsLocked ? 1 : 0, RegistryValueKind.DWord);
+        }
+
+        public void OnDeactivated()
+        {
+            IsOpen = false;
+        }
+
+        private void OnClose(object sender, ExecutedRoutedEventArgs e)
+        {
+            IsOpen = false;
+        }
+
+        private void OnLoadAtStartup(object sender, ExecutedRoutedEventArgs e)
+        {
+            TaskbarIcon SenderIcon = e.Parameter as TaskbarIcon;
+
+            if (IsElevated)
+            {
+                bool IsChecked;
+                if (SenderIcon.ToggleChecked(e.Command, out IsChecked))
+                    InstallLoad(IsChecked);
+            }
+            else
+            {
+                string ExeName = Assembly.GetExecutingAssembly().Location;
+
+                if (Scheduler.IsTaskActive(ExeName))
+                {
+                    RemoveFromStartupWindow Dlg = new RemoveFromStartupWindow();
+                    Dlg.ShowDialog();
+                }
+                else
+                {
+                    LoadAtStartupWindow Dlg = new LoadAtStartupWindow();
+                    Dlg.ShowDialog();
+                }
+            }
+        }
+
+        private void OnShowDarkChapel(object sender, ExecutedRoutedEventArgs e)
+        {
+            TaskbarIcon SenderIcon = e.Parameter as TaskbarIcon;
+
+            bool IsChecked;
+            if (SenderIcon.ToggleChecked(e.Command, out IsChecked))
+                ShowDarkChapel = IsChecked;
+        }
+
+        private void OnShowMushroomFarming(object sender, ExecutedRoutedEventArgs e)
+        {
+            TaskbarIcon SenderIcon = e.Parameter as TaskbarIcon;
+
+            bool IsChecked;
+            if (SenderIcon.ToggleChecked(e.Command, out IsChecked))
+                ShowMushroomFarming = IsChecked;
+        }
+
+        private void OnLock(object sender, ExecutedRoutedEventArgs e)
+        {
+            IsLocked = true;
+        }
+
+        private void OnUnlock(object sender, ExecutedRoutedEventArgs e)
+        {
+            IsLocked = false;
+        }
+
+        private void OnMushroomListScroll(object sender, ScrollEventArgs e)
+        {
+            ScrollBar ScrollBar = e.OriginalSource as ScrollBar;
+            double Offset = ScrollBar.Track.Value * (listviewMushrooms.ExtentHeight - listviewMushrooms.ScrollableHeight);
+            listviewMushrooms.ScrollToVerticalOffset(Offset);
+        }
+
+        private void OnMushroomListSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            FrameworkElement Control = sender as FrameworkElement;
+            if (!double.IsNaN(Control.ActualHeight) && !double.IsNaN(Control.MaxHeight))
+            {
+                IsMushroomListLarge = (Control.ActualHeight >= Control.MaxHeight);
+            }
+        }
+
+        private void OnMushroomNameValidationError(object sender, ValidationErrorEventArgs e)
+        {
+            ComboBox Control = sender as ComboBox;
+            MushroomInfo Line = Control.DataContext as MushroomInfo;
+            Line.Name = "";
+        }
+
+        private void OnMushroomNameLostFocus(object sender, RoutedEventArgs e)
+        {
+            if (MushroomInfoList.Count > 0 && MushroomInfoList.Count < MaxMushroomRows)
+            {
+                if (MushroomInfoList[MushroomInfoList.Count - 1].Name.Length > 0)
+                    MushroomInfoList.Add(new MushroomInfo("", null));
+                else
+                {
+                    bool Continue = true;
+
+                    while (Continue)
+                    {
+                        Continue = false;
+
+                        for (int i = 0; i + 1 < MushroomInfoList.Count; i++)
+                        {
+                            MushroomInfo Item = MushroomInfoList[i];
+                            if (Item.Name.Length == 0 && !Item.PreferredPhase.HasValue)
+                            {
+                                MushroomInfoList.Remove(Item);
+                                Continue = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void OnLockMushroomList(object sender, RoutedEventArgs e)
+        {
+            FrameworkElement Element = sender as FrameworkElement;
+            ContextMenu ContextMenu = Element.ContextMenu;
+            ContextMenu.IsOpen = true;
+            ContextMenu.PlacementTarget = this;
+            ContextMenu.Closed += OnContextMenuClosed;
+        }
+
+        private void OnUnlockMushroomList(object sender, MouseButtonEventArgs e)
+        {
+            FrameworkElement Element = sender as FrameworkElement;
+            ContextMenu ContextMenu = Element.ContextMenu;
+            ContextMenu.IsOpen = true;
+            ContextMenu.PlacementTarget = this;
+            ContextMenu.Closed += OnContextMenuClosed;
+        }
+
+        private void OnContextMenuClosed(object sender, RoutedEventArgs e)
+        {
+            ContextMenu ContextMenu = sender as ContextMenu;
+            ContextMenu.Closed -= OnContextMenuClosed;
+            ContextMenu.PlacementTarget = null;
+        }
+
+        private void OnExit(object sender, ExecutedRoutedEventArgs e)
+        {
+            IsOpen = false;
+
+            using (TaskbarIcon Icon = TaskbarIcon)
+            {
+                TaskbarIcon = null;
+            }
+
+            Application.Current.Shutdown();
+        }
+        #endregion
+
+        #region Window Handle Management
+        [DllImport("User32.dll")]
+        public static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        const int SWP_NOMOVE = 0x0002;
+        const int SWP_NOSIZE = 0x0001;
+        const int SWP_SHOWWINDOW = 0x0040;
+        const int SWP_NOACTIVATE = 0x0010;
+        const int HWND_TOPMOST = -1;
+
+        [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
+        public static extern IntPtr SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int x, int Y, int cx, int cy, int wFlags);
         #endregion
 
         #region Implementation of INotifyPropertyChanged

@@ -90,6 +90,7 @@
       <DependentUpon>LoadAtStartupWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Moon Phases.cs" />
+    <Compile Include="Mushroom Info.cs" />
     <Compile Include="Phase Calculator.cs" />
     <Compile Include="RemoveFromStartupWindow.xaml.cs">
       <DependentUpon>RemoveFromStartupWindow.xaml</DependentUpon>
@@ -98,6 +99,15 @@
     <Compile Include="Selectors\Moon Phase Selector.cs" />
     <Compile Include="Taskbar Icon.cs" />
     <Compile Include="Taskbar.cs" />
+    <Compile Include="Validation\Empty Text Validation Rule.cs" />
+    <Resource Include="Design\ScrollBar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Resource>
+    <Resource Include="Design\TextBlock.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Resource>
     <Page Include="LoadAtStartupWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -156,10 +166,16 @@
     <EmbeddedResource Include="Resources\UAC-16.png" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Design\" />
+    <Resource Include="Resources\Locked.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\PgMoon.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\BigLocked.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Close.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">

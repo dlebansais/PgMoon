@@ -6,16 +6,22 @@
        xmlns:sys="clr-namespace:System;assembly=mscorlib"
        xmlns:conv="clr-namespace:Converters"
        xmlns:sel="clr-namespace:Selectors"
+       xmlns:val="clr-namespace:Validation"
        xmlns:app="clr-namespace:PgMoon"
-       Opened="OnOpened">
+       Opened="OnOpened"
+       Closed="OnClosed">
     <Popup.Resources>
         <conv:BooleanToObjectConverter x:Key="convBooleanToObject"/>
         <conv:MoonPhaseToStringConverter x:Key="convMoonPhaseToString"/>
         <conv:DoubleToThicknessConverter x:Key="convDoubleToThickness"/>
         <sel:MoonPhaseSelector x:Key="selMoonPhase"/>
+        <val:EmptyTextValidationRule x:Key="valEmptyText"/>
         <RoutedUICommand x:Key="LoadAtStartupCommand"/>
         <RoutedUICommand x:Key="CloseCommand"/>
         <RoutedUICommand x:Key="ShowDarkChapelCommand"/>
+        <RoutedUICommand x:Key="ShowMushroomFarmingCommand"/>
+        <RoutedUICommand x:Key="LockCommand"/>
+        <RoutedUICommand x:Key="UnlockCommand"/>
         <RoutedUICommand x:Key="ExitCommand"/>
         <CompositeCollection x:Key="VisibleCollapsed">
             <Visibility>Visible</Visibility>
@@ -25,23 +31,35 @@
             <Visibility>Collapsed</Visibility>
             <Visibility>Visible</Visibility>
         </CompositeCollection>
+        <CompositeCollection x:Key="VisibleHidden">
+            <Visibility>Visible</Visibility>
+            <Visibility>Hidden</Visibility>
+        </CompositeCollection>
+        <CompositeCollection x:Key="HiddenVisible">
+            <Visibility>Hidden</Visibility>
+            <Visibility>Visible</Visibility>
+        </CompositeCollection>
+        <Style TargetType="{x:Type TextBlock}">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+        <BitmapImage x:Key="imgLocked" UriSource="Resources/Locked.png"/>
+        <BitmapImage x:Key="imgBigLocked" UriSource="Resources/BigLocked.png"/>
+        <BitmapImage x:Key="imgClose" UriSource="Resources/Close.png"/>
     </Popup.Resources>
     <Popup.CommandBindings>
         <CommandBinding Command="{StaticResource LoadAtStartupCommand}" Executed="OnLoadAtStartup"/>
         <CommandBinding Command="{StaticResource CloseCommand}" Executed="OnClose"/>
         <CommandBinding Command="{StaticResource ShowDarkChapelCommand}" Executed="OnShowDarkChapel"/>
+        <CommandBinding Command="{StaticResource ShowMushroomFarmingCommand}" Executed="OnShowMushroomFarming"/>
+        <CommandBinding Command="{StaticResource LockCommand}" Executed="OnLock"/>
+        <CommandBinding Command="{StaticResource UnlockCommand}" Executed="OnUnlock"/>
         <CommandBinding Command="{StaticResource ExitCommand}" Executed="OnExit"/>
     </Popup.CommandBindings>
-    <Grid Width="260" Background="#555555">
-        <Grid.Resources>
-            <Style TargetType="{x:Type TextBlock}">
-                <Setter Property="Foreground" Value="White"/>
-                <Setter Property="FontSize" Value="14"/>
-            </Style>
-        </Grid.Resources>
+    <Grid Width="314" Background="#555555">
         <DockPanel>
             <DockPanel DockPanel.Dock="Top" Visibility="{Binding ShowDarkChapel, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource CollapsedVisible}, FallbackValue=Collapsed}">
-                <Separator DockPanel.Dock="Bottom" Margin="4,2,4,2"/>
+                <Separator DockPanel.Dock="Bottom" Margin="4,2,4,0"/>
                 <Canvas Width="150" Height="150" HorizontalAlignment="Center">
                     <Canvas.Resources>
                         <DataTemplate x:Key="SelectedStatueTemplate">
@@ -62,6 +80,84 @@
                     <ContentControl Canvas.Left="109" Canvas.Top="118" ContentTemplateSelector="{StaticResource selMoonPhase}" Content="6"/>
                     <ContentControl Canvas.Left="132" Canvas.Top="60" ContentTemplateSelector="{StaticResource selMoonPhase}" Content="7"/>
                 </Canvas>
+            </DockPanel>
+            <DockPanel DockPanel.Dock="Top" Visibility="{Binding ShowMushroomFarming, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource CollapsedVisible}, FallbackValue=Collapsed}">
+                <DockPanel.Resources>
+                    <ControlTemplate x:Key="ErrorTemplate">
+                        <Grid>
+                            <AdornedElementPlaceholder/>
+                            <TextBlock IsHitTestVisible="False" Text="Enter Name" FontStyle="Italic" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Grid>
+                    </ControlTemplate>
+                    <DataTemplate x:Key="MushroomNameTemplate">
+                        <TextBlock Text="{Binding}" Foreground="Black" FontSize="12"/>
+                    </DataTemplate>
+                    <DataTemplate x:Key="PhaseNameTemplate">
+                        <TextBlock Text="{Binding}" Foreground="Black" FontSize="12"/>
+                    </DataTemplate>
+                    <DataTemplate x:Key="NameTemplate">
+                        <Border BorderBrush="{x:Null}" BorderThickness="0" Margin="-6,0,-8,0">
+                            <ComboBox IsEditable="True" IsReadOnly="False" ItemsSource="{Binding Path=MushroomNameList, RelativeSource={RelativeSource AncestorType={x:Type app:MainWindow}}}" ItemTemplate="{StaticResource MushroomNameTemplate}" Validation.ErrorTemplate="{StaticResource ErrorTemplate}" Validation.Error="OnMushroomNameValidationError" LostFocus="OnMushroomNameLostFocus">
+                                <ComboBox.Text>
+                                    <Binding Path="Name" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged" NotifyOnValidationError="True">
+                                        <Binding.ValidationRules>
+                                            <val:EmptyTextValidationRule ValidatesOnTargetUpdated="True"/>
+                                        </Binding.ValidationRules>
+                                    </Binding>
+                                </ComboBox.Text>
+                            </ComboBox>
+                        </Border>
+                    </DataTemplate>
+                    <DataTemplate x:Key="MoonPhaseTemplate">
+                        <Border BorderBrush="{x:Null}" BorderThickness="0" Margin="-6,0,-8,0">
+                            <ComboBox IsEditable="False" IsReadOnly="True" ItemsSource="{Binding Source={x:Static conv:MoonPhaseToStringConverter.MoonPhaseList}, Mode=OneWay}" SelectedIndex="{Binding SelectedMoonPhase}" ItemTemplate="{StaticResource PhaseNameTemplate}" Margin="5,0,0,0"/>
+                        </Border>
+                    </DataTemplate>
+                </DockPanel.Resources>
+                <Separator DockPanel.Dock="Bottom" Margin="4,2,4,2"/>
+                <DockPanel MaxHeight="150" SizeChanged="OnMushroomListSizeChanged">
+                    <DockPanel DockPanel.Dock="Right" Visibility="{Binding IsMushroomListSmall, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource VisibleHidden}, FallbackValue=Visible}" Margin="0,2,0,0">
+                        <Border DockPanel.Dock="Top" Visibility="{Binding ShowDarkChapel, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource VisibleCollapsed}, FallbackValue=Collapsed}" BorderBrush="{x:Null}" BorderThickness="0" Background="Transparent" Height="15"/>
+                        <Button DockPanel.Dock="Top" BorderBrush="{x:Null}" BorderThickness="0" Visibility="{Binding IsLocked, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource VisibleHidden}, FallbackValue=Visible}" Background="White" Click="OnLockMushroomList" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,2,1,2">
+                            <Button.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Lock" Command="{StaticResource LockCommand}"/>
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                            <Image Source="{StaticResource imgLocked}" Width="13" Height="13"/>
+                        </Button>
+                        <ScrollBar Orientation="Vertical" IsEnabled="{Binding IsMushroomListLarge}" Scroll="OnMushroomListScroll" Margin="0,0,1,0"/>
+                    </DockPanel>
+                    <Grid>
+                        <ScrollViewer x:Name="listviewMushrooms" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" Margin="1,2,1,0">
+                            <ListView ItemsSource="{Binding MushroomInfoList}" Background="Transparent" ScrollViewer.VerticalScrollBarVisibility="Hidden" BorderBrush="{x:Null}" BorderThickness="0">
+                                <ListView.Resources>
+                                    <Style TargetType="{x:Type GridViewColumnHeader}">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </Style>
+                                    <Style TargetType="{x:Type ListViewItem}">
+                                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                        <Setter Property="Padding" Value="0"/>
+                                    </Style>
+                                </ListView.Resources>
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn CellTemplate="{StaticResource NameTemplate}" Width="134"/>
+                                        <GridViewColumn CellTemplate="{StaticResource MoonPhaseTemplate}" Width="158"/>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </ScrollViewer>
+                        <Grid Background="Transparent" Visibility="{Binding IsLocked, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource HiddenVisible}, FallbackValue=Hidden}" MouseLeftButtonDown="OnUnlockMushroomList">
+                            <Grid.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Unlock" Command="{StaticResource UnlockCommand}"/>
+                                </ContextMenu>
+                            </Grid.ContextMenu>
+                            <Image Source="{StaticResource imgBigLocked}" Opacity="0.2" HorizontalAlignment="Center" VerticalAlignment="Center" Width="100" Height="100"/>
+                        </Grid>
+                    </Grid>
+                </DockPanel>
             </DockPanel>
             <DockPanel>
                 <TextBlock DockPanel.Dock="Top" Text="{Binding PhaseCalculator.Phase, Converter={StaticResource convMoonPhaseToString}}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -109,8 +205,8 @@
                 </Grid>
             </DockPanel>
         </DockPanel>
-        <Button HorizontalAlignment="Right" VerticalAlignment="Top" Command="{StaticResource CloseCommand}" BorderThickness="0" Margin="0,2,2,0">
-            <Border BorderBrush="White" BorderThickness="2" Background="Black" Width="7" Height="7"/>
+        <Button HorizontalAlignment="Right" VerticalAlignment="Top" Command="{StaticResource CloseCommand}" BorderBrush="{x:Null}" BorderThickness="0" Background="White" FocusVisualStyle="{x:Null}" Margin="0,1,1,0">
+            <Image Source="{StaticResource imgClose}" Width="13" Height="13"/>
         </Button>
     </Grid>
 </Popup>

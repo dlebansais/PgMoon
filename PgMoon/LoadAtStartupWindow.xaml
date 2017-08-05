@@ -20,12 +20,6 @@
         <CommandBinding Command="{StaticResource CloseCommand}" Executed="OnClose"/>
     </Window.CommandBindings>
     <DockPanel>
-        <DockPanel.Resources>
-            <Style TargetType="{x:Type TextBlock}">
-                <Setter Property="Foreground" Value="Black"/>
-                <Setter Property="FontFamily" Value="Arial"/>
-            </Style>
-        </DockPanel.Resources>
         <DockPanel DockPanel.Dock="Bottom" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" LastChildFill="False">
             <Button DockPanel.Dock="Right" Command="{StaticResource CloseCommand}" Width="120" Height="24" Margin="15,15,15,15">Close</Button>
         </DockPanel>
