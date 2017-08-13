@@ -75,7 +75,7 @@ namespace PgMoon
                         if ((AsExecAction = Definition.Actions[0] as ExecAction) == null)
                             continue;
 
-                        if (Path.GetFileName(AsExecAction.Path) != ProgramName)
+                        if (!AsExecAction.Path.EndsWith(ProgramName) || Path.GetFileName(AsExecAction.Path) != ProgramName)
                             continue;
 
                         Handler(t, ref ReturnValue);

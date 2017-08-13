@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -32,6 +33,7 @@ namespace PgMoon
             Placement = PlacementMode.Absolute;
             InitSettings();
             InitMoonPhase();
+            InitCalendar();
             InitDarkChapel();
             InitMushroomFarming();
             InitTaskbarIcon();
@@ -105,12 +107,12 @@ namespace PgMoon
         {
             MenuHeaderTable = new Dictionary<ICommand, string>();
             LoadAtStartupCommand = InitMenuCommand("LoadAtStartupCommand", LoadAtStartupHeader);
+            ShowCalendarCommand = InitMenuCommand("ShowCalendarCommand", "Show Calendar");
             ShowDarkChapelCommand = InitMenuCommand("ShowDarkChapelCommand", "Show Dark Chapel");
             ShowMushroomFarmingCommand = InitMenuCommand("ShowMushroomFarmingCommand", "Show Mushrooms");
             ExitCommand = InitMenuCommand("ExitCommand", "Exit");
 
             System.Drawing.Icon Icon = LoadIcon("Taskbar.ico");
-            string ToolTipText = MoonPhaseName;
             ContextMenu ContextMenu = LoadContextMenu();
 
             TaskbarIcon = TaskbarIcon.Create(Icon, ToolTipText, ContextMenu, this);
@@ -181,6 +183,8 @@ namespace PgMoon
                     LoadAtStartup.Icon = LoadBitmap("UAC-16.png");
             }
 
+            MenuItem ShowCalendarMenu = LoadNotificationMenuItem(ShowCalendarCommand);
+            ShowCalendarMenu.IsChecked = ShowCalendar;
             MenuItem ShowDarkChapelMenu = LoadNotificationMenuItem(ShowDarkChapelCommand);
             ShowDarkChapelMenu.IsChecked = ShowDarkChapel;
             MenuItem ShowMushroomFarmingMenu = LoadNotificationMenuItem(ShowMushroomFarmingCommand);
@@ -191,6 +195,7 @@ namespace PgMoon
             AddContextMenuSeparator(Result);
             AddContextMenu(Result, ShowDarkChapelMenu, true);
             AddContextMenu(Result, ShowMushroomFarmingMenu, true);
+            AddContextMenu(Result, ShowCalendarMenu, true);
             AddContextMenuSeparator(Result);
             AddContextMenu(Result, ExitMenu, true);
 
@@ -248,6 +253,7 @@ namespace PgMoon
         private static readonly string LoadAtStartupHeader = "Load at startup";
         private static readonly string RemoveFromStartupHeader = "Remove from startup";
         private ICommand LoadAtStartupCommand;
+        private ICommand ShowCalendarCommand;
         private ICommand ShowDarkChapelCommand;
         private ICommand ShowMushroomFarmingCommand;
         private ICommand ExitCommand;
@@ -325,12 +331,17 @@ namespace PgMoon
 
         public bool IsFullMoon
         {
-            get { return PhaseCalculator.Phase == MoonPhases.FullMoon; }
+            get { return PhaseCalculator.MoonPhase == MoonPhases.FullMoon; }
         }
 
         public bool IsNextPhaseFullMoon
         {
-            get { return ((int)PhaseCalculator.Phase + 1) == (int)MoonPhases.FullMoon; }
+            get { return ((int)PhaseCalculator.MoonPhase + 1) == (int)MoonPhases.FullMoon; }
+        }
+
+        public string ToolTipText
+        {
+            get { return MoonPhaseName + "\r\n" + TimeToNextPhaseText; }
         }
 
         private void UpdateMoonPhaseTimerCallback(object Parameter)
@@ -347,17 +358,98 @@ namespace PgMoon
             NotifyPropertyChanged(nameof(TimeToFullMoonText));
             NotifyPropertyChanged(nameof(IsFullMoon));
             NotifyPropertyChanged(nameof(IsNextPhaseFullMoon));
+            NotifyPropertyChanged(nameof(ToolTipText));
 
             if (TaskbarIcon != null)
-                TaskbarIcon.UpdateToolTipText(MoonPhaseName);
+                TaskbarIcon.UpdateToolTipText(ToolTipText);
         }
 
         private string MoonPhaseName
         {
-            get { return MoonPhaseToStringConverter.MoonPhaseTable[PhaseCalculator.Phase]; }
+            get { return MoonPhaseToStringConverter.MoonPhaseTable[PhaseCalculator.MoonPhase]; }
         }
 
         private Timer UpdateMoonPhaseTimer;
+        #endregion
+
+        //System.Windows.Shapes.Path p;
+        #region Calendar
+        private void InitCalendar()
+        {
+            int? ShowSetting = GetSettingKey(ShowCalendarSettingName) as int?;
+            _ShowCalendar = (ShowSetting.HasValue ? (ShowSetting.Value != 0) : true);
+            CalendarStartTime = DateTime.UtcNow;
+            BuildCalendar();
+        }
+
+        public bool ShowCalendar
+        {
+            get { return _ShowCalendar; }
+            set
+            {
+                if (_ShowCalendar != value)
+                {
+                    _ShowCalendar = value;
+                    NotifyThisPropertyChanged();
+
+                    int? KeyValue = value ? 1 : 0;
+                    SetSettingKey(ShowCalendarSettingName, KeyValue, RegistryValueKind.DWord);
+                }
+            }
+        }
+        private bool _ShowCalendar;
+
+        public ObservableCollection<CalendarEntry> CalendarEntryList { get; private set; } = new ObservableCollection<CalendarEntry>();
+
+        private void BuildCalendar()
+        {
+            CalendarEntryList.Clear();
+
+            DateTime Time = CalendarStartTime;
+            for (int i = 0; i < 5; i++)
+            {
+                int MoonMonth;
+                MoonPhases MoonPhase;
+                double ProgressWithinLunation;
+                double ProgressWithinPhase;
+                DateTime PhaseStartTime;
+                DateTime PhaseEndTime;
+                TimeSpan TimeToNextPhase;
+                double ProgressToFullMoon;
+                TimeSpan TimeToFullMoon;
+                PhaseCalculator.DateTimeToMoonPhase(Time, out MoonMonth, out MoonPhase, out ProgressWithinLunation, out ProgressWithinPhase, out PhaseStartTime, out PhaseEndTime, out TimeToNextPhase, out ProgressToFullMoon, out TimeToFullMoon);
+
+                bool IsCurrent = (MoonMonth == PhaseCalculator.MoonMonth && MoonPhase == PhaseCalculator.MoonPhase);
+                CalendarEntry NewCalendarEntry = new CalendarEntry(MoonPhase, IsCurrent, PhaseStartTime, PhaseEndTime);
+                CalendarEntryList.Add(NewCalendarEntry);
+
+                Time += TimeToNextPhase + TimeSpan.FromHours(1);
+            }
+        }
+
+        private void OnShowCalendar(object sender, ExecutedRoutedEventArgs e)
+        {
+            TaskbarIcon SenderIcon = e.Parameter as TaskbarIcon;
+
+            bool IsChecked;
+            if (SenderIcon.ToggleChecked(e.Command, out IsChecked))
+                ShowCalendar = IsChecked;
+        }
+
+        private void OnCalendarUp(object sender, MouseButtonEventArgs e)
+        {
+            CalendarStartTime = CalendarEntryList[0].StartTime - TimeSpan.FromHours(1);
+            BuildCalendar();
+        }
+
+        private void OnCalendarDown(object sender, MouseButtonEventArgs e)
+        {
+            CalendarStartTime = CalendarEntryList[0].EndTime + TimeSpan.FromHours(1);
+            BuildCalendar();
+        }
+
+        private DateTime CalendarStartTime;
+        private static readonly string ShowCalendarSettingName = "ShowCalendar";
         #endregion
 
         #region Dark Chapel
@@ -383,6 +475,15 @@ namespace PgMoon
             }
         }
         private bool _ShowDarkChapel;
+
+        private void OnShowDarkChapel(object sender, ExecutedRoutedEventArgs e)
+        {
+            TaskbarIcon SenderIcon = e.Parameter as TaskbarIcon;
+
+            bool IsChecked;
+            if (SenderIcon.ToggleChecked(e.Command, out IsChecked))
+                ShowDarkChapel = IsChecked;
+        }
 
         private static readonly string ShowDarkChapelSettingName = "ShowDarkChapel";
         #endregion
@@ -571,6 +672,15 @@ namespace PgMoon
             NotifyPropertyChanged(nameof(IsMushroomListSmall));
         }
 
+        private void OnShowMushroomFarming(object sender, ExecutedRoutedEventArgs e)
+        {
+            TaskbarIcon SenderIcon = e.Parameter as TaskbarIcon;
+
+            bool IsChecked;
+            if (SenderIcon.ToggleChecked(e.Command, out IsChecked))
+                ShowMushroomFarming = IsChecked;
+        }
+
         private static readonly string ShowMushroomFarmingSettingName = "ShowMushroomFarming";
         private static readonly string MushroomListSettingName = "MushroomList";
         private static readonly string IsLockedSettingName = "MushroomListLocked";
@@ -664,24 +774,6 @@ namespace PgMoon
                     Dlg.ShowDialog();
                 }
             }
-        }
-
-        private void OnShowDarkChapel(object sender, ExecutedRoutedEventArgs e)
-        {
-            TaskbarIcon SenderIcon = e.Parameter as TaskbarIcon;
-
-            bool IsChecked;
-            if (SenderIcon.ToggleChecked(e.Command, out IsChecked))
-                ShowDarkChapel = IsChecked;
-        }
-
-        private void OnShowMushroomFarming(object sender, ExecutedRoutedEventArgs e)
-        {
-            TaskbarIcon SenderIcon = e.Parameter as TaskbarIcon;
-
-            bool IsChecked;
-            if (SenderIcon.ToggleChecked(e.Command, out IsChecked))
-                ShowMushroomFarming = IsChecked;
         }
 
         private void OnLock(object sender, ExecutedRoutedEventArgs e)
@@ -849,5 +941,58 @@ namespace PgMoon
             Dispose(false);
         }
         #endregion
+
+        /*
+        private void OnPreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton != MouseButtonState.Pressed)
+            {
+                DragSourceRowIndex = -1;
+                return;
+            }
+
+            MushroomInfo Item = null;
+            int RowIndex = -1;
+
+            FrameworkElement SourceRow = e.OriginalSource as FrameworkElement;
+            if (SourceRow != null)
+            {
+                Item = SourceRow.DataContext as MushroomInfo;
+                RowIndex = MushroomInfoList.IndexOf(Item);
+            }
+
+            if (RowIndex < 0)
+            {
+                DragSourceRowIndex = -1;
+                return;
+            }
+
+            if (DragSourceRowIndex == -1)
+                DragSourceRowIndex = RowIndex;
+
+            else if (DragSourceRowIndex != RowIndex)
+            {
+                Debug.Print("Starting DragDrop");
+                DragDrop.DoDragDrop(this, Item, DragDropEffects.Move);
+                e.Handled = true;
+            }
+        }
+
+        private int MousePositionToRowIndex()
+        {
+            return -1;
+        }
+
+        private int DragSourceRowIndex = -1;
+
+        private void OnGiveFeedback(object sender, GiveFeedbackEventArgs e)
+        {
+
+        }
+
+        private void OnDrop(object sender, DragEventArgs e)
+        {
+
+        }*/
     }
 }

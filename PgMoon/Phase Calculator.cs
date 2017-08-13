@@ -7,10 +7,21 @@ namespace PgMoon
     public class PhaseCalculator : INotifyPropertyChanged
     {
         #region Init
+        static PhaseCalculator()
+        {
+            InitPhaseTable();
+        }
+
         public PhaseCalculator()
         {
             CalculateBasicMoonPhase(DateTime.UtcNow);
         }
+
+        private static readonly TimeSpan SynodicMonth = TimeSpan.FromSeconds(2551442.861);
+        private static readonly TimeSpan MainPhaseDuration = TimeSpan.FromDays(3);
+        private static readonly TimeSpan IntermediatePhaseDuration = TimeSpan.FromSeconds((SynodicMonth.TotalSeconds - (MainPhaseDuration.TotalSeconds * 4)) / 4);
+        //private static readonly DateTime RecentNewMoon = new DateTime(2017, 8, 9, 4, 0, 5, DateTimeKind.Utc);
+        private static readonly DateTime RecentNewMoon = new DateTime(2017, 7, 22, 9, 38, 0, DateTimeKind.Utc);
         #endregion
 
         #region Client Interface
@@ -26,19 +37,33 @@ namespace PgMoon
         #endregion
 
         #region Properties
-        public MoonPhases Phase
+        public int MoonMonth
         {
-            get { return _Phase; }
+            get { return _MoonMonth; }
             set
             {
-                if (_Phase != value)
+                if (_MoonMonth != value)
                 {
-                    _Phase = value;
+                    _MoonMonth = value;
                     NotifyThisPropertyChanged();
                 }
             }
         }
-        private MoonPhases _Phase;
+        private int _MoonMonth;
+
+        public MoonPhases MoonPhase
+        {
+            get { return _MoonPhase; }
+            set
+            {
+                if (_MoonPhase != value)
+                {
+                    _MoonPhase = value;
+                    NotifyThisPropertyChanged();
+                }
+            }
+        }
+        private MoonPhases _MoonPhase;
 
         public double ProgressWithinLunation
         {
@@ -111,140 +136,84 @@ namespace PgMoon
         private TimeSpan _TimeToFullMoon;
         #endregion
 
-        #region Complicated
-        private static double RAD
+        #region Client Interface
+        public static void DateTimeToMoonPhase(DateTime Time, out int MoonMonth, out MoonPhases MoonPhase, out double ProgressWithinLunation, out double ProgressWithinPhase, out DateTime PhaseStartTime, out DateTime PhaseEndTime, out TimeSpan TimeToNextPhase, out double ProgressToFullMoon, out TimeSpan TimeToFullMoon)
         {
-            get { return Math.PI / 180.0; }
-        }
-
-        const double SMALL_FLOAT = 1e-12;
-
-        // Returns the number of julian days for the specified day.
-        private static double Julian(int year, int month, double day)
-        {
-            int a, b = 0, c, e;
-            if (month < 3)
-            {
-                year--;
-                month += 12;
-            }
-            if (year > 1582 || (year == 1582 && month > 10) ||
-            (year == 1582 && month == 10 && day > 15))
-            {
-                a = year / 100;
-                b = 2 - a + a / 4;
-            }
-            c = (int)(365.25 * year);
-            e = (int)(30.6001 * (month + 1));
-            return b + c + e + day + 1720994.5;
-        }
-
-        static double sun_position(double j)
-        {
-            double n, x, e, l, dl, v;
-            //double m2;
-            int i;
-
-            n = 360 / 365.2422 * j;
-            i = (int)(n / 360);
-            n = n - i * 360.0;
-            x = n - 3.762863;
-            if (x < 0) x += 360;
-            x *= RAD;
-            e = x;
-            do
-            {
-                dl = e - .016718 * Math.Sin(e) - x;
-                e = e - dl / (1 - .016718 * Math.Cos(e));
-            } while (Math.Abs(dl) >= SMALL_FLOAT);
-            v = 360 / Math.PI * Math.Atan(1.01686011182 * Math.Tan(e / 2));
-            l = v + 282.596403;
-            i = (int)(l / 360);
-            l = l - i * 360.0;
-            return l;
-        }
-
-        static double moon_position(double j, double ls)
-        {
-
-            double ms, l, mm, n, ev, sms, ae, ec;//,z,x;//,lm,bm,ec;
-                                                 //double d;
-                                                 //double ds, as, dm;
-            int i;
-
-            /* ls = sun_position(j) */
-            ms = 0.985647332099 * j - 3.762863;
-            if (ms < 0) ms += 360.0;
-            l = 13.176396 * j + 64.975464;
-            i = (int)(l / 360);
-            l = l - i * 360.0;
-            if (l < 0) l += 360.0;
-            mm = l - 0.1114041 * j - 349.383063;
-            i = (int)(mm / 360);
-            mm -= i * 360.0;
-            n = 151.950429 - 0.0529539 * j;
-            i = (int)(n / 360);
-            n -= i * 360.0;
-            ev = 1.2739 * Math.Sin((2 * (l - ls) - mm) * RAD);
-            sms = Math.Sin(ms * RAD);
-            ae = 0.1858 * sms;
-            mm += ev - ae - 0.37 * sms;
-            ec = 6.2886 * Math.Sin(mm * RAD);
-            l += ev + ec - ae + 0.214 * Math.Sin(2 * mm * RAD);
-            l = 0.6583 * Math.Sin(2 * (l - ls) * RAD) + l;
-            return l;
-        }
-
-        public static int moon_phase2(DateTime CurrentTime)
-        {
-            int year = CurrentTime.Year;
-            int month = CurrentTime.Month;
-            int day = CurrentTime.Day;
-            int hour = CurrentTime.Hour;
-
-            /*
-              Calculates more accurately than Moon_phase , the phase of the moon at
-              the given epoch.
-              returns the moon phase as a real number (0-1)
-              */
-
-            double j = Julian(year, month, (double)day + hour / 24.0) - 2444238.5;
-            double ls = sun_position(j);
-            double lm = moon_position(j, ls);
-
-            double t = lm - ls;
-            if (t < 0) t += 360;
-
-            double Phase = (1.0 - Math.Cos((lm - ls) * RAD)) / 2;
-            int PhaseIndex = (int)(Phase * 8);
-
-            return PhaseIndex;
-        }
-        #endregion
-
-        #region Basic
-        public void CalculateBasicMoonPhase(DateTime Time)
-        {
-            DateTime RecentNewMoon = new DateTime(2017, 7, 23, 3, 0, 0, DateTimeKind.Utc);
             TimeSpan Elapsed = Time - RecentNewMoon;
-            double SynodicMonth = 2551442.861088; // Seconds
 
-            ProgressWithinLunation = (((Elapsed.TotalSeconds + (SynodicMonth / 16.0)) % SynodicMonth) / SynodicMonth);
-            Phase = (MoonPhases)(ProgressWithinLunation * 8);
-            ProgressWithinPhase = (ProgressWithinLunation * 8) - (int)Phase;
-            TimeToNextPhase = TimeSpan.FromSeconds(((((int)Phase + 1) - (ProgressWithinLunation * 8)) / 8) * SynodicMonth);
-            if (Phase < MoonPhases.FullMoon)
+            MoonMonth = (int)(Elapsed.TotalSeconds / SynodicMonth.TotalSeconds);
+            DateTime MonthStartTime = RecentNewMoon + TimeSpan.FromSeconds(SynodicMonth.TotalSeconds * MoonMonth);
+            TimeSpan PositionInMonth = TimeSpan.FromSeconds(Elapsed.TotalSeconds - (MoonMonth * SynodicMonth.TotalSeconds));
+
+            //DateTime RealStart = RecentNewMoon - MainPhaseDuration - IntermediatePhaseDuration - MainPhaseDuration - IntermediatePhaseDuration - MainPhaseDuration;
+
+            int i;
+            for (i = 0; i + 1 < PhaseTable.Length; i++)
+                if (PositionInMonth < PhaseTable[i + 1])
+                    break;
+
+            MoonPhase = (MoonPhases)i;
+            ProgressWithinLunation = PositionInMonth.TotalSeconds / SynodicMonth.TotalSeconds;
+            ProgressWithinPhase = (ProgressWithinLunation * PhaseTable.Length) - (int)MoonPhase;
+            PhaseStartTime = MonthStartTime + PhaseTable[i];
+            PhaseEndTime = ((i + 1 < PhaseTable.Length) ? (MonthStartTime + PhaseTable[i + 1]) : MonthStartTime + SynodicMonth);
+            TimeToNextPhase = TimeSpan.FromSeconds(((((int)MoonPhase + 1) - (ProgressWithinLunation * PhaseTable.Length)) / PhaseTable.Length) * SynodicMonth.TotalSeconds);
+            if (MoonPhase < MoonPhases.FullMoon)
             {
                 ProgressToFullMoon = 1.0 - ((((double)MoonPhases.FullMoon) / 8) - ProgressWithinLunation);
-                TimeToFullMoon = TimeSpan.FromSeconds((((int)MoonPhases.FullMoon - (ProgressWithinLunation * 8)) / 8) * SynodicMonth);
+                TimeToFullMoon = TimeSpan.FromSeconds((((int)MoonPhases.FullMoon - (ProgressWithinLunation * 8)) / 8) * SynodicMonth.TotalSeconds);
             }
             else
             {
                 ProgressToFullMoon = 1.0 - (ProgressWithinLunation - (((double)MoonPhases.FullMoon) / 8));
-                TimeToFullMoon = TimeSpan.FromSeconds(SynodicMonth - (((ProgressWithinLunation * 8) - (int)MoonPhases.FullMoon) / 8) * SynodicMonth);
+                TimeToFullMoon = TimeSpan.FromSeconds(SynodicMonth.TotalSeconds - (((ProgressWithinLunation * 8) - (int)MoonPhases.FullMoon) / 8) * SynodicMonth.TotalSeconds);
             }
         }
+        #endregion
+
+        #region Calculator
+        private static void InitPhaseTable()
+        {
+            PhaseTable = new TimeSpan[8];
+            TimeSpan PhaseStart = TimeSpan.Zero;
+            for (int PhaseIndex = 0; PhaseIndex < PhaseTable.Length; PhaseIndex += 2)
+            {
+                PhaseTable[PhaseIndex + 0] = PhaseStart;
+                PhaseStart += MainPhaseDuration;
+
+                PhaseTable[PhaseIndex + 1] = PhaseStart;
+                PhaseStart += IntermediatePhaseDuration;
+            }
+        }
+
+        private void CalculateBasicMoonPhase(DateTime Time)
+        {
+            int MoonMonth;
+            MoonPhases MoonPhase;
+            double ProgressWithinLunation;
+            double ProgressWithinPhase;
+            DateTime PhaseStartTime;
+            DateTime PhaseEndTime;
+            TimeSpan TimeToNextPhase;
+            double ProgressToFullMoon;
+            TimeSpan TimeToFullMoon;
+            DateTimeToMoonPhase(Time, out MoonMonth, out MoonPhase, out ProgressWithinLunation, out ProgressWithinPhase, out PhaseStartTime, out PhaseEndTime, out TimeToNextPhase, out ProgressToFullMoon, out TimeToFullMoon);
+
+            this.MoonMonth = MoonMonth;
+            this.MoonPhase = MoonPhase;
+            this.ProgressWithinLunation = ProgressWithinLunation;
+            this.ProgressWithinPhase = ProgressWithinPhase;
+            this.TimeToNextPhase = TimeToNextPhase;
+            this.ProgressToFullMoon = ProgressToFullMoon;
+            this.TimeToFullMoon = TimeToFullMoon;
+        }
+
+        private static TimeSpan[] PhaseTable;
+
         // 01/08/17 [04.20,08:53] : FQ -> Waxing Gib
+        // 06/08/17 [01.30,08:09] : Waxing Gib -> Full (06:00?)
+        // 09/08/17 [06.04,06:06] : Full -> Waning Gibbous
+        // 13/08/17 [20:28,] : Waning Gibbous -> Last Quarter
         #endregion
 
         #region Implementation of INotifyPropertyChanged

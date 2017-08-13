@@ -28,7 +28,7 @@ namespace Selectors
             }
 
             string TemplateName;
-            if (DataContext != null && ((int)DataContext.PhaseCalculator.Phase).ToString() == item as string)
+            if (DataContext != null && ((int)DataContext.PhaseCalculator.MoonPhase).ToString() == item as string)
                 TemplateName = "SelectedStatueTemplate";
             else
                 TemplateName = "UnselectedStatueTemplate";
