@@ -18,6 +18,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace PgMoon
@@ -789,8 +790,24 @@ namespace PgMoon
         private void OnMushroomListScroll(object sender, ScrollEventArgs e)
         {
             ScrollBar ScrollBar = e.OriginalSource as ScrollBar;
+            ScrollViewer listviewMushrooms = LocateSibling(sender, nameof(listviewMushrooms)) as ScrollViewer;
             double Offset = ScrollBar.Track.Value * (listviewMushrooms.ExtentHeight - listviewMushrooms.ScrollableHeight);
             listviewMushrooms.ScrollToVerticalOffset(Offset);
+        }
+
+        private object LocateSibling(object sender, string ElementName)
+        {
+            FrameworkElement CurrentElement = sender as FrameworkElement;
+            object SiblingElement = null;
+
+            while (CurrentElement != null && SiblingElement == null)
+            {
+                CurrentElement = VisualTreeHelper.GetParent(CurrentElement) as FrameworkElement;
+                if (CurrentElement != null)
+                    SiblingElement = LogicalTreeHelper.FindLogicalNode(CurrentElement, ElementName);
+            }
+
+            return SiblingElement;
         }
 
         private void OnMushroomListSizeChanged(object sender, SizeChangedEventArgs e)

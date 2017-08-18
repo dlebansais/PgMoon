@@ -48,6 +48,210 @@
         <BitmapImage x:Key="imgLocked" UriSource="Resources/Locked.png"/>
         <BitmapImage x:Key="imgBigLocked" UriSource="Resources/BigLocked.png"/>
         <BitmapImage x:Key="imgClose" UriSource="Resources/Close.png"/>
+        <DockPanel x:Key="DarkChapelSectionTemplate">
+            <Separator DockPanel.Dock="Bottom" Margin="4,2,4,0"/>
+            <Canvas Width="150" Height="150" HorizontalAlignment="Center">
+                <Canvas.Resources>
+                    <DataTemplate x:Key="SelectedStatueTemplate">
+                        <Border BorderBrush="White" BorderThickness="1" Margin="-3,-3,0,0">
+                            <Rectangle Fill="Black" Width="6" Height="6"/>
+                        </Border>
+                    </DataTemplate>
+                    <DataTemplate x:Key="UnselectedStatueTemplate">
+                        <Rectangle Fill="White" Width="4" Height="4" Margin="-2,-2,0,0"/>
+                    </DataTemplate>
+                </Canvas.Resources>
+                <ContentControl Canvas.Left="103" Canvas.Top="17" ContentTemplateSelector="{StaticResource selMoonPhase}" Content="0"/>
+                <ContentControl Canvas.Left="52" Canvas.Top="19" ContentTemplateSelector="{StaticResource selMoonPhase}" Content="1"/>
+                <ContentControl Canvas.Left="25" Canvas.Top="30" ContentTemplateSelector="{StaticResource selMoonPhase}" Content="2"/>
+                <ContentControl Canvas.Left="9" Canvas.Top="82" ContentTemplateSelector="{StaticResource selMoonPhase}" Content="3"/>
+                <ContentControl Canvas.Left="18" Canvas.Top="121" ContentTemplateSelector="{StaticResource selMoonPhase}" Content="4"/>
+                <ContentControl Canvas.Left="60" Canvas.Top="135" ContentTemplateSelector="{StaticResource selMoonPhase}" Content="5"/>
+                <ContentControl Canvas.Left="109" Canvas.Top="118" ContentTemplateSelector="{StaticResource selMoonPhase}" Content="6"/>
+                <ContentControl Canvas.Left="132" Canvas.Top="60" ContentTemplateSelector="{StaticResource selMoonPhase}" Content="7"/>
+            </Canvas>
+        </DockPanel>
+        <DockPanel x:Key="MushroomSectionTemplate">
+            <DockPanel.Resources>
+                <ControlTemplate x:Key="ErrorTemplate">
+                    <Grid>
+                        <AdornedElementPlaceholder/>
+                        <TextBlock IsHitTestVisible="False" Text="Enter Name" FontStyle="Italic" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Grid>
+                </ControlTemplate>
+                <DataTemplate x:Key="MushroomNameTemplate">
+                    <TextBlock Text="{Binding}" Foreground="Black" FontSize="12"/>
+                </DataTemplate>
+                <DataTemplate x:Key="PhaseNameTemplate">
+                    <TextBlock Text="{Binding}" Foreground="Black" FontSize="12"/>
+                </DataTemplate>
+                <DataTemplate x:Key="NameTemplate">
+                    <Border BorderBrush="{x:Null}" BorderThickness="0" Margin="-6,0,-8,0">
+                        <ComboBox IsEditable="True" IsReadOnly="False" ItemsSource="{Binding Path=MushroomNameList, RelativeSource={RelativeSource AncestorType={x:Type app:MainWindow}}}" ItemTemplate="{StaticResource MushroomNameTemplate}" Validation.ErrorTemplate="{StaticResource ErrorTemplate}" Validation.Error="OnMushroomNameValidationError" LostFocus="OnMushroomNameLostFocus">
+                            <ComboBox.Text>
+                                <Binding Path="Name" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged" NotifyOnValidationError="True">
+                                    <Binding.ValidationRules>
+                                        <val:EmptyTextValidationRule ValidatesOnTargetUpdated="True"/>
+                                    </Binding.ValidationRules>
+                                </Binding>
+                            </ComboBox.Text>
+                        </ComboBox>
+                    </Border>
+                </DataTemplate>
+                <DataTemplate x:Key="MoonPhaseTemplate">
+                    <Border BorderBrush="{x:Null}" BorderThickness="0" Margin="-6,0,-8,0">
+                        <ComboBox IsEditable="False" IsReadOnly="True" ItemsSource="{Binding Source={x:Static conv:MoonPhaseToStringConverter.MoonPhaseList}, Mode=OneWay}" SelectedIndex="{Binding SelectedMoonPhase}" ItemTemplate="{StaticResource PhaseNameTemplate}" Margin="5,0,0,0"/>
+                    </Border>
+                </DataTemplate>
+            </DockPanel.Resources>
+            <Separator DockPanel.Dock="Bottom" Margin="4,2,4,2"/>
+            <DockPanel MaxHeight="150" SizeChanged="OnMushroomListSizeChanged">
+                <DockPanel DockPanel.Dock="Right" Visibility="{Binding IsMushroomListSmall, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource VisibleHidden}, FallbackValue=Visible}" Margin="0,2,0,0">
+                    <Border DockPanel.Dock="Top" Visibility="{Binding ShowDarkChapel, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource VisibleCollapsed}, FallbackValue=Collapsed}" BorderBrush="{x:Null}" BorderThickness="0" Background="Transparent" Height="15"/>
+                    <Button DockPanel.Dock="Top" BorderBrush="{x:Null}" BorderThickness="0" Visibility="{Binding IsLocked, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource VisibleHidden}, FallbackValue=Visible}" Background="White" Click="OnLockMushroomList" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,2,1,2">
+                        <Button.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Lock" Command="{StaticResource LockCommand}"/>
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                        <Image Source="{StaticResource imgLocked}" Width="13" Height="13"/>
+                    </Button>
+                    <ScrollBar Orientation="Vertical" IsEnabled="{Binding IsMushroomListLarge}" Scroll="OnMushroomListScroll" Margin="0,0,1,0"/>
+                </DockPanel>
+                <Grid>
+                    <ScrollViewer x:Name="listviewMushrooms" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" Margin="1,2,1,0">
+                        <ListView ItemsSource="{Binding MushroomInfoList}" Background="Transparent" ScrollViewer.VerticalScrollBarVisibility="Hidden" BorderBrush="{x:Null}" BorderThickness="0">
+                            <ListView.Resources>
+                                <Style TargetType="{x:Type GridViewColumnHeader}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </Style>
+                                <Style TargetType="{x:Type ListViewItem}">
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                    <Setter Property="Padding" Value="0"/>
+                                    <!--
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="{x:Type ListViewItem}">
+                                                    <Grid>
+                                                        <GridViewRowPresenter HorizontalAlignment="Stretch" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Width="Auto" Margin="0" Content="{TemplateBinding Content}"/>
+                                                        <Grid Background="Red" Opacity="0.5" HorizontalAlignment="Left" Width="20" IsHitTestVisible="False" PreviewMouseMove="OnPreviewMouseMove" AllowDrop="True" GiveFeedback="OnGiveFeedback" Drop="OnDrop"/>
+                                                    </Grid>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        -->
+                                </Style>
+                            </ListView.Resources>
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn CellTemplate="{StaticResource NameTemplate}" Width="134"/>
+                                    <GridViewColumn CellTemplate="{StaticResource MoonPhaseTemplate}" Width="158"/>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </ScrollViewer>
+                    <Grid Background="Transparent" Visibility="{Binding IsLocked, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource HiddenVisible}, FallbackValue=Hidden}" MouseLeftButtonDown="OnUnlockMushroomList">
+                        <Grid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Unlock" Command="{StaticResource UnlockCommand}"/>
+                            </ContextMenu>
+                        </Grid.ContextMenu>
+                        <Image Source="{StaticResource imgBigLocked}" Opacity="0.2" HorizontalAlignment="Center" VerticalAlignment="Center" Width="100" Height="100"/>
+                    </Grid>
+                </Grid>
+            </DockPanel>
+        </DockPanel>
+        <DockPanel x:Key="CalendarSectionTemplate">
+            <Separator DockPanel.Dock="Bottom" Margin="4,2,4,2"/>
+            <DockPanel DockPanel.Dock="Right" LastChildFill="False" Margin="0,10,2,10">
+                <DockPanel.Resources>
+                    <Style TargetType="{x:Type Path}">
+                        <Style.Setters>
+                            <Setter Property="Fill" Value="White"/>
+                            <Setter Property="Width" Value="14"/>
+                            <Setter Property="Height" Value="14"/>
+                            <Setter Property="HorizontalAlignment" Value="Center"/>
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                        </Style.Setters>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Fill" Value="LightGray"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </DockPanel.Resources>
+                <Border DockPanel.Dock="Top" BorderBrush="{x:Null}" BorderThickness="0" MouseLeftButtonDown="OnCalendarUp">
+                    <Path Data="M 0,4 L 6,-2 L 12,4"/>
+                </Border>
+                <Border DockPanel.Dock="Bottom" BorderBrush="{x:Null}" BorderThickness="0" MouseLeftButtonDown="OnCalendarDown">
+                    <Path Data="M 0,4 L 6,10 L 12,4"/>
+                </Border>
+            </DockPanel>
+            <ItemsControl ItemsSource="{Binding CalendarEntryList}" Margin="5,5,5,5">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <DataTemplate.Resources>
+                            <Style TargetType="{x:Type TextBlock}">
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="FontSize" Value="14"/>
+                            </Style>
+                        </DataTemplate.Resources>
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Left" Text="{Binding MoonPhase, Converter={StaticResource convMoonPhaseToString}}" TextAlignment="Right" Width="150"/>
+                            <Grid Margin="5,0,12,0">
+                                <TextBlock Visibility="{Binding IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource CollapsedVisible}, FallbackValue=Collapsed}" Text="Current" TextAlignment="Left"/>
+                                <TextBlock Visibility="{Binding IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource VisibleCollapsed}, FallbackValue=Visible}" Text="{Binding StartTime, Converter={StaticResource convDateTimeToString}}" TextAlignment="Left"/>
+                            </Grid>
+                        </DockPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </DockPanel>
+        <DockPanel x:Key="MoonPhaseSectionTemplate">
+            <TextBlock DockPanel.Dock="Top" Text="{Binding PhaseCalculator.MoonPhase, Converter={StaticResource convMoonPhaseToString}}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <Separator DockPanel.Dock="Top" Margin="4,2,4,2"/>
+            <Grid Margin="5,0,5,5">
+                <Grid Visibility="{Binding IsFullMoon, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource VisibleCollapsed}, FallbackValue=Visible}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="50"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Column="0" Grid.Row="0" TextAlignment="Right" VerticalAlignment="Center" Margin="0,5,0,0">Next Phase:</TextBlock>
+                    <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding TimeToNextPhaseText}" VerticalAlignment="Center" Margin="5,5,0,0"/>
+                    <Border Grid.Column="2" Grid.Row="0" BorderBrush="{x:Null}" BorderThickness="0" Background="White" Padding="1,1,1,1" VerticalAlignment="Center" Margin="5,5,0,0" CornerRadius="3">
+                        <Border BorderBrush="{x:Null}" BorderThickness="0" Background="#444444" Margin="{Binding PhaseCalculator.ProgressWithinPhase, Converter={StaticResource convDoubleToThickness}, ConverterParameter=50}" CornerRadius="2,0,0,2" Height="7"/>
+                    </Border>
+                    <TextBlock Grid.Column="0" Grid.Row="1" Visibility="{Binding IsNextPhaseFullMoon, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource VisibleCollapsed}, FallbackValue=Visible}" TextAlignment="Right" VerticalAlignment="Center" Margin="0,5,0,0">Full Moon:</TextBlock>
+                    <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding TimeToFullMoonText}" Visibility="{Binding IsNextPhaseFullMoon, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource VisibleCollapsed}, FallbackValue=Visible}" VerticalAlignment="Center" Margin="5,5,0,0"/>
+                    <Border Grid.Column="2" Grid.Row="1" Visibility="{Binding IsNextPhaseFullMoon, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource VisibleCollapsed}, FallbackValue=Visible}" BorderBrush="{x:Null}" BorderThickness="0" Background="White" Padding="1,1,1,1" VerticalAlignment="Center" Margin="5,5,0,0" CornerRadius="3">
+                        <Border BorderBrush="{x:Null}" BorderThickness="0" Background="#444444" Margin="{Binding PhaseCalculator.ProgressToFullMoon, Converter={StaticResource convDoubleToThickness}, ConverterParameter=50}" CornerRadius="2,0,0,2" Height="7"/>
+                    </Border>
+                    <TextBlock Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="1" Visibility="{Binding IsNextPhaseFullMoon, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource CollapsedVisible}, FallbackValue=Visible}" TextAlignment="Center" VerticalAlignment="Center" Margin="0,5,0,0">It will be Full Moon</TextBlock>
+                </Grid>
+                <Grid Visibility="{Binding IsFullMoon, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource CollapsedVisible}, FallbackValue=Collapsed}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="50"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Column="0" Grid.Row="0" TextAlignment="Right" VerticalAlignment="Center" Margin="0,5,0,0">Next Phase:</TextBlock>
+                    <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding TimeToNextPhaseText}" VerticalAlignment="Center" Margin="5,5,0,0"/>
+                    <Border Grid.Column="2" Grid.Row="0" BorderBrush="{x:Null}" BorderThickness="0" Background="White" Padding="1,1,1,1" VerticalAlignment="Center" Margin="5,5,0,0" CornerRadius="3">
+                        <Border BorderBrush="{x:Null}" BorderThickness="0" Background="#444444" Margin="{Binding PhaseCalculator.ProgressWithinPhase, Converter={StaticResource convDoubleToThickness}, ConverterParameter=50}" CornerRadius="2,0,0,2" Height="7"/>
+                    </Border>
+                    <TextBlock Grid.Row="1" Margin="5,5,0,0"/>
+                </Grid>
+            </Grid>
+        </DockPanel>
     </Popup.Resources>
     <Popup.CommandBindings>
         <CommandBinding Command="{StaticResource LoadAtStartupCommand}" Executed="OnLoadAtStartup"/>
@@ -61,210 +265,10 @@
     </Popup.CommandBindings>
     <Grid Width="314" Background="#555555">
         <DockPanel>
-            <DockPanel DockPanel.Dock="Top" Visibility="{Binding ShowDarkChapel, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource CollapsedVisible}, FallbackValue=Collapsed}">
-                <Separator DockPanel.Dock="Bottom" Margin="4,2,4,0"/>
-                <Canvas Width="150" Height="150" HorizontalAlignment="Center">
-                    <Canvas.Resources>
-                        <DataTemplate x:Key="SelectedStatueTemplate">
-                            <Border BorderBrush="White" BorderThickness="1" Margin="-3,-3,0,0">
-                                <Rectangle Fill="Black" Width="6" Height="6"/>
-                            </Border>
-                        </DataTemplate>
-                        <DataTemplate x:Key="UnselectedStatueTemplate">
-                            <Rectangle Fill="White" Width="4" Height="4" Margin="-2,-2,0,0"/>
-                        </DataTemplate>
-                    </Canvas.Resources>
-                    <ContentControl Canvas.Left="103" Canvas.Top="17" ContentTemplateSelector="{StaticResource selMoonPhase}" Content="0"/>
-                    <ContentControl Canvas.Left="52" Canvas.Top="19" ContentTemplateSelector="{StaticResource selMoonPhase}" Content="1"/>
-                    <ContentControl Canvas.Left="25" Canvas.Top="30" ContentTemplateSelector="{StaticResource selMoonPhase}" Content="2"/>
-                    <ContentControl Canvas.Left="9" Canvas.Top="82" ContentTemplateSelector="{StaticResource selMoonPhase}" Content="3"/>
-                    <ContentControl Canvas.Left="18" Canvas.Top="121" ContentTemplateSelector="{StaticResource selMoonPhase}" Content="4"/>
-                    <ContentControl Canvas.Left="60" Canvas.Top="135" ContentTemplateSelector="{StaticResource selMoonPhase}" Content="5"/>
-                    <ContentControl Canvas.Left="109" Canvas.Top="118" ContentTemplateSelector="{StaticResource selMoonPhase}" Content="6"/>
-                    <ContentControl Canvas.Left="132" Canvas.Top="60" ContentTemplateSelector="{StaticResource selMoonPhase}" Content="7"/>
-                </Canvas>
-            </DockPanel>
-            <DockPanel DockPanel.Dock="Top" Visibility="{Binding ShowMushroomFarming, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource CollapsedVisible}, FallbackValue=Collapsed}">
-                <DockPanel.Resources>
-                    <ControlTemplate x:Key="ErrorTemplate">
-                        <Grid>
-                            <AdornedElementPlaceholder/>
-                            <TextBlock IsHitTestVisible="False" Text="Enter Name" FontStyle="Italic" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Grid>
-                    </ControlTemplate>
-                    <DataTemplate x:Key="MushroomNameTemplate">
-                        <TextBlock Text="{Binding}" Foreground="Black" FontSize="12"/>
-                    </DataTemplate>
-                    <DataTemplate x:Key="PhaseNameTemplate">
-                        <TextBlock Text="{Binding}" Foreground="Black" FontSize="12"/>
-                    </DataTemplate>
-                    <DataTemplate x:Key="NameTemplate">
-                        <Border BorderBrush="{x:Null}" BorderThickness="0" Margin="-6,0,-8,0">
-                            <ComboBox IsEditable="True" IsReadOnly="False" ItemsSource="{Binding Path=MushroomNameList, RelativeSource={RelativeSource AncestorType={x:Type app:MainWindow}}}" ItemTemplate="{StaticResource MushroomNameTemplate}" Validation.ErrorTemplate="{StaticResource ErrorTemplate}" Validation.Error="OnMushroomNameValidationError" LostFocus="OnMushroomNameLostFocus">
-                                <ComboBox.Text>
-                                    <Binding Path="Name" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged" NotifyOnValidationError="True">
-                                        <Binding.ValidationRules>
-                                            <val:EmptyTextValidationRule ValidatesOnTargetUpdated="True"/>
-                                        </Binding.ValidationRules>
-                                    </Binding>
-                                </ComboBox.Text>
-                            </ComboBox>
-                        </Border>
-                    </DataTemplate>
-                    <DataTemplate x:Key="MoonPhaseTemplate">
-                        <Border BorderBrush="{x:Null}" BorderThickness="0" Margin="-6,0,-8,0">
-                            <ComboBox IsEditable="False" IsReadOnly="True" ItemsSource="{Binding Source={x:Static conv:MoonPhaseToStringConverter.MoonPhaseList}, Mode=OneWay}" SelectedIndex="{Binding SelectedMoonPhase}" ItemTemplate="{StaticResource PhaseNameTemplate}" Margin="5,0,0,0"/>
-                        </Border>
-                    </DataTemplate>
-                </DockPanel.Resources>
-                <Separator DockPanel.Dock="Bottom" Margin="4,2,4,2"/>
-                <DockPanel MaxHeight="150" SizeChanged="OnMushroomListSizeChanged">
-                    <DockPanel DockPanel.Dock="Right" Visibility="{Binding IsMushroomListSmall, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource VisibleHidden}, FallbackValue=Visible}" Margin="0,2,0,0">
-                        <Border DockPanel.Dock="Top" Visibility="{Binding ShowDarkChapel, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource VisibleCollapsed}, FallbackValue=Collapsed}" BorderBrush="{x:Null}" BorderThickness="0" Background="Transparent" Height="15"/>
-                        <Button DockPanel.Dock="Top" BorderBrush="{x:Null}" BorderThickness="0" Visibility="{Binding IsLocked, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource VisibleHidden}, FallbackValue=Visible}" Background="White" Click="OnLockMushroomList" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,2,1,2">
-                            <Button.ContextMenu>
-                                <ContextMenu>
-                                    <MenuItem Header="Lock" Command="{StaticResource LockCommand}"/>
-                                </ContextMenu>
-                            </Button.ContextMenu>
-                            <Image Source="{StaticResource imgLocked}" Width="13" Height="13"/>
-                        </Button>
-                        <ScrollBar Orientation="Vertical" IsEnabled="{Binding IsMushroomListLarge}" Scroll="OnMushroomListScroll" Margin="0,0,1,0"/>
-                    </DockPanel>
-                    <Grid>
-                        <ScrollViewer x:Name="listviewMushrooms" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" Margin="1,2,1,0">
-                            <ListView ItemsSource="{Binding MushroomInfoList}" Background="Transparent" ScrollViewer.VerticalScrollBarVisibility="Hidden" BorderBrush="{x:Null}" BorderThickness="0">
-                                <ListView.Resources>
-                                    <Style TargetType="{x:Type GridViewColumnHeader}">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                    </Style>
-                                    <Style TargetType="{x:Type ListViewItem}">
-                                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                        <Setter Property="Padding" Value="0"/>
-                                        <!--
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="{x:Type ListViewItem}">
-                                                    <Grid>
-                                                        <GridViewRowPresenter HorizontalAlignment="Stretch" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Width="Auto" Margin="0" Content="{TemplateBinding Content}"/>
-                                                        <Grid Background="Red" Opacity="0.5" HorizontalAlignment="Left" Width="20" IsHitTestVisible="False" PreviewMouseMove="OnPreviewMouseMove" AllowDrop="True" GiveFeedback="OnGiveFeedback" Drop="OnDrop"/>
-                                                    </Grid>
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                        -->
-                                    </Style>
-                                </ListView.Resources>
-                                <ListView.View>
-                                    <GridView>
-                                        <GridViewColumn CellTemplate="{StaticResource NameTemplate}" Width="134"/>
-                                        <GridViewColumn CellTemplate="{StaticResource MoonPhaseTemplate}" Width="158"/>
-                                    </GridView>
-                                </ListView.View>
-                            </ListView>
-                        </ScrollViewer>
-                        <Grid Background="Transparent" Visibility="{Binding IsLocked, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource HiddenVisible}, FallbackValue=Hidden}" MouseLeftButtonDown="OnUnlockMushroomList">
-                            <Grid.ContextMenu>
-                                <ContextMenu>
-                                    <MenuItem Header="Unlock" Command="{StaticResource UnlockCommand}"/>
-                                </ContextMenu>
-                            </Grid.ContextMenu>
-                            <Image Source="{StaticResource imgBigLocked}" Opacity="0.2" HorizontalAlignment="Center" VerticalAlignment="Center" Width="100" Height="100"/>
-                        </Grid>
-                    </Grid>
-                </DockPanel>
-            </DockPanel>
-            <DockPanel DockPanel.Dock="Top" Visibility="{Binding ShowCalendar, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource CollapsedVisible}, FallbackValue=Collapsed}">
-                <Separator DockPanel.Dock="Bottom" Margin="4,2,4,2"/>
-                <DockPanel DockPanel.Dock="Right" LastChildFill="False" Margin="0,10,2,10">
-                    <DockPanel.Resources>
-                        <Style TargetType="{x:Type Path}">
-                            <Style.Setters>
-                                <Setter Property="Fill" Value="White"/>
-                                <Setter Property="Width" Value="14"/>
-                                <Setter Property="Height" Value="14"/>
-                                <Setter Property="HorizontalAlignment" Value="Center"/>
-                                <Setter Property="VerticalAlignment" Value="Center"/>
-                            </Style.Setters>
-                            <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Fill" Value="LightGray"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </DockPanel.Resources>
-                    <Border DockPanel.Dock="Top" BorderBrush="{x:Null}" BorderThickness="0" MouseLeftButtonDown="OnCalendarUp">
-                        <Path Data="M 0,4 L 6,-2 L 12,4"/>
-                    </Border>
-                    <Border DockPanel.Dock="Bottom" BorderBrush="{x:Null}" BorderThickness="0" MouseLeftButtonDown="OnCalendarDown">
-                        <Path Data="M 0,4 L 6,10 L 12,4"/>
-                    </Border>
-                </DockPanel>
-                <ItemsControl ItemsSource="{Binding CalendarEntryList}" Margin="5,5,5,5">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <DataTemplate.Resources>
-                                <Style TargetType="{x:Type TextBlock}">
-                                    <Setter Property="Foreground" Value="White"/>
-                                    <Setter Property="FontSize" Value="14"/>
-                                </Style>
-                            </DataTemplate.Resources>
-                            <DockPanel>
-                                <TextBlock DockPanel.Dock="Left" Text="{Binding MoonPhase, Converter={StaticResource convMoonPhaseToString}}" TextAlignment="Right" Width="150"/>
-                                <Grid Margin="5,0,12,0">
-                                    <TextBlock Visibility="{Binding IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource CollapsedVisible}, FallbackValue=Collapsed}" Text="Current" TextAlignment="Left"/>
-                                    <TextBlock Visibility="{Binding IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource VisibleCollapsed}, FallbackValue=Visible}" Text="{Binding StartTime, Converter={StaticResource convDateTimeToString}}" TextAlignment="Left"/>
-                                </Grid>
-                            </DockPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </DockPanel>
-            <DockPanel>
-                <TextBlock DockPanel.Dock="Top" Text="{Binding PhaseCalculator.MoonPhase, Converter={StaticResource convMoonPhaseToString}}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                <Separator DockPanel.Dock="Top" Margin="4,2,4,2"/>
-                <Grid Margin="5,0,5,5">
-                    <Grid Visibility="{Binding IsFullMoon, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource VisibleCollapsed}, FallbackValue=Visible}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition/>
-                            <ColumnDefinition Width="50"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition/>
-                            <RowDefinition/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Grid.Column="0" Grid.Row="0" TextAlignment="Right" VerticalAlignment="Center" Margin="0,5,0,0">Next Phase:</TextBlock>
-                        <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding TimeToNextPhaseText}" VerticalAlignment="Center" Margin="5,5,0,0"/>
-                        <Border Grid.Column="2" Grid.Row="0" BorderBrush="{x:Null}" BorderThickness="0" Background="White" Padding="1,1,1,1" VerticalAlignment="Center" Margin="5,5,0,0" CornerRadius="3">
-                            <Border BorderBrush="{x:Null}" BorderThickness="0" Background="#444444" Margin="{Binding PhaseCalculator.ProgressWithinPhase, Converter={StaticResource convDoubleToThickness}, ConverterParameter=50}" CornerRadius="2,0,0,2" Height="7"/>
-                        </Border>
-                        <TextBlock Grid.Column="0" Grid.Row="1" Visibility="{Binding IsNextPhaseFullMoon, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource VisibleCollapsed}, FallbackValue=Visible}" TextAlignment="Right" VerticalAlignment="Center" Margin="0,5,0,0">Full Moon:</TextBlock>
-                        <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding TimeToFullMoonText}" Visibility="{Binding IsNextPhaseFullMoon, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource VisibleCollapsed}, FallbackValue=Visible}" VerticalAlignment="Center" Margin="5,5,0,0"/>
-                        <Border Grid.Column="2" Grid.Row="1" Visibility="{Binding IsNextPhaseFullMoon, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource VisibleCollapsed}, FallbackValue=Visible}" BorderBrush="{x:Null}" BorderThickness="0" Background="White" Padding="1,1,1,1" VerticalAlignment="Center" Margin="5,5,0,0" CornerRadius="3">
-                            <Border BorderBrush="{x:Null}" BorderThickness="0" Background="#444444" Margin="{Binding PhaseCalculator.ProgressToFullMoon, Converter={StaticResource convDoubleToThickness}, ConverterParameter=50}" CornerRadius="2,0,0,2" Height="7"/>
-                        </Border>
-                        <TextBlock Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="1" Visibility="{Binding IsNextPhaseFullMoon, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource CollapsedVisible}, FallbackValue=Visible}" TextAlignment="Center" VerticalAlignment="Center" Margin="0,5,0,0">It will be Full Moon</TextBlock>
-                    </Grid>
-                    <Grid Visibility="{Binding IsFullMoon, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource CollapsedVisible}, FallbackValue=Collapsed}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition/>
-                            <ColumnDefinition Width="50"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition/>
-                            <RowDefinition/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Grid.Column="0" Grid.Row="0" TextAlignment="Right" VerticalAlignment="Center" Margin="0,5,0,0">Next Phase:</TextBlock>
-                        <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding TimeToNextPhaseText}" VerticalAlignment="Center" Margin="5,5,0,0"/>
-                        <Border Grid.Column="2" Grid.Row="0" BorderBrush="{x:Null}" BorderThickness="0" Background="White" Padding="1,1,1,1" VerticalAlignment="Center" Margin="5,5,0,0" CornerRadius="3">
-                            <Border BorderBrush="{x:Null}" BorderThickness="0" Background="#444444" Margin="{Binding PhaseCalculator.ProgressWithinPhase, Converter={StaticResource convDoubleToThickness}, ConverterParameter=50}" CornerRadius="2,0,0,2" Height="7"/>
-                        </Border>
-                        <TextBlock Grid.Row="1" Margin="5,5,0,0"/>
-                    </Grid>
-                </Grid>
-            </DockPanel>
+            <ContentControl DockPanel.Dock="Top" Visibility="{Binding ShowDarkChapel, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource CollapsedVisible}, FallbackValue=Collapsed}" Content="{StaticResource DarkChapelSectionTemplate}"/>
+            <ContentControl DockPanel.Dock="Top" Visibility="{Binding ShowMushroomFarming, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource CollapsedVisible}, FallbackValue=Collapsed}" Content="{StaticResource MushroomSectionTemplate}"/>
+            <ContentControl DockPanel.Dock="Top" Visibility="{Binding ShowCalendar, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource CollapsedVisible}, FallbackValue=Collapsed}" Content="{StaticResource CalendarSectionTemplate}"/>
+            <ContentControl Content="{StaticResource MoonPhaseSectionTemplate}"/>
         </DockPanel>
         <Button HorizontalAlignment="Right" VerticalAlignment="Top" Command="{StaticResource CloseCommand}" BorderBrush="{x:Null}" BorderThickness="0" Background="White" FocusVisualStyle="{x:Null}" Margin="0,1,1,0">
             <Image Source="{StaticResource imgClose}" Width="13" Height="13"/>

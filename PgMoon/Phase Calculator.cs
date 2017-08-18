@@ -213,9 +213,9 @@ namespace PgMoon
         // 01/08/17 [04.20,08:53] : FQ -> Waxing Gib
         // 06/08/17 [01.30,08:09] : Waxing Gib -> Full (06:00?)
         // 09/08/17 [06.04,06:06] : Full -> Waning Gibbous
-        // 13/08/17 [20:28,] : Waning Gibbous -> Last Quarter
+        // 14/08/17 [05:17,09:08] : Waning Gibbous -> Last Quarter
+        // 17/08/17 [05:47,07:04] : Last Quarter -> Waning Crescent
         #endregion
-
         #region Implementation of INotifyPropertyChanged
         /// <summary>
         ///     Implements the PropertyChanged event.
