@@ -47,6 +47,9 @@ namespace Converters
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
+            if (value == null)
+                return null;
+
             MoonPhases MoonPhaseValue = (MoonPhases)value;
             return MoonPhaseTable[MoonPhaseValue];
         }

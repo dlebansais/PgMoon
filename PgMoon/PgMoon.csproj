@@ -168,7 +168,7 @@
     <EmbeddedResource Include="Resources\UAC-16.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Locked.png" />
+    <Resource Include="Resources\LockedWhite.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\PgMoon.xml" />
@@ -178,6 +178,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Close.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\LockedBlack.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">

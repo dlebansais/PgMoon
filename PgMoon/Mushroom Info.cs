@@ -24,6 +24,9 @@ namespace PgMoon
                 {
                     _Name = value;
                     NotifyThisPropertyChanged();
+
+                    if (_Name == null || _Name.Length == 0)
+                        ResetSelectedMoonPhase();
                 }
             }
         }
@@ -38,11 +41,7 @@ namespace PgMoon
                 {
                     _SelectedMoonPhase = value;
                     if (_SelectedMoonPhase > (int)MoonPhases.WaningCrescentMoon)
-                    {
-                        App CurrentApp = App.Current as App;
-                        MainWindow MainPopup = CurrentApp.MainPopup;
-                        MainPopup.Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, new ResetSelectedMoonPhaseHandler(OnResetSelectedMoonPhase));
-                    }
+                        ResetSelectedMoonPhase();
                 }
             }
         }
@@ -52,11 +51,19 @@ namespace PgMoon
         #endregion
 
         #region Implementation
+        private void ResetSelectedMoonPhase()
+        {
+            App CurrentApp = App.Current as App;
+            MainWindow MainPopup = CurrentApp.MainPopup;
+            MainPopup.Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, new ResetSelectedMoonPhaseHandler(OnResetSelectedMoonPhase));
+        }
+
         private delegate void ResetSelectedMoonPhaseHandler();
         private void OnResetSelectedMoonPhase()
         {
             _SelectedMoonPhase = -1;
             NotifyThisPropertyChanged(nameof(SelectedMoonPhase));
+            NotifyThisPropertyChanged(nameof(PreferredPhase));
         }
         #endregion
 

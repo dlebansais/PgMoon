@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -373,13 +372,12 @@ namespace PgMoon
         private Timer UpdateMoonPhaseTimer;
         #endregion
 
-        //System.Windows.Shapes.Path p;
         #region Calendar
         private void InitCalendar()
         {
             int? ShowSetting = GetSettingKey(ShowCalendarSettingName) as int?;
             _ShowCalendar = (ShowSetting.HasValue ? (ShowSetting.Value != 0) : true);
-            CalendarStartTime = DateTime.UtcNow;
+            _CalendarStartTime = DateTime.UtcNow;
             BuildCalendar();
         }
 
@@ -399,6 +397,32 @@ namespace PgMoon
             }
         }
         private bool _ShowCalendar;
+
+        public DateTime CalendarStartTime
+        {
+            get { return _CalendarStartTime; }
+            set
+            {
+                if (_CalendarStartTime != value)
+                {
+                    _CalendarStartTime = value;
+                    NotifyThisPropertyChanged();
+                    NotifyPropertyChanged(nameof(CalendarStartTimeYear));
+                }
+            }
+        }
+        public string CalendarStartTimeYear
+        {
+            get
+            {
+                int Year = CalendarStartTime.Year;
+                if (Year == DateTime.UtcNow.Year)
+                    return "";
+                else
+                    return CalendarStartTime.Year.ToString();
+            }
+        }
+        private DateTime _CalendarStartTime;
 
         public ObservableCollection<CalendarEntry> CalendarEntryList { get; private set; } = new ObservableCollection<CalendarEntry>();
 
@@ -443,14 +467,44 @@ namespace PgMoon
             BuildCalendar();
         }
 
+        private void OnCalendarUpPage(object sender, MouseButtonEventArgs e)
+        {
+            CalendarStartTime = CalendarEntryList[0].StartTime - (CalendarEntryList[CalendarEntryList.Count - 1].StartTime - CalendarEntryList[0].EndTime);
+            BuildCalendar();
+        }
+
         private void OnCalendarDown(object sender, MouseButtonEventArgs e)
         {
             CalendarStartTime = CalendarEntryList[0].EndTime + TimeSpan.FromHours(1);
             BuildCalendar();
         }
 
-        private DateTime CalendarStartTime;
+        private void OnCalendarDownPage(object sender, MouseButtonEventArgs e)
+        {
+            CalendarStartTime = CalendarEntryList[CalendarEntryList.Count - 1].StartTime + TimeSpan.FromHours(1);
+            BuildCalendar();
+        }
+
+        private void OnCalendarDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            CalendarStartTime = DateTime.UtcNow;
+            BuildCalendar();
+        }
+
+        private void OnCalendarMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            CalendarStartTime = CalendarEntryList[0].EndTime - TimeSpan.FromHours(e.Delta);
+            BuildCalendar();
+        }
+
+        private void OnDisplayCurrent(object sender, ExecutedRoutedEventArgs e)
+        {
+            CalendarStartTime = DateTime.UtcNow;
+            BuildCalendar();
+        }
+
         private static readonly string ShowCalendarSettingName = "ShowCalendar";
+        private const int CalendarPageIncrement = 80;
         #endregion
 
         #region Dark Chapel
@@ -682,6 +736,125 @@ namespace PgMoon
                 ShowMushroomFarming = IsChecked;
         }
 
+        private void OnMushroomListUp(object sender, MouseButtonEventArgs e)
+        {
+            ScrollViewer listviewMushrooms = LocateSibling(sender, nameof(listviewMushrooms)) as ScrollViewer;
+            listviewMushrooms.LineUp();
+        }
+
+        private void OnMushroomListUpPage(object sender, MouseButtonEventArgs e)
+        {
+            ScrollViewer listviewMushrooms = LocateSibling(sender, nameof(listviewMushrooms)) as ScrollViewer;
+            listviewMushrooms.ScrollToTop();
+        }
+
+        private void OnMushroomListDown(object sender, MouseButtonEventArgs e)
+        {
+            ScrollViewer listviewMushrooms = LocateSibling(sender, nameof(listviewMushrooms)) as ScrollViewer;
+            listviewMushrooms.LineDown();
+        }
+
+        private void OnMushroomListDownPage(object sender, MouseButtonEventArgs e)
+        {
+            ScrollViewer listviewMushrooms = LocateSibling(sender, nameof(listviewMushrooms)) as ScrollViewer;
+            listviewMushrooms.ScrollToBottom();
+        }
+
+        private void OnLockMushroomList(object sender, MouseButtonEventArgs e)
+        {
+            FrameworkElement Element = sender as FrameworkElement;
+            ContextMenu ContextMenu = Element.ContextMenu;
+            ContextMenu.IsOpen = true;
+            ContextMenu.PlacementTarget = this;
+            ContextMenu.Closed += OnContextMenuClosed;
+        }
+
+        private void OnLock(object sender, ExecutedRoutedEventArgs e)
+        {
+            IsLocked = true;
+        }
+
+        private void OnUnlock(object sender, ExecutedRoutedEventArgs e)
+        {
+            IsLocked = false;
+        }
+
+        private object LocateSibling(object sender, string ElementName)
+        {
+            FrameworkElement CurrentElement = sender as FrameworkElement;
+            object SiblingElement = null;
+
+            while (CurrentElement != null && SiblingElement == null)
+            {
+                CurrentElement = VisualTreeHelper.GetParent(CurrentElement) as FrameworkElement;
+                if (CurrentElement != null)
+                    SiblingElement = LogicalTreeHelper.FindLogicalNode(CurrentElement, ElementName);
+            }
+
+            return SiblingElement;
+        }
+
+        private void OnMushroomListSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            FrameworkElement Control = sender as FrameworkElement;
+            if (!double.IsNaN(Control.ActualHeight) && !double.IsNaN(Control.MaxHeight))
+            {
+                IsMushroomListLarge = (Control.ActualHeight >= Control.MaxHeight);
+            }
+        }
+
+        private void OnMushroomNameValidationError(object sender, ValidationErrorEventArgs e)
+        {
+            ComboBox Control = sender as ComboBox;
+            MushroomInfo Line = Control.DataContext as MushroomInfo;
+            Line.Name = "";
+        }
+
+        private void OnMushroomNameLostFocus(object sender, RoutedEventArgs e)
+        {
+            if (MushroomInfoList.Count > 0 && MushroomInfoList.Count < MaxMushroomRows)
+            {
+                if (MushroomInfoList[MushroomInfoList.Count - 1].Name.Length > 0)
+                    MushroomInfoList.Add(new MushroomInfo("", null));
+                else
+                {
+                    bool Continue = true;
+
+                    while (Continue)
+                    {
+                        Continue = false;
+
+                        for (int i = 0; i + 1 < MushroomInfoList.Count; i++)
+                        {
+                            MushroomInfo Item = MushroomInfoList[i];
+                            if (Item.Name.Length == 0 && !Item.PreferredPhase.HasValue)
+                            {
+                                MushroomInfoList.Remove(Item);
+                                Continue = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void OnUnlockMushroomList(object sender, MouseButtonEventArgs e)
+        {
+            FrameworkElement Element = sender as FrameworkElement;
+            ContextMenu ContextMenu = Element.ContextMenu;
+            ContextMenu.IsOpen = true;
+            ContextMenu.PlacementTarget = this;
+            ContextMenu.Closed += OnContextMenuClosed;
+        }
+
+        private void OnContextMenuClosed(object sender, RoutedEventArgs e)
+        {
+            ContextMenu ContextMenu = sender as ContextMenu;
+            ContextMenu.Closed -= OnContextMenuClosed;
+            ContextMenu.PlacementTarget = null;
+        }
+
         private static readonly string ShowMushroomFarmingSettingName = "ShowMushroomFarming";
         private static readonly string MushroomListSettingName = "MushroomList";
         private static readonly string IsLockedSettingName = "MushroomListLocked";
@@ -777,109 +950,6 @@ namespace PgMoon
             }
         }
 
-        private void OnLock(object sender, ExecutedRoutedEventArgs e)
-        {
-            IsLocked = true;
-        }
-
-        private void OnUnlock(object sender, ExecutedRoutedEventArgs e)
-        {
-            IsLocked = false;
-        }
-
-        private void OnMushroomListScroll(object sender, ScrollEventArgs e)
-        {
-            ScrollBar ScrollBar = e.OriginalSource as ScrollBar;
-            ScrollViewer listviewMushrooms = LocateSibling(sender, nameof(listviewMushrooms)) as ScrollViewer;
-            double Offset = ScrollBar.Track.Value * (listviewMushrooms.ExtentHeight - listviewMushrooms.ScrollableHeight);
-            listviewMushrooms.ScrollToVerticalOffset(Offset);
-        }
-
-        private object LocateSibling(object sender, string ElementName)
-        {
-            FrameworkElement CurrentElement = sender as FrameworkElement;
-            object SiblingElement = null;
-
-            while (CurrentElement != null && SiblingElement == null)
-            {
-                CurrentElement = VisualTreeHelper.GetParent(CurrentElement) as FrameworkElement;
-                if (CurrentElement != null)
-                    SiblingElement = LogicalTreeHelper.FindLogicalNode(CurrentElement, ElementName);
-            }
-
-            return SiblingElement;
-        }
-
-        private void OnMushroomListSizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            FrameworkElement Control = sender as FrameworkElement;
-            if (!double.IsNaN(Control.ActualHeight) && !double.IsNaN(Control.MaxHeight))
-            {
-                IsMushroomListLarge = (Control.ActualHeight >= Control.MaxHeight);
-            }
-        }
-
-        private void OnMushroomNameValidationError(object sender, ValidationErrorEventArgs e)
-        {
-            ComboBox Control = sender as ComboBox;
-            MushroomInfo Line = Control.DataContext as MushroomInfo;
-            Line.Name = "";
-        }
-
-        private void OnMushroomNameLostFocus(object sender, RoutedEventArgs e)
-        {
-            if (MushroomInfoList.Count > 0 && MushroomInfoList.Count < MaxMushroomRows)
-            {
-                if (MushroomInfoList[MushroomInfoList.Count - 1].Name.Length > 0)
-                    MushroomInfoList.Add(new MushroomInfo("", null));
-                else
-                {
-                    bool Continue = true;
-
-                    while (Continue)
-                    {
-                        Continue = false;
-
-                        for (int i = 0; i + 1 < MushroomInfoList.Count; i++)
-                        {
-                            MushroomInfo Item = MushroomInfoList[i];
-                            if (Item.Name.Length == 0 && !Item.PreferredPhase.HasValue)
-                            {
-                                MushroomInfoList.Remove(Item);
-                                Continue = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        private void OnLockMushroomList(object sender, RoutedEventArgs e)
-        {
-            FrameworkElement Element = sender as FrameworkElement;
-            ContextMenu ContextMenu = Element.ContextMenu;
-            ContextMenu.IsOpen = true;
-            ContextMenu.PlacementTarget = this;
-            ContextMenu.Closed += OnContextMenuClosed;
-        }
-
-        private void OnUnlockMushroomList(object sender, MouseButtonEventArgs e)
-        {
-            FrameworkElement Element = sender as FrameworkElement;
-            ContextMenu ContextMenu = Element.ContextMenu;
-            ContextMenu.IsOpen = true;
-            ContextMenu.PlacementTarget = this;
-            ContextMenu.Closed += OnContextMenuClosed;
-        }
-
-        private void OnContextMenuClosed(object sender, RoutedEventArgs e)
-        {
-            ContextMenu ContextMenu = sender as ContextMenu;
-            ContextMenu.Closed -= OnContextMenuClosed;
-            ContextMenu.PlacementTarget = null;
-        }
-
         private void OnExit(object sender, ExecutedRoutedEventArgs e)
         {
             IsOpen = false;
@@ -945,6 +1015,19 @@ namespace PgMoon
                 UpdateMoonPhaseTimer.Dispose();
                 UpdateMoonPhaseTimer = null;
             }
+
+            if (UpdateMushroomNameListTimer != null)
+            {
+                UpdateMushroomNameListTimer.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+                UpdateMushroomNameListTimer.Dispose();
+                UpdateMushroomNameListTimer = null;
+            }
+
+            if (MushroomNameFileWatcher != null)
+            {
+                MushroomNameFileWatcher.EnableRaisingEvents = false;
+                MushroomNameFileWatcher.Dispose();
+            }
         }
 
         public void Dispose()
@@ -958,58 +1041,5 @@ namespace PgMoon
             Dispose(false);
         }
         #endregion
-
-        /*
-        private void OnPreviewMouseMove(object sender, MouseEventArgs e)
-        {
-            if (e.LeftButton != MouseButtonState.Pressed)
-            {
-                DragSourceRowIndex = -1;
-                return;
-            }
-
-            MushroomInfo Item = null;
-            int RowIndex = -1;
-
-            FrameworkElement SourceRow = e.OriginalSource as FrameworkElement;
-            if (SourceRow != null)
-            {
-                Item = SourceRow.DataContext as MushroomInfo;
-                RowIndex = MushroomInfoList.IndexOf(Item);
-            }
-
-            if (RowIndex < 0)
-            {
-                DragSourceRowIndex = -1;
-                return;
-            }
-
-            if (DragSourceRowIndex == -1)
-                DragSourceRowIndex = RowIndex;
-
-            else if (DragSourceRowIndex != RowIndex)
-            {
-                Debug.Print("Starting DragDrop");
-                DragDrop.DoDragDrop(this, Item, DragDropEffects.Move);
-                e.Handled = true;
-            }
-        }
-
-        private int MousePositionToRowIndex()
-        {
-            return -1;
-        }
-
-        private int DragSourceRowIndex = -1;
-
-        private void OnGiveFeedback(object sender, GiveFeedbackEventArgs e)
-        {
-
-        }
-
-        private void OnDrop(object sender, DragEventArgs e)
-        {
-
-        }*/
     }
 }

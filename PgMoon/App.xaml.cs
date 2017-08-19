@@ -4,7 +4,7 @@ using System.Windows;
 
 namespace PgMoon
 {
-    public partial class App : Application
+    public partial class App : Application, IDisposable
     {
         public App()
         {
@@ -59,5 +59,33 @@ namespace PgMoon
 
         public MainWindow MainPopup { get; private set; }
         private EventWaitHandle InstanceEvent;
+
+        #region Implementation of IDisposable
+        protected virtual void Dispose(bool isDisposing)
+        {
+            if (isDisposing)
+                DisposeNow();
+        }
+
+        private void DisposeNow()
+        {
+            if (InstanceEvent != null)
+            {
+                InstanceEvent.Close();
+                InstanceEvent = null;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~App()
+        {
+            Dispose(false);
+        }
+        #endregion
     }
 }
