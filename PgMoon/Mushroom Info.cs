@@ -42,12 +42,34 @@ namespace PgMoon
                     _SelectedMoonPhase = value;
                     if (_SelectedMoonPhase > (int)MoonPhases.WaningCrescentMoon)
                         ResetSelectedMoonPhase();
+                    else
+                    {
+                        NotifyPropertyChanged(nameof(PreferredPhase));
+                        NotifyPropertyChanged(nameof(PhaseWeight));
+                    }
                 }
             }
         }
         private int _SelectedMoonPhase;
 
         public MoonPhases? PreferredPhase { get { return (SelectedMoonPhase >= 0) ? (MoonPhases?)SelectedMoonPhase : null; } }
+
+        // A property like PhaseWeight is the wrong way to apply bold style, Binding should be preferred.
+        // However, there is some strange bug with the FontWeight type, it won't bind correctly in templates...
+        public System.Windows.FontWeight PhaseWeight
+        {
+            get
+            {
+                if (SelectedMoonPhase >= 0)
+                {
+                    PhaseCalculator PhaseCalculator = new PhaseCalculator();
+                    if (SelectedMoonPhase == (int)PhaseCalculator.MoonPhase)
+                        return System.Windows.FontWeight.FromOpenTypeWeight(700);
+                }
+
+                return System.Windows.FontWeight.FromOpenTypeWeight(400);
+            }
+        }
         #endregion
 
         #region Implementation
@@ -62,8 +84,9 @@ namespace PgMoon
         private void OnResetSelectedMoonPhase()
         {
             _SelectedMoonPhase = -1;
-            NotifyThisPropertyChanged(nameof(SelectedMoonPhase));
-            NotifyThisPropertyChanged(nameof(PreferredPhase));
+            NotifyPropertyChanged(nameof(SelectedMoonPhase));
+            NotifyPropertyChanged(nameof(PreferredPhase));
+            NotifyPropertyChanged(nameof(PhaseWeight));
         }
         #endregion
 

@@ -16,6 +16,7 @@
         <conv:MoonPhaseToStringConverter x:Key="convMoonPhaseToString"/>
         <conv:DoubleToThicknessConverter x:Key="convDoubleToThickness"/>
         <conv:DateTimeToStringConverter x:Key="convDateTimeToString"/>
+        <conv:CurrentPhaseNameToObjectConverter x:Key="convCurrentPhaseNameToObject"/>
         <sel:MoonPhaseSelector x:Key="selMoonPhase"/>
         <val:EmptyTextValidationRule x:Key="valEmptyText"/>
         <RoutedUICommand x:Key="LoadAtStartupCommand"/>
@@ -42,6 +43,10 @@
         <CompositeCollection x:Key="HiddenVisible">
             <Visibility>Hidden</Visibility>
             <Visibility>Visible</Visibility>
+        </CompositeCollection>
+        <CompositeCollection x:Key="NormalBold">
+            <FontWeight>Normal</FontWeight>
+            <FontWeight>Bold</FontWeight>
         </CompositeCollection>
         <Style TargetType="{x:Type TextBlock}">
             <Setter Property="Foreground" Value="White"/>
@@ -90,7 +95,7 @@
                     <TextBlock Text="{Binding}" Foreground="Black" FontSize="12"/>
                 </DataTemplate>
                 <DataTemplate x:Key="PhaseNameTemplate">
-                    <TextBlock Text="{Binding}" Foreground="Black" FontSize="12"/>
+                    <TextBlock Text="{Binding}" Foreground="Black" FontWeight="{Binding Converter={StaticResource convCurrentPhaseNameToObject}, ConverterParameter={StaticResource NormalBold}}" FontSize="12"/>
                 </DataTemplate>
                 <DataTemplate x:Key="NameTemplate">
                     <Border BorderBrush="{x:Null}" BorderThickness="0" Margin="-6,0,-8,0">
@@ -117,7 +122,9 @@
                 </DataTemplate>
                 <DataTemplate x:Key="LockedMoonPhaseTemplate">
                     <Border BorderBrush="{x:Null}" BorderThickness="0" Margin="0,3,-8,3">
-                        <TextBlock Text="{Binding PreferredPhase, Converter={StaticResource convMoonPhaseToString}}" Foreground="Black" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        <Grid>
+                            <TextBlock Text="{Binding PreferredPhase, Converter={StaticResource convMoonPhaseToString}}" FontWeight="{Binding PhaseWeight}" Foreground="Black" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        </Grid>
                     </Border>
                 </DataTemplate>
             </DockPanel.Resources>

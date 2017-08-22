@@ -435,20 +435,17 @@ namespace PgMoon
             {
                 int MoonMonth;
                 MoonPhases MoonPhase;
-                double ProgressWithinLunation;
-                double ProgressWithinPhase;
                 DateTime PhaseStartTime;
                 DateTime PhaseEndTime;
-                TimeSpan TimeToNextPhase;
                 double ProgressToFullMoon;
-                TimeSpan TimeToFullMoon;
-                PhaseCalculator.DateTimeToMoonPhase(Time, out MoonMonth, out MoonPhase, out ProgressWithinLunation, out ProgressWithinPhase, out PhaseStartTime, out PhaseEndTime, out TimeToNextPhase, out ProgressToFullMoon, out TimeToFullMoon);
+                DateTime NextFullMoonTime;
+                PhaseCalculator.DateTimeToMoonPhase2(Time, out MoonMonth, out MoonPhase, out PhaseStartTime, out PhaseEndTime, out ProgressToFullMoon, out NextFullMoonTime);
 
                 bool IsCurrent = (MoonMonth == PhaseCalculator.MoonMonth && MoonPhase == PhaseCalculator.MoonPhase);
                 CalendarEntry NewCalendarEntry = new CalendarEntry(MoonPhase, IsCurrent, PhaseStartTime, PhaseEndTime);
                 CalendarEntryList.Add(NewCalendarEntry);
 
-                Time += TimeToNextPhase + TimeSpan.FromHours(1);
+                Time = PhaseEndTime + TimeSpan.FromHours(1);
             }
         }
 

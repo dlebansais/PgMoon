@@ -65,20 +65,6 @@ namespace PgMoon
         }
         private MoonPhases _MoonPhase;
 
-        public double ProgressWithinLunation
-        {
-            get { return _ProgressWithinLunation; }
-            set
-            {
-                if (_ProgressWithinLunation != value)
-                {
-                    _ProgressWithinLunation = value;
-                    NotifyThisPropertyChanged();
-                }
-            }
-        }
-        private double _ProgressWithinLunation;
-
         public double ProgressWithinPhase
         {
             get { return _ProgressWithinPhase; }
@@ -137,7 +123,39 @@ namespace PgMoon
         #endregion
 
         #region Client Interface
-        public static void DateTimeToMoonPhase(DateTime Time, out int MoonMonth, out MoonPhases MoonPhase, out double ProgressWithinLunation, out double ProgressWithinPhase, out DateTime PhaseStartTime, out DateTime PhaseEndTime, out TimeSpan TimeToNextPhase, out double ProgressToFullMoon, out TimeSpan TimeToFullMoon)
+        [System.Runtime.InteropServices.DllImport("MoonPhaseCalculator.dll")]
+        public static extern void DateTimeToMoonPhase(long Time, out int MoonMonth, out int MoonPhase, out long PhaseStartTime, out long PhaseEndTime, out double ProgressToFullMoon, out long NextFullMoonTime);
+
+        private static readonly DateTime UnixReferenceTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        private static long to_time_t(DateTime Time)
+        {
+            return (long)((Time - UnixReferenceTime).TotalSeconds);
+        }
+
+        private static DateTime from_time_t(long Time_t)
+        {
+            return UnixReferenceTime + TimeSpan.FromSeconds(Time_t);
+        }
+
+        public static void DateTimeToMoonPhase2(DateTime Time, out int MoonMonth, out MoonPhases MoonPhase, out DateTime PhaseStartTime, out DateTime PhaseEndTime, out double ProgressToFullMoon, out DateTime NextFullMoonTime)
+        {
+            long Time_t = to_time_t(Time);
+            int MoonPhaseAsInt;
+            long PhaseStartTime_t;
+            long PhaseEndTime_t;
+            long NextFullMoonTime_t;
+
+            DateTimeToMoonPhase(Time_t, out MoonMonth, out MoonPhaseAsInt, out PhaseStartTime_t, out PhaseEndTime_t, out ProgressToFullMoon, out NextFullMoonTime_t);
+
+            MoonPhase = (MoonPhases)MoonPhaseAsInt;
+            PhaseStartTime = from_time_t(PhaseStartTime_t);
+            PhaseEndTime = from_time_t(PhaseEndTime_t);
+            NextFullMoonTime = from_time_t(NextFullMoonTime_t);
+        }
+
+        /*
+        private static void DateTimeToMoonPhase(DateTime Time, out int MoonMonth, out MoonPhases MoonPhase, out DateTime PhaseStartTime, out DateTime PhaseEndTime, out double ProgressToFullMoon, out DateTime NextFullMoonTime)
         {
             TimeSpan Elapsed = Time - RecentNewMoon;
 
@@ -153,22 +171,22 @@ namespace PgMoon
                     break;
 
             MoonPhase = (MoonPhases)i;
-            ProgressWithinLunation = PositionInMonth.TotalSeconds / SynodicMonth.TotalSeconds;
-            ProgressWithinPhase = (ProgressWithinLunation * PhaseTable.Length) - (int)MoonPhase;
+            double ProgressWithinLunation = PositionInMonth.TotalSeconds / SynodicMonth.TotalSeconds;
             PhaseStartTime = MonthStartTime + PhaseTable[i];
             PhaseEndTime = ((i + 1 < PhaseTable.Length) ? (MonthStartTime + PhaseTable[i + 1]) : MonthStartTime + SynodicMonth);
-            TimeToNextPhase = TimeSpan.FromSeconds(((((int)MoonPhase + 1) - (ProgressWithinLunation * PhaseTable.Length)) / PhaseTable.Length) * SynodicMonth.TotalSeconds);
             if (MoonPhase < MoonPhases.FullMoon)
             {
                 ProgressToFullMoon = 1.0 - ((((double)MoonPhases.FullMoon) / 8) - ProgressWithinLunation);
-                TimeToFullMoon = TimeSpan.FromSeconds((((int)MoonPhases.FullMoon - (ProgressWithinLunation * 8)) / 8) * SynodicMonth.TotalSeconds);
+                TimeSpan TimeToFullMoon = TimeSpan.FromSeconds((((int)MoonPhases.FullMoon - (ProgressWithinLunation * 8)) / 8) * SynodicMonth.TotalSeconds);
+                NextFullMoonTime = Time + TimeToFullMoon;
             }
             else
             {
                 ProgressToFullMoon = 1.0 - (ProgressWithinLunation - (((double)MoonPhases.FullMoon) / 8));
-                TimeToFullMoon = TimeSpan.FromSeconds(SynodicMonth.TotalSeconds - (((ProgressWithinLunation * 8) - (int)MoonPhases.FullMoon) / 8) * SynodicMonth.TotalSeconds);
+                TimeSpan TimeToFullMoon = TimeSpan.FromSeconds(SynodicMonth.TotalSeconds - (((ProgressWithinLunation * 8) - (int)MoonPhases.FullMoon) / 8) * SynodicMonth.TotalSeconds);
+                NextFullMoonTime = Time + TimeToFullMoon;
             }
-        }
+        }*/
         #endregion
 
         #region Calculator
@@ -190,18 +208,18 @@ namespace PgMoon
         {
             int MoonMonth;
             MoonPhases MoonPhase;
-            double ProgressWithinLunation;
-            double ProgressWithinPhase;
             DateTime PhaseStartTime;
             DateTime PhaseEndTime;
-            TimeSpan TimeToNextPhase;
             double ProgressToFullMoon;
-            TimeSpan TimeToFullMoon;
-            DateTimeToMoonPhase(Time, out MoonMonth, out MoonPhase, out ProgressWithinLunation, out ProgressWithinPhase, out PhaseStartTime, out PhaseEndTime, out TimeToNextPhase, out ProgressToFullMoon, out TimeToFullMoon);
+            DateTime NextFullMoonTime;
+            DateTimeToMoonPhase2(Time, out MoonMonth, out MoonPhase, out PhaseStartTime, out PhaseEndTime, out ProgressToFullMoon, out NextFullMoonTime);
+
+            double ProgressWithinPhase = (Time - PhaseStartTime).TotalSeconds / (PhaseEndTime - PhaseStartTime).TotalSeconds;
+            TimeSpan TimeToNextPhase = PhaseEndTime - Time;
+            TimeSpan TimeToFullMoon = NextFullMoonTime - Time;
 
             this.MoonMonth = MoonMonth;
             this.MoonPhase = MoonPhase;
-            this.ProgressWithinLunation = ProgressWithinLunation;
             this.ProgressWithinPhase = ProgressWithinPhase;
             this.TimeToNextPhase = TimeToNextPhase;
             this.ProgressToFullMoon = ProgressToFullMoon;
@@ -215,7 +233,8 @@ namespace PgMoon
         // 09/08/17 [06.04,06:06] : Full -> Waning Gibbous
         // 14/08/17 [05:17,09:08] : Waning Gibbous -> Last Quarter
         // 17/08/17 [05:47,07:04] : Last Quarter -> Waning Crescent
-        // 19/08/17 [16:00] : Waning Crescent -> New Moon
+        // 20/08/17 [04:18,09:12] : Waning Crescent -> New Moon
+        //4:38-6:35 14
         #endregion
 
         #region Implementation of INotifyPropertyChanged

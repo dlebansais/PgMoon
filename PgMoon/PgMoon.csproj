@@ -85,6 +85,7 @@
     </ApplicationDefinition>
     <Compile Include="Calendar Entry.cs" />
     <Compile Include="Converter\Boolean To Object Converter.cs" />
+    <Compile Include="Converter\Current Phase Name To Object Converter.cs" />
     <Compile Include="Converter\DateTime To String.cs" />
     <Compile Include="Converter\Double To Thickness Converter.cs" />
     <Compile Include="Converter\Moon Phase To String Converter.cs" />
