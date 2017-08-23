@@ -555,27 +555,7 @@ namespace PgMoon
             SetSettingKey(MushroomListInitializedName, 1, RegistryValueKind.DWord);
 
             if (MushroomInfoList.Count == 0 && !IsMushroomListInitialized)
-            {
-                MushroomInfoList.Add(new MushroomInfo("Parasol Mushroom", MoonPhases.FullMoon, MoonPhases.WaningCrescentMoon));
-                MushroomInfoList.Add(new MushroomInfo("Mycena Mushroom", MoonPhases.WaxingCrescentMoon, MoonPhases.FirstQuarterMoon));
-                MushroomInfoList.Add(new MushroomInfo("Boletus Mushroom", MoonPhases.NewMoon, null));
-                MushroomInfoList.Add(new MushroomInfo("Field Mushroom", MoonPhases.WaxingGibbousMoon, MoonPhases.LastQuarterMoon));
-                MushroomInfoList.Add(new MushroomInfo("Blusher Mushroom", MoonPhases.NewMoon, MoonPhases.WaningGibbousMoon));
-                MushroomInfoList.Add(new MushroomInfo("Milk Cap Mushroom", MoonPhases.FullMoon, MoonPhases.WaningCrescentMoon));
-                MushroomInfoList.Add(new MushroomInfo("Blood Mushroom", MoonPhases.WaxingCrescentMoon, MoonPhases.LastQuarterMoon));
-                MushroomInfoList.Add(new MushroomInfo("Coral Mushroom", MoonPhases.FirstQuarterMoon, MoonPhases.WaxingGibbousMoon));
-                MushroomInfoList.Add(new MushroomInfo("Iocaine Mushroom", MoonPhases.WaxingCrescentMoon, MoonPhases.FirstQuarterMoon));
-                MushroomInfoList.Add(new MushroomInfo("Groxmak Mushroom", MoonPhases.WaxingGibbousMoon, MoonPhases.LastQuarterMoon));
-                MushroomInfoList.Add(new MushroomInfo("Porcini Mushroom", MoonPhases.FullMoon, MoonPhases.WaningGibbousMoon));
-                MushroomInfoList.Add(new MushroomInfo("Black Foot Morel", MoonPhases.NewMoon, MoonPhases.WaningCrescentMoon));
-                MushroomInfoList.Add(new MushroomInfo("Pixie's Parasol", MoonPhases.FirstQuarterMoon, MoonPhases.WaxingGibbousMoon));
-                MushroomInfoList.Add(new MushroomInfo("Fly Amanita", MoonPhases.WaxingCrescentMoon, MoonPhases.FullMoon));
-                MushroomInfoList.Add(new MushroomInfo("Charged Mycelium", null, null));
-                MushroomInfoList.Add(new MushroomInfo("Goblin Puffball", MoonPhases.NewMoon, MoonPhases.WaxingGibbousMoon));
-                MushroomInfoList.Add(new MushroomInfo("Blastcap Mushroom", MoonPhases.FullMoon, MoonPhases.WaningGibbousMoon));
-                MushroomInfoList.Add(new MushroomInfo("False Agaric", MoonPhases.WaningCrescentMoon, null));
-                MushroomInfoList.Add(new MushroomInfo("Wizard's Mushroom", MoonPhases.WaxingCrescentMoon, null));
-            }
+                ResetMushroomListToDefault();
 
             MushroomInfoList.Add(new MushroomInfo("", null, null));
             MushroomInfoList.CollectionChanged += OnMushroomInfoListChanged;
@@ -656,6 +636,30 @@ namespace PgMoon
             }
 
             SetSettingKey(MushroomListSettingName, Setting, RegistryValueKind.String);
+        }
+
+        private void ResetMushroomListToDefault()
+        {
+            MushroomInfoList.Clear();
+            MushroomInfoList.Add(new MushroomInfo("Parasol Mushroom", MoonPhases.FullMoon, MoonPhases.WaningCrescentMoon));
+            MushroomInfoList.Add(new MushroomInfo("Mycena Mushroom", MoonPhases.WaxingCrescentMoon, MoonPhases.FirstQuarterMoon));
+            MushroomInfoList.Add(new MushroomInfo("Boletus Mushroom", MoonPhases.NewMoon, null));
+            MushroomInfoList.Add(new MushroomInfo("Field Mushroom", MoonPhases.WaxingGibbousMoon, MoonPhases.LastQuarterMoon));
+            MushroomInfoList.Add(new MushroomInfo("Blusher Mushroom", MoonPhases.NewMoon, MoonPhases.WaningGibbousMoon));
+            MushroomInfoList.Add(new MushroomInfo("Milk Cap Mushroom", MoonPhases.FullMoon, MoonPhases.WaningCrescentMoon));
+            MushroomInfoList.Add(new MushroomInfo("Blood Mushroom", MoonPhases.WaxingCrescentMoon, MoonPhases.LastQuarterMoon));
+            MushroomInfoList.Add(new MushroomInfo("Coral Mushroom", MoonPhases.FirstQuarterMoon, MoonPhases.WaxingGibbousMoon));
+            MushroomInfoList.Add(new MushroomInfo("Iocaine Mushroom", MoonPhases.WaxingCrescentMoon, MoonPhases.FirstQuarterMoon));
+            MushroomInfoList.Add(new MushroomInfo("Groxmak Mushroom", MoonPhases.WaxingGibbousMoon, MoonPhases.LastQuarterMoon));
+            MushroomInfoList.Add(new MushroomInfo("Porcini Mushroom", MoonPhases.FullMoon, MoonPhases.WaningGibbousMoon));
+            MushroomInfoList.Add(new MushroomInfo("Black Foot Morel", MoonPhases.NewMoon, MoonPhases.WaningCrescentMoon));
+            MushroomInfoList.Add(new MushroomInfo("Pixie's Parasol", MoonPhases.FirstQuarterMoon, MoonPhases.WaxingGibbousMoon));
+            MushroomInfoList.Add(new MushroomInfo("Fly Amanita", MoonPhases.WaxingCrescentMoon, MoonPhases.FullMoon));
+            MushroomInfoList.Add(new MushroomInfo("Charged Mycelium", null, null));
+            MushroomInfoList.Add(new MushroomInfo("Goblin Puffball", MoonPhases.NewMoon, MoonPhases.WaxingGibbousMoon));
+            MushroomInfoList.Add(new MushroomInfo("Blastcap Mushroom", MoonPhases.FullMoon, MoonPhases.WaningGibbousMoon));
+            MushroomInfoList.Add(new MushroomInfo("False Agaric", MoonPhases.WaningCrescentMoon, null));
+            MushroomInfoList.Add(new MushroomInfo("Wizard's Mushroom", MoonPhases.WaxingCrescentMoon, null));
         }
 
         public bool ShowMushroomFarming
@@ -817,6 +821,14 @@ namespace PgMoon
         private void OnUnlock(object sender, ExecutedRoutedEventArgs e)
         {
             IsLocked = false;
+        }
+
+        private void OnResetToDefault(object sender, ExecutedRoutedEventArgs e)
+        {
+            if (MessageBox.Show("All your changes to the mushroom farming settings will be lost, are you sure?", "Reset Mushroom List To Default", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                return;
+
+            ResetMushroomListToDefault();
         }
 
         private object LocateSibling(object sender, string ElementName)

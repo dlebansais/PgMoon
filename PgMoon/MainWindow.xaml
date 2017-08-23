@@ -26,8 +26,9 @@
         <RoutedUICommand x:Key="ShowMushroomFarmingCommand"/>
         <RoutedUICommand x:Key="LockCommand"/>
         <RoutedUICommand x:Key="UnlockCommand"/>
-        <RoutedUICommand x:Key="ExitCommand"/>
+        <RoutedUICommand x:Key="ResetToDefaultCommand"/>
         <RoutedUICommand x:Key="DisplayCurrentCommand"/>
+        <RoutedUICommand x:Key="ExitCommand"/>
         <CompositeCollection x:Key="VisibleCollapsed">
             <Visibility>Visible</Visibility>
             <Visibility>Collapsed</Visibility>
@@ -140,6 +141,7 @@
                         <ContentControl.ContextMenu>
                             <ContextMenu>
                                 <MenuItem Header="Lock" Command="{StaticResource LockCommand}"/>
+                                <MenuItem Header="Reset to Default" Command="{StaticResource ResetToDefaultCommand}"/>
                             </ContextMenu>
                         </ContentControl.ContextMenu>
                         <ContentControl.Style>
@@ -392,6 +394,7 @@
         <CommandBinding Command="{StaticResource ShowMushroomFarmingCommand}" Executed="OnShowMushroomFarming"/>
         <CommandBinding Command="{StaticResource LockCommand}" Executed="OnLock"/>
         <CommandBinding Command="{StaticResource UnlockCommand}" Executed="OnUnlock"/>
+        <CommandBinding Command="{StaticResource ResetToDefaultCommand}" Executed="OnResetToDefault"/>
         <CommandBinding Command="{StaticResource DisplayCurrentCommand}" Executed="OnDisplayCurrent"/>
         <CommandBinding Command="{StaticResource ExitCommand}" Executed="OnExit"/>
     </Popup.CommandBindings>
