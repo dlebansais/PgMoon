@@ -7,10 +7,11 @@ namespace PgMoon
     public class MushroomInfo : INotifyPropertyChanged
     {
         #region Init
-        public MushroomInfo(string Name, MoonPhases? PreferredPhase)
+        public MushroomInfo(string Name, MoonPhases? PreferredPhase1, MoonPhases? PreferredPhase2)
         {
             _Name = Name;
-            _SelectedMoonPhase = PreferredPhase.HasValue ? (int)PreferredPhase.Value : -1;
+            _SelectedMoonPhase1 = PreferredPhase1.HasValue ? (int)PreferredPhase1.Value : -1;
+            _SelectedMoonPhase2 = PreferredPhase2.HasValue ? (int)PreferredPhase2.Value : -1;
         }
         #endregion
 
@@ -26,44 +27,82 @@ namespace PgMoon
                     NotifyThisPropertyChanged();
 
                     if (_Name == null || _Name.Length == 0)
-                        ResetSelectedMoonPhase();
+                    {
+                        ResetSelectedMoonPhase1();
+                        ResetSelectedMoonPhase2();
+                    }
                 }
             }
         }
         private string _Name;
 
-        public int SelectedMoonPhase
+        public int SelectedMoonPhase1
         {
-            get { return _SelectedMoonPhase; }
+            get { return _SelectedMoonPhase1; }
             set
             {
-                if (_SelectedMoonPhase != value)
+                if (_SelectedMoonPhase1 != value)
                 {
-                    _SelectedMoonPhase = value;
-                    if (_SelectedMoonPhase > (int)MoonPhases.WaningCrescentMoon)
-                        ResetSelectedMoonPhase();
+                    _SelectedMoonPhase1 = value;
+                    if (_SelectedMoonPhase1 > (int)MoonPhases.WaningCrescentMoon)
+                        ResetSelectedMoonPhase1();
                     else
                     {
-                        NotifyPropertyChanged(nameof(PreferredPhase));
-                        NotifyPropertyChanged(nameof(PhaseWeight));
+                        NotifyPropertyChanged(nameof(PreferredPhase1));
+                        NotifyPropertyChanged(nameof(PhaseWeight1));
                     }
                 }
             }
         }
-        private int _SelectedMoonPhase;
+        private int _SelectedMoonPhase1;
 
-        public MoonPhases? PreferredPhase { get { return (SelectedMoonPhase >= 0) ? (MoonPhases?)SelectedMoonPhase : null; } }
+        public int SelectedMoonPhase2
+        {
+            get { return _SelectedMoonPhase2; }
+            set
+            {
+                if (_SelectedMoonPhase2 != value)
+                {
+                    _SelectedMoonPhase2 = value;
+                    if (_SelectedMoonPhase2 > (int)MoonPhases.WaningCrescentMoon)
+                        ResetSelectedMoonPhase2();
+                    else
+                    {
+                        NotifyPropertyChanged(nameof(PreferredPhase2));
+                        NotifyPropertyChanged(nameof(PhaseWeight2));
+                    }
+                }
+            }
+        }
+        private int _SelectedMoonPhase2;
+
+        public MoonPhases? PreferredPhase1 { get { return (SelectedMoonPhase1 >= 0) ? (MoonPhases?)SelectedMoonPhase1 : null; } }
+        public MoonPhases? PreferredPhase2 { get { return (SelectedMoonPhase2 >= 0) ? (MoonPhases?)SelectedMoonPhase2 : null; } }
 
         // A property like PhaseWeight is the wrong way to apply bold style, Binding should be preferred.
         // However, there is some strange bug with the FontWeight type, it won't bind correctly in templates...
-        public System.Windows.FontWeight PhaseWeight
+        public System.Windows.FontWeight PhaseWeight1
         {
             get
             {
-                if (SelectedMoonPhase >= 0)
+                if (SelectedMoonPhase1 >= 0)
                 {
                     PhaseCalculator PhaseCalculator = new PhaseCalculator();
-                    if (SelectedMoonPhase == (int)PhaseCalculator.MoonPhase)
+                    if (SelectedMoonPhase1 == (int)PhaseCalculator.MoonPhase)
+                        return System.Windows.FontWeight.FromOpenTypeWeight(700);
+                }
+
+                return System.Windows.FontWeight.FromOpenTypeWeight(400);
+            }
+        }
+        public System.Windows.FontWeight PhaseWeight2
+        {
+            get
+            {
+                if (SelectedMoonPhase2 >= 0)
+                {
+                    PhaseCalculator PhaseCalculator = new PhaseCalculator();
+                    if (SelectedMoonPhase2 == (int)PhaseCalculator.MoonPhase)
                         return System.Windows.FontWeight.FromOpenTypeWeight(700);
                 }
 
@@ -73,20 +112,34 @@ namespace PgMoon
         #endregion
 
         #region Implementation
-        private void ResetSelectedMoonPhase()
+        private void ResetSelectedMoonPhase1()
         {
             App CurrentApp = App.Current as App;
             MainWindow MainPopup = CurrentApp.MainPopup;
-            MainPopup.Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, new ResetSelectedMoonPhaseHandler(OnResetSelectedMoonPhase));
+            MainPopup.Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, new ResetSelectedMoonPhaseHandler(OnResetSelectedMoonPhase1));
+        }
+
+        private void ResetSelectedMoonPhase2()
+        {
+            App CurrentApp = App.Current as App;
+            MainWindow MainPopup = CurrentApp.MainPopup;
+            MainPopup.Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, new ResetSelectedMoonPhaseHandler(OnResetSelectedMoonPhase2));
         }
 
         private delegate void ResetSelectedMoonPhaseHandler();
-        private void OnResetSelectedMoonPhase()
+        private void OnResetSelectedMoonPhase1()
         {
-            _SelectedMoonPhase = -1;
-            NotifyPropertyChanged(nameof(SelectedMoonPhase));
-            NotifyPropertyChanged(nameof(PreferredPhase));
-            NotifyPropertyChanged(nameof(PhaseWeight));
+            _SelectedMoonPhase1 = -1;
+            NotifyPropertyChanged(nameof(SelectedMoonPhase1));
+            NotifyPropertyChanged(nameof(PreferredPhase1));
+            NotifyPropertyChanged(nameof(PhaseWeight1));
+        }
+        private void OnResetSelectedMoonPhase2()
+        {
+            _SelectedMoonPhase2 = -1;
+            NotifyPropertyChanged(nameof(SelectedMoonPhase2));
+            NotifyPropertyChanged(nameof(PreferredPhase2));
+            NotifyPropertyChanged(nameof(PhaseWeight2));
         }
         #endregion
 

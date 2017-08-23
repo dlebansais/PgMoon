@@ -544,13 +544,40 @@ namespace PgMoon
         private void InitMushroomFarming()
         {
             int? ShowMushroomFarmingSetting = GetSettingKey(ShowMushroomFarmingSettingName) as int?;
-            _ShowMushroomFarming = (ShowMushroomFarmingSetting.HasValue ? (ShowMushroomFarmingSetting.Value != 0) : false);
+            _ShowMushroomFarming = (ShowMushroomFarmingSetting.HasValue ? (ShowMushroomFarmingSetting.Value != 0) : true);
             _IsMushroomListLarge = false;
             int? IsLockedSetting = GetSettingKey(IsLockedSettingName) as int?;
             _IsLocked = (IsLockedSetting.HasValue ? (IsLockedSetting.Value != 0) : false);
 
             LoadMushroomInfoList();
-            MushroomInfoList.Add(new MushroomInfo("", null));
+
+            bool IsMushroomListInitialized = (GetSettingKey(MushroomListInitializedName) != null);
+            SetSettingKey(MushroomListInitializedName, 1, RegistryValueKind.DWord);
+
+            if (MushroomInfoList.Count == 0 && !IsMushroomListInitialized)
+            {
+                MushroomInfoList.Add(new MushroomInfo("Parasol Mushroom", MoonPhases.FullMoon, MoonPhases.WaningCrescentMoon));
+                MushroomInfoList.Add(new MushroomInfo("Mycena Mushroom", MoonPhases.WaxingCrescentMoon, MoonPhases.FirstQuarterMoon));
+                MushroomInfoList.Add(new MushroomInfo("Boletus Mushroom", MoonPhases.NewMoon, null));
+                MushroomInfoList.Add(new MushroomInfo("Field Mushroom", MoonPhases.WaxingGibbousMoon, MoonPhases.LastQuarterMoon));
+                MushroomInfoList.Add(new MushroomInfo("Blusher Mushroom", MoonPhases.NewMoon, MoonPhases.WaningGibbousMoon));
+                MushroomInfoList.Add(new MushroomInfo("Milk Cap Mushroom", MoonPhases.FullMoon, MoonPhases.WaningCrescentMoon));
+                MushroomInfoList.Add(new MushroomInfo("Blood Mushroom", MoonPhases.WaxingCrescentMoon, MoonPhases.LastQuarterMoon));
+                MushroomInfoList.Add(new MushroomInfo("Coral Mushroom", MoonPhases.FirstQuarterMoon, MoonPhases.WaxingGibbousMoon));
+                MushroomInfoList.Add(new MushroomInfo("Iocaine Mushroom", MoonPhases.WaxingCrescentMoon, MoonPhases.FirstQuarterMoon));
+                MushroomInfoList.Add(new MushroomInfo("Groxmak Mushroom", MoonPhases.WaxingGibbousMoon, MoonPhases.LastQuarterMoon));
+                MushroomInfoList.Add(new MushroomInfo("Porcini Mushroom", MoonPhases.FullMoon, MoonPhases.WaningGibbousMoon));
+                MushroomInfoList.Add(new MushroomInfo("Black Foot Morel", MoonPhases.NewMoon, MoonPhases.WaningCrescentMoon));
+                MushroomInfoList.Add(new MushroomInfo("Pixie's Parasol", MoonPhases.FirstQuarterMoon, MoonPhases.WaxingGibbousMoon));
+                MushroomInfoList.Add(new MushroomInfo("Fly Amanita", MoonPhases.WaxingCrescentMoon, MoonPhases.FullMoon));
+                MushroomInfoList.Add(new MushroomInfo("Charged Mycelium", null, null));
+                MushroomInfoList.Add(new MushroomInfo("Goblin Puffball", MoonPhases.NewMoon, MoonPhases.WaxingGibbousMoon));
+                MushroomInfoList.Add(new MushroomInfo("Blastcap Mushroom", MoonPhases.FullMoon, MoonPhases.WaningGibbousMoon));
+                MushroomInfoList.Add(new MushroomInfo("False Agaric", MoonPhases.WaningCrescentMoon, null));
+                MushroomInfoList.Add(new MushroomInfo("Wizard's Mushroom", MoonPhases.WaxingCrescentMoon, null));
+            }
+
+            MushroomInfoList.Add(new MushroomInfo("", null, null));
             MushroomInfoList.CollectionChanged += OnMushroomInfoListChanged;
 
             string ApplicationFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PgJsonParse");
@@ -575,19 +602,30 @@ namespace PgMoon
                         string Name = Line[0].Trim();
                         if (Name.Length > 0)
                         {
-                            MoonPhases? PreferredPhase;
-                            if (Line.Length >= 2)
+                            MoonPhases? PreferredPhase1;
+                            MoonPhases? PreferredPhase2;
+                            if (Line.Length >= 3)
                             {
-                                int PhaseIndex;
-                                if (int.TryParse(Line[1].Trim(), out PhaseIndex) && PhaseIndex >= 0 && PhaseIndex <= (int)MoonPhases.WaningCrescentMoon)
-                                    PreferredPhase = (MoonPhases)PhaseIndex;
+                                int PhaseIndex1;
+                                int PhaseIndex2;
+
+                                if (int.TryParse(Line[1].Trim(), out PhaseIndex1) && PhaseIndex1 >= 0 && PhaseIndex1 <= (int)MoonPhases.WaningCrescentMoon)
+                                    PreferredPhase1 = (MoonPhases)PhaseIndex1;
                                 else
-                                    PreferredPhase = null;
+                                    PreferredPhase1 = null;
+
+                                if (int.TryParse(Line[2].Trim(), out PhaseIndex2) && PhaseIndex2 >= 0 && PhaseIndex2 <= (int)MoonPhases.WaningCrescentMoon)
+                                    PreferredPhase2 = (MoonPhases)PhaseIndex2;
+                                else
+                                    PreferredPhase2 = null;
                             }
                             else
-                                PreferredPhase = null;
+                            {
+                                PreferredPhase1 = null;
+                                PreferredPhase2 = null;
+                            }
 
-                            MushroomInfoList.Add(new MushroomInfo(Name, PreferredPhase));
+                            MushroomInfoList.Add(new MushroomInfo(Name, PreferredPhase1, PreferredPhase2));
                         }
                     }
                 }
@@ -603,9 +641,14 @@ namespace PgMoon
                 if (Info.Name.Length == 0)
                     continue;
 
-                string Line = Info.Name;
-                if (Info.PreferredPhase.HasValue)
-                    Line += MushroomSeparator + ((int)Info.PreferredPhase).ToString();
+                string Line = "";
+                Line += Info.Name;
+                Line += MushroomSeparator;
+                if (Info.PreferredPhase1.HasValue)
+                    Line += ((int)Info.PreferredPhase1).ToString();
+                Line += MushroomSeparator;
+                if (Info.PreferredPhase2.HasValue)
+                    Line += ((int)Info.PreferredPhase2).ToString();
 
                 if (Setting.Length > 0)
                     Setting += MushroomListSeparator;
@@ -742,7 +785,7 @@ namespace PgMoon
         private void OnMushroomListUpPage(object sender, MouseButtonEventArgs e)
         {
             ScrollViewer listviewMushrooms = LocateSibling(sender, nameof(listviewMushrooms)) as ScrollViewer;
-            listviewMushrooms.ScrollToTop();
+            listviewMushrooms.PageUp();
         }
 
         private void OnMushroomListDown(object sender, MouseButtonEventArgs e)
@@ -754,7 +797,7 @@ namespace PgMoon
         private void OnMushroomListDownPage(object sender, MouseButtonEventArgs e)
         {
             ScrollViewer listviewMushrooms = LocateSibling(sender, nameof(listviewMushrooms)) as ScrollViewer;
-            listviewMushrooms.ScrollToBottom();
+            listviewMushrooms.PageDown();
         }
 
         private void OnLockMushroomList(object sender, MouseButtonEventArgs e)
@@ -812,7 +855,7 @@ namespace PgMoon
             if (MushroomInfoList.Count > 0 && MushroomInfoList.Count < MaxMushroomRows)
             {
                 if (MushroomInfoList[MushroomInfoList.Count - 1].Name.Length > 0)
-                    MushroomInfoList.Add(new MushroomInfo("", null));
+                    MushroomInfoList.Add(new MushroomInfo("", null, null));
                 else
                 {
                     bool Continue = true;
@@ -824,7 +867,7 @@ namespace PgMoon
                         for (int i = 0; i + 1 < MushroomInfoList.Count; i++)
                         {
                             MushroomInfo Item = MushroomInfoList[i];
-                            if (Item.Name.Length == 0 && !Item.PreferredPhase.HasValue)
+                            if (Item.Name.Length == 0 && !Item.PreferredPhase1.HasValue && !Item.PreferredPhase2.HasValue)
                             {
                                 MushroomInfoList.Remove(Item);
                                 Continue = true;
@@ -854,6 +897,7 @@ namespace PgMoon
 
         private static readonly string ShowMushroomFarmingSettingName = "ShowMushroomFarming";
         private static readonly string MushroomListSettingName = "MushroomList";
+        private static readonly string MushroomListInitializedName = "MushroomListInitialized";
         private static readonly string IsLockedSettingName = "MushroomListLocked";
         private const int MaxMushroomRows = 40;
         private const char MushroomListSeparator = '\u2551';
