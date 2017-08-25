@@ -7,11 +7,11 @@ namespace PgMoon
     public class MushroomInfo : INotifyPropertyChanged
     {
         #region Init
-        public MushroomInfo(string Name, MoonPhases? PreferredPhase1, MoonPhases? PreferredPhase2)
+        public MushroomInfo(string Name, MoonPhase PreferredPhase1, MoonPhase PreferredPhase2)
         {
             _Name = Name;
-            _SelectedMoonPhase1 = PreferredPhase1.HasValue ? (int)PreferredPhase1.Value : -1;
-            _SelectedMoonPhase2 = PreferredPhase2.HasValue ? (int)PreferredPhase2.Value : -1;
+            _SelectedMoonPhase1 = (PreferredPhase1 != null ? MoonPhase.MoonPhaseList.IndexOf(PreferredPhase1) : -1);
+            _SelectedMoonPhase2 = (PreferredPhase2 != null ? MoonPhase.MoonPhaseList.IndexOf(PreferredPhase2) : -1);
         }
         #endregion
 
@@ -44,7 +44,7 @@ namespace PgMoon
                 if (_SelectedMoonPhase1 != value)
                 {
                     _SelectedMoonPhase1 = value;
-                    if (_SelectedMoonPhase1 > (int)MoonPhases.WaningCrescentMoon)
+                    if (_SelectedMoonPhase1 >= MoonPhase.MoonPhaseList.Count)
                         ResetSelectedMoonPhase1();
                     else
                     {
@@ -64,7 +64,7 @@ namespace PgMoon
                 if (_SelectedMoonPhase2 != value)
                 {
                     _SelectedMoonPhase2 = value;
-                    if (_SelectedMoonPhase2 > (int)MoonPhases.WaningCrescentMoon)
+                    if (_SelectedMoonPhase2 >= MoonPhase.MoonPhaseList.Count)
                         ResetSelectedMoonPhase2();
                     else
                     {
@@ -76,8 +76,8 @@ namespace PgMoon
         }
         private int _SelectedMoonPhase2;
 
-        public MoonPhases? PreferredPhase1 { get { return (SelectedMoonPhase1 >= 0) ? (MoonPhases?)SelectedMoonPhase1 : null; } }
-        public MoonPhases? PreferredPhase2 { get { return (SelectedMoonPhase2 >= 0) ? (MoonPhases?)SelectedMoonPhase2 : null; } }
+        public MoonPhase PreferredPhase1 { get { return (SelectedMoonPhase1 >= 0) ? MoonPhase.MoonPhaseList[SelectedMoonPhase1] : null; } }
+        public MoonPhase PreferredPhase2 { get { return (SelectedMoonPhase2 >= 0) ? MoonPhase.MoonPhaseList[SelectedMoonPhase2] : null; } }
 
         // A property like PhaseWeight is the wrong way to apply bold style, Binding should be preferred.
         // However, there is some strange bug with the FontWeight type, it won't bind correctly in templates...
@@ -85,12 +85,8 @@ namespace PgMoon
         {
             get
             {
-                if (SelectedMoonPhase1 >= 0)
-                {
-                    PhaseCalculator PhaseCalculator = new PhaseCalculator();
-                    if (SelectedMoonPhase1 == (int)PhaseCalculator.MoonPhase)
-                        return System.Windows.FontWeight.FromOpenTypeWeight(700);
-                }
+                if (PreferredPhase1 == PhaseCalculator.MoonPhase)
+                    return System.Windows.FontWeight.FromOpenTypeWeight(700);
 
                 return System.Windows.FontWeight.FromOpenTypeWeight(400);
             }
@@ -99,12 +95,8 @@ namespace PgMoon
         {
             get
             {
-                if (SelectedMoonPhase2 >= 0)
-                {
-                    PhaseCalculator PhaseCalculator = new PhaseCalculator();
-                    if (SelectedMoonPhase2 == (int)PhaseCalculator.MoonPhase)
-                        return System.Windows.FontWeight.FromOpenTypeWeight(700);
-                }
+                if (PreferredPhase2 == PhaseCalculator.MoonPhase)
+                    return System.Windows.FontWeight.FromOpenTypeWeight(700);
 
                 return System.Windows.FontWeight.FromOpenTypeWeight(400);
             }

@@ -4,40 +4,36 @@ using System.Runtime.CompilerServices;
 
 namespace PgMoon
 {
-    public class PhaseCalculator : INotifyPropertyChanged
+    public class PhaseCalculator
     {
         #region Init
         static PhaseCalculator()
         {
-            InitPhaseTable();
+            Singleton = new PhaseCalculator();
         }
 
-        public PhaseCalculator()
+        private PhaseCalculator()
         {
-            CalculateBasicMoonPhase(DateTime.UtcNow);
+            CalculateBasicMoonPhase(App.Now());
         }
 
-        private static readonly TimeSpan SynodicMonth = TimeSpan.FromSeconds(2551442.861);
-        private static readonly TimeSpan MainPhaseDuration = TimeSpan.FromDays(3);
-        private static readonly TimeSpan IntermediatePhaseDuration = TimeSpan.FromSeconds((SynodicMonth.TotalSeconds - (MainPhaseDuration.TotalSeconds * 4)) / 4);
-        //private static readonly DateTime RecentNewMoon = new DateTime(2017, 8, 9, 4, 0, 5, DateTimeKind.Utc);
-        private static readonly DateTime RecentNewMoon = new DateTime(2017, 7, 22, 9, 38, 0, DateTimeKind.Utc);
+        public static PhaseCalculator Singleton { get; private set; }
         #endregion
 
         #region Client Interface
-        public void Update()
+        public static void Update()
         {
-            CalculateBasicMoonPhase(DateTime.UtcNow);
+            Singleton.CalculateBasicMoonPhase(App.Now());
         }
 
-        public void Update(DateTime Time)
+        public static bool IsCurrent(int CheckMoonMonth, MoonPhase CheckMoonPhase)
         {
-            CalculateBasicMoonPhase(Time);
+            return CheckMoonMonth == MoonMonth && CheckMoonPhase == MoonPhase;
         }
         #endregion
 
         #region Properties
-        public int MoonMonth
+        public static int MoonMonth
         {
             get { return _MoonMonth; }
             set
@@ -49,9 +45,9 @@ namespace PgMoon
                 }
             }
         }
-        private int _MoonMonth;
+        private static int _MoonMonth;
 
-        public MoonPhases MoonPhase
+        public static MoonPhase MoonPhase
         {
             get { return _MoonPhase; }
             set
@@ -60,12 +56,14 @@ namespace PgMoon
                 {
                     _MoonPhase = value;
                     NotifyThisPropertyChanged();
+
+                    MoonPhase.UpdateCurrent();
                 }
             }
         }
-        private MoonPhases _MoonPhase;
+        private static MoonPhase _MoonPhase;
 
-        public double ProgressWithinPhase
+        public static double ProgressWithinPhase
         {
             get { return _ProgressWithinPhase; }
             set
@@ -77,9 +75,9 @@ namespace PgMoon
                 }
             }
         }
-        private double _ProgressWithinPhase;
+        private static double _ProgressWithinPhase;
 
-        public double ProgressToFullMoon
+        public static double ProgressToFullMoon
         {
             get { return _ProgressToFullMoon; }
             set
@@ -91,9 +89,9 @@ namespace PgMoon
                 }
             }
         }
-        private double _ProgressToFullMoon;
+        private static double _ProgressToFullMoon;
 
-        public TimeSpan TimeToNextPhase
+        public static TimeSpan TimeToNextPhase
         {
             get { return _TimeToNextPhase; }
             set
@@ -105,9 +103,9 @@ namespace PgMoon
                 }
             }
         }
-        private TimeSpan _TimeToNextPhase;
+        private static TimeSpan _TimeToNextPhase;
 
-        public TimeSpan TimeToFullMoon
+        public static TimeSpan TimeToFullMoon
         {
             get { return _TimeToFullMoon; }
             set
@@ -119,7 +117,7 @@ namespace PgMoon
                 }
             }
         }
-        private TimeSpan _TimeToFullMoon;
+        private static TimeSpan _TimeToFullMoon;
         #endregion
 
         #region Client Interface
@@ -138,7 +136,7 @@ namespace PgMoon
             return UnixReferenceTime + TimeSpan.FromSeconds(Time_t);
         }
 
-        public static void DateTimeToMoonPhase2(DateTime Time, out int MoonMonth, out MoonPhases MoonPhase, out DateTime PhaseStartTime, out DateTime PhaseEndTime, out double ProgressToFullMoon, out DateTime NextFullMoonTime)
+        public static void DateTimeToMoonPhase2(DateTime Time, out int MoonMonth, out MoonPhase MoonPhase, out DateTime PhaseStartTime, out DateTime PhaseEndTime, out double ProgressToFullMoon, out DateTime NextFullMoonTime)
         {
             long Time_t = to_time_t(Time);
             int MoonPhaseAsInt;
@@ -148,85 +146,35 @@ namespace PgMoon
 
             DateTimeToMoonPhase(Time_t, out MoonMonth, out MoonPhaseAsInt, out PhaseStartTime_t, out PhaseEndTime_t, out ProgressToFullMoon, out NextFullMoonTime_t);
 
-            MoonPhase = (MoonPhases)MoonPhaseAsInt;
+            MoonPhase = MoonPhase.MoonPhaseList[MoonPhaseAsInt];
             PhaseStartTime = from_time_t(PhaseStartTime_t);
             PhaseEndTime = from_time_t(PhaseEndTime_t);
             NextFullMoonTime = from_time_t(NextFullMoonTime_t);
         }
-
-        /*
-        private static void DateTimeToMoonPhase(DateTime Time, out int MoonMonth, out MoonPhases MoonPhase, out DateTime PhaseStartTime, out DateTime PhaseEndTime, out double ProgressToFullMoon, out DateTime NextFullMoonTime)
-        {
-            TimeSpan Elapsed = Time - RecentNewMoon;
-
-            MoonMonth = (int)(Elapsed.TotalSeconds / SynodicMonth.TotalSeconds);
-            DateTime MonthStartTime = RecentNewMoon + TimeSpan.FromSeconds(SynodicMonth.TotalSeconds * MoonMonth);
-            TimeSpan PositionInMonth = TimeSpan.FromSeconds(Elapsed.TotalSeconds - (MoonMonth * SynodicMonth.TotalSeconds));
-
-            //DateTime RealStart = RecentNewMoon - MainPhaseDuration - IntermediatePhaseDuration - MainPhaseDuration - IntermediatePhaseDuration - MainPhaseDuration;
-
-            int i;
-            for (i = 0; i + 1 < PhaseTable.Length; i++)
-                if (PositionInMonth < PhaseTable[i + 1])
-                    break;
-
-            MoonPhase = (MoonPhases)i;
-            double ProgressWithinLunation = PositionInMonth.TotalSeconds / SynodicMonth.TotalSeconds;
-            PhaseStartTime = MonthStartTime + PhaseTable[i];
-            PhaseEndTime = ((i + 1 < PhaseTable.Length) ? (MonthStartTime + PhaseTable[i + 1]) : MonthStartTime + SynodicMonth);
-            if (MoonPhase < MoonPhases.FullMoon)
-            {
-                ProgressToFullMoon = 1.0 - ((((double)MoonPhases.FullMoon) / 8) - ProgressWithinLunation);
-                TimeSpan TimeToFullMoon = TimeSpan.FromSeconds((((int)MoonPhases.FullMoon - (ProgressWithinLunation * 8)) / 8) * SynodicMonth.TotalSeconds);
-                NextFullMoonTime = Time + TimeToFullMoon;
-            }
-            else
-            {
-                ProgressToFullMoon = 1.0 - (ProgressWithinLunation - (((double)MoonPhases.FullMoon) / 8));
-                TimeSpan TimeToFullMoon = TimeSpan.FromSeconds(SynodicMonth.TotalSeconds - (((ProgressWithinLunation * 8) - (int)MoonPhases.FullMoon) / 8) * SynodicMonth.TotalSeconds);
-                NextFullMoonTime = Time + TimeToFullMoon;
-            }
-        }*/
         #endregion
 
         #region Calculator
-        private static void InitPhaseTable()
-        {
-            PhaseTable = new TimeSpan[8];
-            TimeSpan PhaseStart = TimeSpan.Zero;
-            for (int PhaseIndex = 0; PhaseIndex < PhaseTable.Length; PhaseIndex += 2)
-            {
-                PhaseTable[PhaseIndex + 0] = PhaseStart;
-                PhaseStart += MainPhaseDuration;
-
-                PhaseTable[PhaseIndex + 1] = PhaseStart;
-                PhaseStart += IntermediatePhaseDuration;
-            }
-        }
-
         private void CalculateBasicMoonPhase(DateTime Time)
         {
-            int MoonMonth;
-            MoonPhases MoonPhase;
-            DateTime PhaseStartTime;
-            DateTime PhaseEndTime;
-            double ProgressToFullMoon;
-            DateTime NextFullMoonTime;
-            DateTimeToMoonPhase2(Time, out MoonMonth, out MoonPhase, out PhaseStartTime, out PhaseEndTime, out ProgressToFullMoon, out NextFullMoonTime);
+            int NewMoonMonth;
+            MoonPhase NewMoonPhase;
+            DateTime NewPhaseStartTime;
+            DateTime NewPhaseEndTime;
+            double NewProgressToFullMoon;
+            DateTime NewNextFullMoonTime;
+            DateTimeToMoonPhase2(Time, out NewMoonMonth, out NewMoonPhase, out NewPhaseStartTime, out NewPhaseEndTime, out NewProgressToFullMoon, out NewNextFullMoonTime);
 
-            double ProgressWithinPhase = (Time - PhaseStartTime).TotalSeconds / (PhaseEndTime - PhaseStartTime).TotalSeconds;
-            TimeSpan TimeToNextPhase = PhaseEndTime - Time;
-            TimeSpan TimeToFullMoon = NextFullMoonTime - Time;
+            double NewProgressWithinPhase = (Time - NewPhaseStartTime).TotalSeconds / (NewPhaseEndTime - NewPhaseStartTime).TotalSeconds;
+            TimeSpan NewTimeToNextPhase = NewPhaseEndTime - Time;
+            TimeSpan NewTimeToFullMoon = NewNextFullMoonTime - Time;
 
-            this.MoonMonth = MoonMonth;
-            this.MoonPhase = MoonPhase;
-            this.ProgressWithinPhase = ProgressWithinPhase;
-            this.TimeToNextPhase = TimeToNextPhase;
-            this.ProgressToFullMoon = ProgressToFullMoon;
-            this.TimeToFullMoon = TimeToFullMoon;
+            MoonMonth = NewMoonMonth;
+            MoonPhase = NewMoonPhase;
+            ProgressWithinPhase = NewProgressWithinPhase;
+            TimeToNextPhase = NewTimeToNextPhase;
+            ProgressToFullMoon = NewProgressToFullMoon;
+            TimeToFullMoon = NewTimeToFullMoon;
         }
-
-        private static TimeSpan[] PhaseTable;
 
         // 01/08/17 [04.20,08:53] : FQ -> Waxing Gib
         // 06/08/17 [01.30,08:09] : Waxing Gib -> Full (06:00?)
@@ -238,21 +186,21 @@ namespace PgMoon
         //06:05,06:09 
         #endregion
 
-        #region Implementation of INotifyPropertyChanged
+        #region Implementation of STATIC INotifyPropertyChanged
         /// <summary>
         ///     Implements the PropertyChanged event.
         /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
+        public static event EventHandler<PropertyChangedEventArgs> StaticPropertyChanged;
 
-        internal void NotifyPropertyChanged(string propertyName)
+        internal static void NotifyPropertyChanged(string propertyName)
         {
-            if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            StaticPropertyChanged?.Invoke(null, new PropertyChangedEventArgs(propertyName));
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed", Justification = "Default parameter is mandatory with [CallerMemberName]")]
-        internal void NotifyThisPropertyChanged([CallerMemberName] string propertyName = "")
+        internal static void NotifyThisPropertyChanged([CallerMemberName] string propertyName = "")
         {
-            if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            StaticPropertyChanged?.Invoke(null, new PropertyChangedEventArgs(propertyName));
         }
         #endregion
     }

@@ -6,8 +6,10 @@ namespace PgMoon
 {
     public partial class App : Application, IDisposable
     {
+        #region Init
         public App()
         {
+            // Ensure only one instance is running at a time.
             try
             {
                 bool createdNew;
@@ -31,6 +33,11 @@ namespace PgMoon
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
         }
 
+        public MainWindow MainPopup { get; private set; }
+        private EventWaitHandle InstanceEvent;
+        #endregion
+
+        #region Events
         private void OnStartup(object sender, StartupEventArgs e)
         {
             MainPopup = new MainWindow();
@@ -56,9 +63,22 @@ namespace PgMoon
                 MainPopup = null;
             }
         }
+        #endregion
 
-        public MainWindow MainPopup { get; private set; }
-        private EventWaitHandle InstanceEvent;
+        #region Current Time
+        // Use this only for debugging purpose.
+        public static void IncreaseNow()
+        {
+            TimeOffset += TimeSpan.FromDays(1);
+        }
+
+        public static DateTime Now()
+        {
+            return DateTime.UtcNow + TimeOffset;
+        }
+
+        private static TimeSpan TimeOffset = TimeSpan.Zero;
+        #endregion
 
         #region Implementation of IDisposable
         protected virtual void Dispose(bool isDisposing)

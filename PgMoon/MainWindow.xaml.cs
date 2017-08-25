@@ -275,14 +275,11 @@ namespace PgMoon
         #region Moon Phase
         private void InitMoonPhase()
         {
-            PhaseCalculator = new PhaseCalculator();
-
             UpdateMoonPhaseTimer = new Timer(new TimerCallback(UpdateMoonPhaseTimerCallback));
-            TimeSpan UpdateInterval = TimeSpan.FromMinutes(1);
+            TimeSpan UpdateInterval = TimeSpan.FromSeconds(60);
+            PreviousUpdateChanged = true;
             UpdateMoonPhaseTimer.Change(UpdateInterval, UpdateInterval);
         }
-
-        public PhaseCalculator PhaseCalculator { get; private set; }
 
         public string TimeToNextPhaseText
         {
@@ -331,17 +328,17 @@ namespace PgMoon
 
         public bool IsFullMoon
         {
-            get { return PhaseCalculator.MoonPhase == MoonPhases.FullMoon; }
+            get { return PhaseCalculator.MoonPhase == MoonPhase.FullMoon; }
         }
 
         public bool IsNextPhaseFullMoon
         {
-            get { return ((int)PhaseCalculator.MoonPhase + 1) == (int)MoonPhases.FullMoon; }
+            get { return PhaseCalculator.MoonPhase == MoonPhase.WaxingGibbousMoon; }
         }
 
         public string ToolTipText
         {
-            get { return MoonPhaseName + "\r\n" + TimeToNextPhaseText; }
+            get { return PhaseCalculator.MoonPhase.Name + "\r\n" + TimeToNextPhaseText; }
         }
 
         private void UpdateMoonPhaseTimerCallback(object Parameter)
@@ -353,6 +350,8 @@ namespace PgMoon
 
         private void OnUpdateMoonPhase()
         {
+            //App.IncreaseNow(); //Debug only
+
             PhaseCalculator.Update();
             NotifyPropertyChanged(nameof(TimeToNextPhaseText));
             NotifyPropertyChanged(nameof(TimeToFullMoonText));
@@ -362,14 +361,30 @@ namespace PgMoon
 
             if (TaskbarIcon != null)
                 TaskbarIcon.UpdateToolTipText(ToolTipText);
-        }
 
-        private string MoonPhaseName
-        {
-            get { return MoonPhaseToStringConverter.MoonPhaseTable[PhaseCalculator.MoonPhase]; }
+            DateTime LastTimeKey = DateTime.MinValue;
+            DateTime LastTime = DateTime.MinValue;
+
+            foreach (KeyValuePair<DateTime, CalendarEntry> Entry in CalendarEntryTable)
+            {
+                CalendarEntry Item = Entry.Value;
+                Item.Update();
+
+                LastTimeKey = Entry.Key;
+                LastTime = Item.EndTime;
+            }
+
+            if (LastTime < App.Now() && !PreviousUpdateChanged)
+            {
+                CalendarStartTime = LastTimeKey;
+                BuildCalendar();
+            }
+
+            PreviousUpdateChanged = false;
         }
 
         private Timer UpdateMoonPhaseTimer;
+        private bool PreviousUpdateChanged;
         #endregion
 
         #region Calendar
@@ -377,7 +392,7 @@ namespace PgMoon
         {
             int? ShowSetting = GetSettingKey(ShowCalendarSettingName) as int?;
             _ShowCalendar = (ShowSetting.HasValue ? (ShowSetting.Value != 0) : true);
-            _CalendarStartTime = DateTime.UtcNow;
+            _CalendarStartTime = App.Now();
             BuildCalendar();
         }
 
@@ -416,7 +431,7 @@ namespace PgMoon
             get
             {
                 int Year = CalendarStartTime.Year;
-                if (Year == DateTime.UtcNow.Year)
+                if (Year == App.Now().Year)
                     return "";
                 else
                     return CalendarStartTime.Year.ToString();
@@ -425,6 +440,7 @@ namespace PgMoon
         private DateTime _CalendarStartTime;
 
         public ObservableCollection<CalendarEntry> CalendarEntryList { get; private set; } = new ObservableCollection<CalendarEntry>();
+        private Dictionary<DateTime, CalendarEntry> CalendarEntryTable = new Dictionary<DateTime, CalendarEntry>();
 
         private void BuildCalendar()
         {
@@ -433,19 +449,31 @@ namespace PgMoon
             DateTime Time = CalendarStartTime;
             for (int i = 0; i < 5; i++)
             {
-                int MoonMonth;
-                MoonPhases MoonPhase;
-                DateTime PhaseStartTime;
-                DateTime PhaseEndTime;
-                double ProgressToFullMoon;
-                DateTime NextFullMoonTime;
-                PhaseCalculator.DateTimeToMoonPhase2(Time, out MoonMonth, out MoonPhase, out PhaseStartTime, out PhaseEndTime, out ProgressToFullMoon, out NextFullMoonTime);
+                CalendarEntry CalendarEntry;
 
-                bool IsCurrent = (MoonMonth == PhaseCalculator.MoonMonth && MoonPhase == PhaseCalculator.MoonPhase);
-                CalendarEntry NewCalendarEntry = new CalendarEntry(MoonPhase, IsCurrent, PhaseStartTime, PhaseEndTime);
-                CalendarEntryList.Add(NewCalendarEntry);
+                if (!CalendarEntryTable.ContainsKey(Time))
+                {
+                    int MoonMonth;
+                    MoonPhase MoonPhase;
+                    DateTime PhaseStartTime;
+                    DateTime PhaseEndTime;
+                    double ProgressToFullMoon;
+                    DateTime NextFullMoonTime;
+                    PhaseCalculator.DateTimeToMoonPhase2(Time, out MoonMonth, out MoonPhase, out PhaseStartTime, out PhaseEndTime, out ProgressToFullMoon, out NextFullMoonTime);
 
-                Time = PhaseEndTime + TimeSpan.FromHours(1);
+                    if (!CalendarEntryTable.ContainsKey(PhaseStartTime))
+                    {
+                        CalendarEntry NewCalendarEntry = new CalendarEntry(MoonMonth, MoonPhase, PhaseStartTime, PhaseEndTime);
+                        CalendarEntryTable.Add(PhaseStartTime, NewCalendarEntry);
+                    }
+
+                    Time = PhaseStartTime;
+                }
+
+                CalendarEntry = CalendarEntryTable[Time];
+                CalendarEntryList.Add(CalendarEntry);
+
+                Time = CalendarEntry.EndTime;
             }
         }
 
@@ -462,42 +490,49 @@ namespace PgMoon
         {
             CalendarStartTime = CalendarEntryList[0].StartTime - TimeSpan.FromHours(1);
             BuildCalendar();
+            PreviousUpdateChanged = true;
         }
 
         private void OnCalendarUpPage(object sender, MouseButtonEventArgs e)
         {
             CalendarStartTime = CalendarEntryList[0].StartTime - (CalendarEntryList[CalendarEntryList.Count - 1].StartTime - CalendarEntryList[0].EndTime);
             BuildCalendar();
+            PreviousUpdateChanged = true;
         }
 
         private void OnCalendarDown(object sender, MouseButtonEventArgs e)
         {
             CalendarStartTime = CalendarEntryList[0].EndTime + TimeSpan.FromHours(1);
             BuildCalendar();
+            PreviousUpdateChanged = true;
         }
 
         private void OnCalendarDownPage(object sender, MouseButtonEventArgs e)
         {
             CalendarStartTime = CalendarEntryList[CalendarEntryList.Count - 1].StartTime + TimeSpan.FromHours(1);
             BuildCalendar();
+            PreviousUpdateChanged = true;
         }
 
         private void OnCalendarDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            CalendarStartTime = DateTime.UtcNow;
+            CalendarStartTime = App.Now();
             BuildCalendar();
+            PreviousUpdateChanged = true;
         }
 
         private void OnCalendarMouseWheel(object sender, MouseWheelEventArgs e)
         {
             CalendarStartTime = CalendarEntryList[0].EndTime - TimeSpan.FromHours(e.Delta);
             BuildCalendar();
+            PreviousUpdateChanged = true;
         }
 
         private void OnDisplayCurrent(object sender, ExecutedRoutedEventArgs e)
         {
-            CalendarStartTime = DateTime.UtcNow;
+            CalendarStartTime = App.Now();
             BuildCalendar();
+            PreviousUpdateChanged = true;
         }
 
         private static readonly string ShowCalendarSettingName = "ShowCalendar";
@@ -582,29 +617,30 @@ namespace PgMoon
                         string Name = Line[0].Trim();
                         if (Name.Length > 0)
                         {
-                            MoonPhases? PreferredPhase1;
-                            MoonPhases? PreferredPhase2;
+                            int SelectedPhase1, SelectedPhase2;
                             if (Line.Length >= 3)
                             {
                                 int PhaseIndex1;
                                 int PhaseIndex2;
 
-                                if (int.TryParse(Line[1].Trim(), out PhaseIndex1) && PhaseIndex1 >= 0 && PhaseIndex1 <= (int)MoonPhases.WaningCrescentMoon)
-                                    PreferredPhase1 = (MoonPhases)PhaseIndex1;
+                                if (int.TryParse(Line[1].Trim(), out PhaseIndex1) && PhaseIndex1 >= 0 && PhaseIndex1 < MoonPhase.MoonPhaseList.Count)
+                                    SelectedPhase1 = PhaseIndex1;
                                 else
-                                    PreferredPhase1 = null;
+                                    SelectedPhase1 = -1;
 
-                                if (int.TryParse(Line[2].Trim(), out PhaseIndex2) && PhaseIndex2 >= 0 && PhaseIndex2 <= (int)MoonPhases.WaningCrescentMoon)
-                                    PreferredPhase2 = (MoonPhases)PhaseIndex2;
+                                if (int.TryParse(Line[2].Trim(), out PhaseIndex2) && PhaseIndex2 >= 0 && PhaseIndex2 < MoonPhase.MoonPhaseList.Count)
+                                    SelectedPhase2 = PhaseIndex2;
                                 else
-                                    PreferredPhase2 = null;
+                                    SelectedPhase2 = -1;
                             }
                             else
                             {
-                                PreferredPhase1 = null;
-                                PreferredPhase2 = null;
+                                SelectedPhase1 = -1;
+                                SelectedPhase2 = -1;
                             }
 
+                            MoonPhase PreferredPhase1 = (SelectedPhase1 >= 0 ? MoonPhase.MoonPhaseList[SelectedPhase1] : null);
+                            MoonPhase PreferredPhase2 = (SelectedPhase2 >= 0 ? MoonPhase.MoonPhaseList[SelectedPhase2] : null);
                             MushroomInfoList.Add(new MushroomInfo(Name, PreferredPhase1, PreferredPhase2));
                         }
                     }
@@ -624,11 +660,11 @@ namespace PgMoon
                 string Line = "";
                 Line += Info.Name;
                 Line += MushroomSeparator;
-                if (Info.PreferredPhase1.HasValue)
-                    Line += ((int)Info.PreferredPhase1).ToString();
+                if (Info.SelectedMoonPhase1 >= 0)
+                    Line += Info.SelectedMoonPhase1.ToString();
                 Line += MushroomSeparator;
-                if (Info.PreferredPhase2.HasValue)
-                    Line += ((int)Info.PreferredPhase2).ToString();
+                if (Info.SelectedMoonPhase2 >= 0)
+                    Line += Info.SelectedMoonPhase2.ToString();
 
                 if (Setting.Length > 0)
                     Setting += MushroomListSeparator;
@@ -641,25 +677,25 @@ namespace PgMoon
         private void ResetMushroomListToDefault()
         {
             MushroomInfoList.Clear();
-            MushroomInfoList.Add(new MushroomInfo("Parasol Mushroom", MoonPhases.FullMoon, MoonPhases.WaningCrescentMoon));
-            MushroomInfoList.Add(new MushroomInfo("Mycena Mushroom", MoonPhases.WaxingCrescentMoon, MoonPhases.FirstQuarterMoon));
-            MushroomInfoList.Add(new MushroomInfo("Boletus Mushroom", MoonPhases.NewMoon, null));
-            MushroomInfoList.Add(new MushroomInfo("Field Mushroom", MoonPhases.WaxingGibbousMoon, MoonPhases.LastQuarterMoon));
-            MushroomInfoList.Add(new MushroomInfo("Blusher Mushroom", MoonPhases.NewMoon, MoonPhases.WaningGibbousMoon));
-            MushroomInfoList.Add(new MushroomInfo("Milk Cap Mushroom", MoonPhases.FullMoon, MoonPhases.WaningCrescentMoon));
-            MushroomInfoList.Add(new MushroomInfo("Blood Mushroom", MoonPhases.WaxingCrescentMoon, MoonPhases.LastQuarterMoon));
-            MushroomInfoList.Add(new MushroomInfo("Coral Mushroom", MoonPhases.FirstQuarterMoon, MoonPhases.WaxingGibbousMoon));
-            MushroomInfoList.Add(new MushroomInfo("Iocaine Mushroom", MoonPhases.WaxingCrescentMoon, MoonPhases.FirstQuarterMoon));
-            MushroomInfoList.Add(new MushroomInfo("Groxmak Mushroom", MoonPhases.WaxingGibbousMoon, MoonPhases.LastQuarterMoon));
-            MushroomInfoList.Add(new MushroomInfo("Porcini Mushroom", MoonPhases.FullMoon, MoonPhases.WaningGibbousMoon));
-            MushroomInfoList.Add(new MushroomInfo("Black Foot Morel", MoonPhases.NewMoon, MoonPhases.WaningCrescentMoon));
-            MushroomInfoList.Add(new MushroomInfo("Pixie's Parasol", MoonPhases.FirstQuarterMoon, MoonPhases.WaxingGibbousMoon));
-            MushroomInfoList.Add(new MushroomInfo("Fly Amanita", MoonPhases.WaxingCrescentMoon, MoonPhases.FullMoon));
+            MushroomInfoList.Add(new MushroomInfo("Parasol Mushroom", MoonPhase.FullMoon, MoonPhase.WaningCrescentMoon));
+            MushroomInfoList.Add(new MushroomInfo("Mycena Mushroom", MoonPhase.WaxingCrescentMoon, MoonPhase.FirstQuarterMoon));
+            MushroomInfoList.Add(new MushroomInfo("Boletus Mushroom", MoonPhase.NewMoon, null));
+            MushroomInfoList.Add(new MushroomInfo("Field Mushroom", MoonPhase.WaxingGibbousMoon, MoonPhase.LastQuarterMoon));
+            MushroomInfoList.Add(new MushroomInfo("Blusher Mushroom", MoonPhase.NewMoon, MoonPhase.WaningGibbousMoon));
+            MushroomInfoList.Add(new MushroomInfo("Milk Cap Mushroom", MoonPhase.FullMoon, MoonPhase.WaningCrescentMoon));
+            MushroomInfoList.Add(new MushroomInfo("Blood Mushroom", MoonPhase.WaxingCrescentMoon, MoonPhase.LastQuarterMoon));
+            MushroomInfoList.Add(new MushroomInfo("Coral Mushroom", MoonPhase.FirstQuarterMoon, MoonPhase.WaxingGibbousMoon));
+            MushroomInfoList.Add(new MushroomInfo("Iocaine Mushroom", MoonPhase.WaxingCrescentMoon, MoonPhase.FirstQuarterMoon));
+            MushroomInfoList.Add(new MushroomInfo("Groxmak Mushroom", MoonPhase.WaxingGibbousMoon, MoonPhase.LastQuarterMoon));
+            MushroomInfoList.Add(new MushroomInfo("Porcini Mushroom", MoonPhase.FullMoon, MoonPhase.WaningGibbousMoon));
+            MushroomInfoList.Add(new MushroomInfo("Black Foot Morel", MoonPhase.NewMoon, MoonPhase.WaningCrescentMoon));
+            MushroomInfoList.Add(new MushroomInfo("Pixie's Parasol", MoonPhase.FirstQuarterMoon, MoonPhase.WaxingGibbousMoon));
+            MushroomInfoList.Add(new MushroomInfo("Fly Amanita", MoonPhase.WaxingCrescentMoon, MoonPhase.FullMoon));
             MushroomInfoList.Add(new MushroomInfo("Charged Mycelium", null, null));
-            MushroomInfoList.Add(new MushroomInfo("Goblin Puffball", MoonPhases.NewMoon, MoonPhases.WaxingGibbousMoon));
-            MushroomInfoList.Add(new MushroomInfo("Blastcap Mushroom", MoonPhases.FullMoon, MoonPhases.WaningGibbousMoon));
-            MushroomInfoList.Add(new MushroomInfo("False Agaric", MoonPhases.WaningCrescentMoon, null));
-            MushroomInfoList.Add(new MushroomInfo("Wizard's Mushroom", MoonPhases.WaxingCrescentMoon, null));
+            MushroomInfoList.Add(new MushroomInfo("Goblin Puffball", MoonPhase.NewMoon, MoonPhase.WaxingGibbousMoon));
+            MushroomInfoList.Add(new MushroomInfo("Blastcap Mushroom", MoonPhase.FullMoon, MoonPhase.WaningGibbousMoon));
+            MushroomInfoList.Add(new MushroomInfo("False Agaric", MoonPhase.WaningCrescentMoon, null));
+            MushroomInfoList.Add(new MushroomInfo("Wizard's Mushroom", MoonPhase.WaxingCrescentMoon, null));
         }
 
         public bool ShowMushroomFarming
@@ -879,7 +915,7 @@ namespace PgMoon
                         for (int i = 0; i + 1 < MushroomInfoList.Count; i++)
                         {
                             MushroomInfo Item = MushroomInfoList[i];
-                            if (Item.Name.Length == 0 && !Item.PreferredPhase1.HasValue && !Item.PreferredPhase2.HasValue)
+                            if (Item.Name.Length == 0 && Item.SelectedMoonPhase1 < 0 && Item.SelectedMoonPhase2 < 0)
                             {
                                 MushroomInfoList.Remove(Item);
                                 Continue = true;
@@ -956,7 +992,12 @@ namespace PgMoon
             }
 
             HwndSource source = (HwndSource)HwndSource.FromVisual(Child);
-            SetWindowPos(source.Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE);
+            if (!IsTopMostSet)
+            {
+                IsTopMostSet = true;
+                SetWindowPos(source.Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE);
+            }
+
             SetForegroundWindow(source.Handle);
         }
 
@@ -1014,6 +1055,8 @@ namespace PgMoon
 
             Application.Current.Shutdown();
         }
+
+        private bool IsTopMostSet = false;
         #endregion
 
         #region Window Handle Management

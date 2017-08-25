@@ -5,7 +5,6 @@
        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
        xmlns:sys="clr-namespace:System;assembly=mscorlib"
        xmlns:conv="clr-namespace:Converters"
-       xmlns:sel="clr-namespace:Selectors"
        xmlns:val="clr-namespace:Validation"
        xmlns:app="clr-namespace:PgMoon"
        AllowsTransparency="True"
@@ -13,11 +12,8 @@
        Closed="OnClosed">
     <Popup.Resources>
         <conv:BooleanToObjectConverter x:Key="convBooleanToObject"/>
-        <conv:MoonPhaseToStringConverter x:Key="convMoonPhaseToString"/>
         <conv:DoubleToThicknessConverter x:Key="convDoubleToThickness"/>
         <conv:DateTimeToStringConverter x:Key="convDateTimeToString"/>
-        <conv:CurrentPhaseNameToObjectConverter x:Key="convCurrentPhaseNameToObject"/>
-        <sel:MoonPhaseSelector x:Key="selMoonPhase"/>
         <val:EmptyTextValidationRule x:Key="valEmptyText"/>
         <RoutedUICommand x:Key="LoadAtStartupCommand"/>
         <RoutedUICommand x:Key="CloseCommand"/>
@@ -65,6 +61,16 @@
             <Separator DockPanel.Dock="Bottom"/>
             <Canvas Width="150" Height="150" HorizontalAlignment="Center">
                 <Canvas.Resources>
+                    <CompositeCollection x:Key="DarkChapelTemplateCollection">
+                        <DataTemplate>
+                            <Rectangle Fill="White" Width="6" Height="6" Margin="-3,-3,0,0"/>
+                        </DataTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="White" BorderThickness="1" Margin="-5,-5,0,0">
+                                <Rectangle Fill="Black" Width="10" Height="10"/>
+                            </Border>
+                        </DataTemplate>
+                    </CompositeCollection>
                     <DataTemplate x:Key="SelectedStatueTemplate">
                         <Border BorderBrush="White" BorderThickness="1" Margin="-5,-5,0,0">
                             <Rectangle Fill="Black" Width="10" Height="10"/>
@@ -74,14 +80,14 @@
                         <Rectangle Fill="White" Width="6" Height="6" Margin="-3,-3,0,0"/>
                     </DataTemplate>
                 </Canvas.Resources>
-                <ContentControl Canvas.Left="103" Canvas.Top="17" ContentTemplateSelector="{StaticResource selMoonPhase}" Content="0" ToolTip="North of the lake"/>
-                <ContentControl Canvas.Left="52" Canvas.Top="19" ContentTemplateSelector="{StaticResource selMoonPhase}" Content="1" ToolTip="By the meditation pillar"/>
-                <ContentControl Canvas.Left="25" Canvas.Top="30" ContentTemplateSelector="{StaticResource selMoonPhase}" Content="2" ToolTip="At spiders"/>
-                <ContentControl Canvas.Left="9" Canvas.Top="82" ContentTemplateSelector="{StaticResource selMoonPhase}" Content="3" ToolTip="North of the portal to Serbule"/>
-                <ContentControl Canvas.Left="18" Canvas.Top="121" ContentTemplateSelector="{StaticResource selMoonPhase}" Content="4" ToolTip="By Percy's House"/>
-                <ContentControl Canvas.Left="60" Canvas.Top="135" ContentTemplateSelector="{StaticResource selMoonPhase}" Content="5" ToolTip="West of Hogan's Keep"/>
-                <ContentControl Canvas.Left="109" Canvas.Top="118" ContentTemplateSelector="{StaticResource selMoonPhase}" Content="6" ToolTip="At gnashers"/>
-                <ContentControl Canvas.Left="132" Canvas.Top="60" ContentTemplateSelector="{StaticResource selMoonPhase}" Content="7" ToolTip="North of the waterfall"/>
+                <ContentControl Canvas.Left="103" Canvas.Top="17" ContentTemplate="{Binding Source={x:Static app:MoonPhase.NewMoon}, Path=IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource DarkChapelTemplateCollection}}" ToolTip="North of the lake"/>
+                <ContentControl Canvas.Left="52" Canvas.Top="19" ContentTemplate="{Binding Source={x:Static app:MoonPhase.WaxingCrescentMoon}, Path=IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource DarkChapelTemplateCollection}}" ToolTip="By the meditation pillar"/>
+                <ContentControl Canvas.Left="25" Canvas.Top="30" ContentTemplate="{Binding Source={x:Static app:MoonPhase.FirstQuarterMoon}, Path=IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource DarkChapelTemplateCollection}}" ToolTip="At spiders"/>
+                <ContentControl Canvas.Left="9" Canvas.Top="82" ContentTemplate="{Binding Source={x:Static app:MoonPhase.WaxingGibbousMoon}, Path=IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource DarkChapelTemplateCollection}}" ToolTip="North of the portal to Serbule"/>
+                <ContentControl Canvas.Left="18" Canvas.Top="121" ContentTemplate="{Binding Source={x:Static app:MoonPhase.FullMoon}, Path=IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource DarkChapelTemplateCollection}}" ToolTip="By Percy's House"/>
+                <ContentControl Canvas.Left="60" Canvas.Top="135" ContentTemplate="{Binding Source={x:Static app:MoonPhase.WaningGibbousMoon}, Path=IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource DarkChapelTemplateCollection}}" ToolTip="West of Hogan's Keep"/>
+                <ContentControl Canvas.Left="109" Canvas.Top="118" ContentTemplate="{Binding Source={x:Static app:MoonPhase.LastQuarterMoon}, Path=IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource DarkChapelTemplateCollection}}" ToolTip="At gnashers"/>
+                <ContentControl Canvas.Left="132" Canvas.Top="60" ContentTemplate="{Binding Source={x:Static app:MoonPhase.WaningCrescentMoon}, Path=IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource DarkChapelTemplateCollection}}" ToolTip="North of the waterfall"/>
             </Canvas>
         </DockPanel>
         <DockPanel x:Key="MushroomSectionTemplate">
@@ -96,7 +102,7 @@
                     <TextBlock Text="{Binding}" Foreground="Black" FontSize="12"/>
                 </DataTemplate>
                 <DataTemplate x:Key="PhaseNameTemplate">
-                    <TextBlock Text="{Binding}" Foreground="Black" FontWeight="{Binding Converter={StaticResource convCurrentPhaseNameToObject}, ConverterParameter={StaticResource NormalBold}}" FontSize="12"/>
+                    <TextBlock Text="{Binding Name}" Foreground="Black" FontWeight="{Binding Path=IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource NormalBold}}" FontSize="12"/>
                 </DataTemplate>
                 <DataTemplate x:Key="NameTemplate">
                     <Border BorderBrush="{x:Null}" BorderThickness="0" Margin="-6,0,-8,0">
@@ -114,8 +120,8 @@
                 <DataTemplate x:Key="MoonPhaseTemplate">
                     <Border BorderBrush="{x:Null}" BorderThickness="0" Margin="-6,0,-2,0">
                         <StackPanel>
-                            <ComboBox IsEditable="False" IsReadOnly="True" ItemsSource="{Binding Source={x:Static conv:MoonPhaseToStringConverter.MoonPhaseList}, Mode=OneWay}" SelectedIndex="{Binding SelectedMoonPhase1}" ItemTemplate="{StaticResource PhaseNameTemplate}" Margin="5,0,0,0"/>
-                            <ComboBox IsEditable="False" IsReadOnly="True" ItemsSource="{Binding Source={x:Static conv:MoonPhaseToStringConverter.MoonPhaseList}, Mode=OneWay}" SelectedIndex="{Binding SelectedMoonPhase2}" ItemTemplate="{StaticResource PhaseNameTemplate}" Margin="5,1,0,0"/>
+                            <ComboBox IsEditable="False" IsReadOnly="True" ItemsSource="{Binding Source={x:Static app:MoonPhase.MoonPhaseList}, Mode=OneWay}" SelectedIndex="{Binding SelectedMoonPhase1}" ItemTemplate="{StaticResource PhaseNameTemplate}" Margin="5,0,0,0"/>
+                            <ComboBox IsEditable="False" IsReadOnly="True" ItemsSource="{Binding Source={x:Static app:MoonPhase.MoonPhaseList}, Mode=OneWay}" SelectedIndex="{Binding SelectedMoonPhase2}" ItemTemplate="{StaticResource PhaseNameTemplate}" Margin="5,1,0,0"/>
                         </StackPanel>
                     </Border>
                 </DataTemplate>
@@ -127,8 +133,8 @@
                 <DataTemplate x:Key="LockedMoonPhaseTemplate">
                     <Border BorderBrush="{x:Null}" BorderThickness="0" Margin="0,3,-2,3">
                         <StackPanel>
-                            <TextBlock Text="{Binding PreferredPhase1, Converter={StaticResource convMoonPhaseToString}}" FontWeight="{Binding PhaseWeight1}" Foreground="Black" VerticalAlignment="Center" Margin="5,0,0,3"/>
-                            <TextBlock Text="{Binding PreferredPhase2, Converter={StaticResource convMoonPhaseToString}}" FontWeight="{Binding PhaseWeight2}" Foreground="Black" VerticalAlignment="Center" Margin="5,4,0,0"/>
+                            <ContentControl Content="{Binding PreferredPhase1}" ContentTemplate="{StaticResource PhaseNameTemplate}" Foreground="Black" VerticalAlignment="Center" Margin="5,0,0,3"/>
+                            <ContentControl Content="{Binding PreferredPhase2}" ContentTemplate="{StaticResource PhaseNameTemplate}" Foreground="Black" VerticalAlignment="Center" Margin="5,4,0,0"/>
                         </StackPanel>
                     </Border>
                 </DataTemplate>
@@ -321,7 +327,7 @@
                                             <Setter Property="FontWeight" Value="Bold"/>
                                         </Style>
                                     </DockPanel.Resources>
-                                    <TextBlock DockPanel.Dock="Left" Text="{Binding MoonPhase, Converter={StaticResource convMoonPhaseToString}}" TextAlignment="Right" Width="160"/>
+                                    <TextBlock DockPanel.Dock="Left" Text="{Binding MoonPhase.Name}" TextAlignment="Right" Width="160"/>
                                     <TextBlock Text="Current" Margin="10,0,0,0"/>
                                 </DockPanel>
                                 <DockPanel Visibility="{Binding IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource VisibleCollapsed}, FallbackValue=Visible}">
@@ -331,7 +337,7 @@
                                             <Setter Property="FontSize" Value="14"/>
                                         </Style>
                                     </DockPanel.Resources>
-                                    <TextBlock DockPanel.Dock="Left" Text="{Binding MoonPhase, Converter={StaticResource convMoonPhaseToString}}" TextAlignment="Right" Width="160"/>
+                                    <TextBlock DockPanel.Dock="Left" Text="{Binding MoonPhase.Name}" TextAlignment="Right" Width="160"/>
                                     <TextBlock Text="{Binding StartTime, Converter={StaticResource convDateTimeToString}}" Margin="10,0,0,0"/>
                                 </DockPanel>
                             </Grid>
@@ -341,7 +347,7 @@
             </Grid>
         </DockPanel>
         <DockPanel x:Key="MoonPhaseSectionTemplate">
-            <TextBlock DockPanel.Dock="Top" Text="{Binding PhaseCalculator.MoonPhase, Converter={StaticResource convMoonPhaseToString}}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,3,0,3"/>
+            <TextBlock DockPanel.Dock="Top" Text="{Binding Path=(app:PhaseCalculator.MoonPhase).Name}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,3,0,3"/>
             <Separator DockPanel.Dock="Top"/>
             <Grid Margin="5,0,5,5">
                 <Grid Visibility="{Binding IsFullMoon, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource VisibleCollapsed}, FallbackValue=Visible}">
@@ -357,12 +363,12 @@
                     <TextBlock Grid.Column="0" Grid.Row="0" TextAlignment="Right" VerticalAlignment="Center" Margin="0,5,0,0">Next Phase:</TextBlock>
                     <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding TimeToNextPhaseText}" VerticalAlignment="Center" Margin="5,5,0,0"/>
                     <Border Grid.Column="2" Grid.Row="0" BorderBrush="{x:Null}" BorderThickness="0" Background="White" Padding="1,1,1,1" VerticalAlignment="Center" Margin="5,5,0,0" CornerRadius="3">
-                        <Border BorderBrush="{x:Null}" BorderThickness="0" Background="#444444" Margin="{Binding PhaseCalculator.ProgressWithinPhase, Converter={StaticResource convDoubleToThickness}, ConverterParameter=60}" CornerRadius="2,0,0,2" Height="7"/>
+                        <Border BorderBrush="{x:Null}" BorderThickness="0" Background="#444444" Margin="{Binding Path=(app:PhaseCalculator.ProgressWithinPhase), Converter={StaticResource convDoubleToThickness}, ConverterParameter=60}" CornerRadius="2,0,0,2" Height="7"/>
                     </Border>
                     <TextBlock Grid.Column="0" Grid.Row="1" Visibility="{Binding IsNextPhaseFullMoon, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource VisibleCollapsed}, FallbackValue=Visible}" TextAlignment="Right" VerticalAlignment="Center" Margin="0,5,0,0">Full Moon:</TextBlock>
                     <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding TimeToFullMoonText}" Visibility="{Binding IsNextPhaseFullMoon, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource VisibleCollapsed}, FallbackValue=Visible}" VerticalAlignment="Center" Margin="5,5,0,0"/>
                     <Border Grid.Column="2" Grid.Row="1" Visibility="{Binding IsNextPhaseFullMoon, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource VisibleCollapsed}, FallbackValue=Visible}" BorderBrush="{x:Null}" BorderThickness="0" Background="White" Padding="1,1,1,1" VerticalAlignment="Center" Margin="5,5,0,0" CornerRadius="3">
-                        <Border BorderBrush="{x:Null}" BorderThickness="0" Background="#444444" Margin="{Binding PhaseCalculator.ProgressToFullMoon, Converter={StaticResource convDoubleToThickness}, ConverterParameter=60}" CornerRadius="2,0,0,2" Height="7"/>
+                        <Border BorderBrush="{x:Null}" BorderThickness="0" Background="#444444" Margin="{Binding Path=(app:PhaseCalculator.ProgressToFullMoon), Converter={StaticResource convDoubleToThickness}, ConverterParameter=60}" CornerRadius="2,0,0,2" Height="7"/>
                     </Border>
                     <TextBlock Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="1" Visibility="{Binding IsNextPhaseFullMoon, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource CollapsedVisible}, FallbackValue=Visible}" TextAlignment="Center" VerticalAlignment="Center" Margin="0,5,0,0">It will be Full Moon</TextBlock>
                 </Grid>
@@ -379,7 +385,7 @@
                     <TextBlock Grid.Column="0" Grid.Row="0" TextAlignment="Right" VerticalAlignment="Center" Margin="0,5,0,0">Next Phase:</TextBlock>
                     <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding TimeToNextPhaseText}" VerticalAlignment="Center" Margin="5,5,0,0"/>
                     <Border Grid.Column="2" Grid.Row="0" BorderBrush="{x:Null}" BorderThickness="0" Background="White" Padding="1,1,1,1" VerticalAlignment="Center" Margin="5,5,0,0" CornerRadius="3">
-                        <Border BorderBrush="{x:Null}" BorderThickness="0" Background="#444444" Margin="{Binding PhaseCalculator.ProgressWithinPhase, Converter={StaticResource convDoubleToThickness}, ConverterParameter=60}" CornerRadius="2,0,0,2" Height="7"/>
+                        <Border BorderBrush="{x:Null}" BorderThickness="0" Background="#444444" Margin="{Binding Path=(app:PhaseCalculator.ProgressWithinPhase), Converter={StaticResource convDoubleToThickness}, ConverterParameter=60}" CornerRadius="2,0,0,2" Height="7"/>
                     </Border>
                     <TextBlock Grid.Row="1" Margin="5,5,0,0"/>
                 </Grid>
