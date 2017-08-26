@@ -11,7 +11,7 @@ The remaining time before full moon is show.
 All moon phases, past and future, can be seen in the calendar. To return to the current phase, double-click the calendar, or right-click to see the context menu and select "Display Current".
 
 ## Mushrooms
-In Project:Gorgon, one can grow mushrooms in boxes, and all mushrooms grow differently depending on the moon phase. For each mushroom type, there are two prefered phase when they grow robustly. The main screen allows one to add the name of a mushroom (or use predefined names) and select two corresponding moon phases.
+In Project:Gorgon, one can grow mushrooms in boxes, and all mushrooms grow differently depending on the moon phase. For each mushroom type, there are two preferred phase when they grow robustly. The main screen allows one to add the name of a mushroom (or use predefined names) and select two corresponding moon phases.
 If one of the moon phase is current, its name is in bold characters.
 
 ## Dark Chapel
