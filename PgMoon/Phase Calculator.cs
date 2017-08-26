@@ -183,6 +183,7 @@ namespace PgMoon
         // 17/08/17 [05:47,07:04] : Last Quarter -> Waning Crescent
         // 20/08/17 [04:18,09:12] : Waning Crescent -> New Moon
         // 23/08/17 [06:05,06:09] : New Moon -> Waxing Crescent
+        // 26/08/17 [11:08,] : Waxing Crescent ->
         //06:05,06:09 
         #endregion
 

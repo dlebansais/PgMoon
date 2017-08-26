@@ -623,12 +623,12 @@ namespace PgMoon
                                 int PhaseIndex1;
                                 int PhaseIndex2;
 
-                                if (int.TryParse(Line[1].Trim(), out PhaseIndex1) && PhaseIndex1 >= 0 && PhaseIndex1 < MoonPhase.MoonPhaseList.Count)
+                                if (int.TryParse(Line[1].Trim(), out PhaseIndex1) && PhaseIndex1 >= 0 && PhaseIndex1 + 1 < MoonPhase.MoonPhaseList.Count)
                                     SelectedPhase1 = PhaseIndex1;
                                 else
                                     SelectedPhase1 = -1;
 
-                                if (int.TryParse(Line[2].Trim(), out PhaseIndex2) && PhaseIndex2 >= 0 && PhaseIndex2 < MoonPhase.MoonPhaseList.Count)
+                                if (int.TryParse(Line[2].Trim(), out PhaseIndex2) && PhaseIndex2 >= 0 && PhaseIndex2 + 1 < MoonPhase.MoonPhaseList.Count)
                                     SelectedPhase2 = PhaseIndex2;
                                 else
                                     SelectedPhase2 = -1;

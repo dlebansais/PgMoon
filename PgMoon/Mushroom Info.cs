@@ -44,13 +44,10 @@ namespace PgMoon
                 if (_SelectedMoonPhase1 != value)
                 {
                     _SelectedMoonPhase1 = value;
-                    if (_SelectedMoonPhase1 >= MoonPhase.MoonPhaseList.Count)
+                    if (_SelectedMoonPhase1 + 1 >= MoonPhase.MoonPhaseList.Count)
                         ResetSelectedMoonPhase1();
                     else
-                    {
                         NotifyPropertyChanged(nameof(PreferredPhase1));
-                        NotifyPropertyChanged(nameof(PhaseWeight1));
-                    }
                 }
             }
         }
@@ -64,13 +61,10 @@ namespace PgMoon
                 if (_SelectedMoonPhase2 != value)
                 {
                     _SelectedMoonPhase2 = value;
-                    if (_SelectedMoonPhase2 >= MoonPhase.MoonPhaseList.Count)
+                    if (_SelectedMoonPhase2 + 1 >= MoonPhase.MoonPhaseList.Count)
                         ResetSelectedMoonPhase2();
                     else
-                    {
                         NotifyPropertyChanged(nameof(PreferredPhase2));
-                        NotifyPropertyChanged(nameof(PhaseWeight2));
-                    }
                 }
             }
         }
@@ -78,29 +72,6 @@ namespace PgMoon
 
         public MoonPhase PreferredPhase1 { get { return (SelectedMoonPhase1 >= 0) ? MoonPhase.MoonPhaseList[SelectedMoonPhase1] : null; } }
         public MoonPhase PreferredPhase2 { get { return (SelectedMoonPhase2 >= 0) ? MoonPhase.MoonPhaseList[SelectedMoonPhase2] : null; } }
-
-        // A property like PhaseWeight is the wrong way to apply bold style, Binding should be preferred.
-        // However, there is some strange bug with the FontWeight type, it won't bind correctly in templates...
-        public System.Windows.FontWeight PhaseWeight1
-        {
-            get
-            {
-                if (PreferredPhase1 == PhaseCalculator.MoonPhase)
-                    return System.Windows.FontWeight.FromOpenTypeWeight(700);
-
-                return System.Windows.FontWeight.FromOpenTypeWeight(400);
-            }
-        }
-        public System.Windows.FontWeight PhaseWeight2
-        {
-            get
-            {
-                if (PreferredPhase2 == PhaseCalculator.MoonPhase)
-                    return System.Windows.FontWeight.FromOpenTypeWeight(700);
-
-                return System.Windows.FontWeight.FromOpenTypeWeight(400);
-            }
-        }
         #endregion
 
         #region Implementation
@@ -124,14 +95,12 @@ namespace PgMoon
             _SelectedMoonPhase1 = -1;
             NotifyPropertyChanged(nameof(SelectedMoonPhase1));
             NotifyPropertyChanged(nameof(PreferredPhase1));
-            NotifyPropertyChanged(nameof(PhaseWeight1));
         }
         private void OnResetSelectedMoonPhase2()
         {
             _SelectedMoonPhase2 = -1;
             NotifyPropertyChanged(nameof(SelectedMoonPhase2));
             NotifyPropertyChanged(nameof(PreferredPhase2));
-            NotifyPropertyChanged(nameof(PhaseWeight2));
         }
         #endregion
 

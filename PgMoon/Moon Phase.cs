@@ -15,6 +15,7 @@ namespace PgMoon
         public static MoonPhase WaningGibbousMoon = new MoonPhase("Waning Gibbous Moon");
         public static MoonPhase LastQuarterMoon = new MoonPhase("Last Quarter Moon");
         public static MoonPhase WaningCrescentMoon = new MoonPhase("Waning Crescent Moon");
+        private static MoonPhase NullMoonPhase = new MoonPhase("(Unselect)");
 
         public static List<MoonPhase> MoonPhaseList = new List<MoonPhase>()
         {
@@ -26,6 +27,7 @@ namespace PgMoon
             WaningGibbousMoon,
             LastQuarterMoon,
             WaningCrescentMoon,
+            NullMoonPhase,
         };
 
         public MoonPhase(string Name)

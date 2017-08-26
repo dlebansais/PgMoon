@@ -66,7 +66,7 @@ namespace PgMoon
         #endregion
 
         #region Current Time
-        // Use this only for debugging purpose.
+        // Use this for debugging purpose only.
         public static void IncreaseNow()
         {
             TimeOffset += TimeSpan.FromDays(1);
