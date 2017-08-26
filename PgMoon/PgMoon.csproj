@@ -181,8 +181,8 @@
     <Resource Include="Resources\LockedBlack.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\MainScreen.png" />
-    <Resource Include="Resources\Menu.png" />
+    <None Include="Screenshots\MainScreen.png" />
+    <None Include="Screenshots\Menu.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
