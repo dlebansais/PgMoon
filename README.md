@@ -13,6 +13,7 @@ All moon phases, past and future, can be seen in the calendar. To return to the 
 ## Mushrooms
 In Project:Gorgon, one can grow mushrooms in boxes, and all mushrooms grow differently depending on the moon phase. For each mushroom type, there are two preferred phase when they grow robustly. The main screen allows one to add the name of a mushroom (or use predefined names) and select two corresponding moon phases.
 If one of the moon phase is current, its name is in bold characters.
+In the top-left corner of the mushroom section, a little key icon is used to lock the list (click it and select "Lock""). The purpose of this feature is to avoid accidental changes, since this list is supposed to be edited only rarely. To unlock, click the list and select "Unlock" in the menu.
 
 ## Dark Chapel
 The Dark Chapel dungeon can be entered by inserting a Gulagra's Key in the appropriate statue in Eltibule. The correct statue varies depending on the phases of the moon. The current one is show as a big black square (others as small white squares). Each square has a tooltip with a short description of where to find it.
