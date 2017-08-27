@@ -7,9 +7,10 @@ namespace PgMoon
     public class MushroomInfo : INotifyPropertyChanged
     {
         #region Init
-        public MushroomInfo(string Name, MoonPhase PreferredPhase1, MoonPhase PreferredPhase2)
+        public MushroomInfo(string Name, string Comment, MoonPhase PreferredPhase1, MoonPhase PreferredPhase2)
         {
             _Name = Name;
+            _Comment = Comment;
             _SelectedMoonPhase1 = (PreferredPhase1 != null ? MoonPhase.MoonPhaseList.IndexOf(PreferredPhase1) : -1);
             _SelectedMoonPhase2 = (PreferredPhase2 != null ? MoonPhase.MoonPhaseList.IndexOf(PreferredPhase2) : -1);
         }
@@ -35,6 +36,20 @@ namespace PgMoon
             }
         }
         private string _Name;
+
+        public string Comment
+        {
+            get { return _Comment; }
+            set
+            {
+                if (_Comment != value)
+                {
+                    _Comment = value;
+                    NotifyThisPropertyChanged();
+                }
+            }
+        }
+        private string _Comment;
 
         public int SelectedMoonPhase1
         {
