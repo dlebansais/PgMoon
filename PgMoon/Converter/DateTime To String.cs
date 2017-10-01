@@ -12,7 +12,8 @@ namespace Converters
             CultureInfo UsCulture = new CultureInfo("en-US");
             DateTime TimeValue = (DateTime)value;
             TimeValue = TimeValue.ToLocalTime();
-            string s = TimeValue.ToString("M", UsCulture) + " " + TimeValue.Hour.ToString("D2") + ":" + TimeValue.Minute.ToString("D2");
+            string s = TimeValue.ToString("M", UsCulture) + " " + TimeValue.Hour.ToString("D2") + ":" + "00";
+            //string s = TimeValue.ToString("M", UsCulture) + " " + TimeValue.Hour.ToString("D2") + ":" + TimeValue.Minute.ToString("D2");
 
             return s;
         }

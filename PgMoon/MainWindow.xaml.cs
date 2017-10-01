@@ -466,7 +466,7 @@ namespace PgMoon
                     DateTime PhaseEndTime;
                     double ProgressToFullMoon;
                     DateTime NextFullMoonTime;
-                    PhaseCalculator.DateTimeToMoonPhase2(Time, out MoonMonth, out MoonPhase, out PhaseStartTime, out PhaseEndTime, out ProgressToFullMoon, out NextFullMoonTime);
+                    PhaseCalculator.DateTimeToMoonPhase(Time, out MoonMonth, out MoonPhase, out PhaseStartTime, out PhaseEndTime, out ProgressToFullMoon, out NextFullMoonTime);
 
                     if (!CalendarEntryTable.ContainsKey(PhaseStartTime))
                     {
