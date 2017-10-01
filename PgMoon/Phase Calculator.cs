@@ -175,16 +175,6 @@ namespace PgMoon
             ProgressToFullMoon = NewProgressToFullMoon;
             TimeToFullMoon = NewTimeToFullMoon;
         }
-
-        // 01/08/17 [04.20,08:53] : FQ -> Waxing Gib
-        // 06/08/17 [01.30,08:09] : Waxing Gib -> Full (06:00?)
-        // 09/08/17 [06.04,06:06] : Full -> Waning Gibbous
-        // 14/08/17 [05:17,09:08] : Waning Gibbous -> Last Quarter
-        // 17/08/17 [05:47,07:04] : Last Quarter -> Waning Crescent
-        // 20/08/17 [04:18,09:12] : Waning Crescent -> New Moon
-        // 23/08/17 [06:05,06:09] : New Moon -> Waxing Crescent
-        // 27/08/17 [06:15,] : Waxing Crescent ->
-        //06:05,06:06 
         #endregion
 
         #region Implementation of STATIC INotifyPropertyChanged

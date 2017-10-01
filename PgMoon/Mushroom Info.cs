@@ -7,12 +7,12 @@ namespace PgMoon
     public class MushroomInfo : INotifyPropertyChanged
     {
         #region Init
-        public MushroomInfo(string Name, string Comment, MoonPhase PreferredPhase1, MoonPhase PreferredPhase2)
+        public MushroomInfo(string Name, string Comment, MoonPhase RobustGrowthPhase1, MoonPhase RobustGrowthPhase2)
         {
             _Name = Name;
             _Comment = Comment;
-            _SelectedMoonPhase1 = (PreferredPhase1 != null ? MoonPhase.MoonPhaseList.IndexOf(PreferredPhase1) : -1);
-            _SelectedMoonPhase2 = (PreferredPhase2 != null ? MoonPhase.MoonPhaseList.IndexOf(PreferredPhase2) : -1);
+            _SelectedMoonPhase1 = (RobustGrowthPhase1 != null ? MoonPhase.MoonPhaseList.IndexOf(RobustGrowthPhase1) : -1);
+            _SelectedMoonPhase2 = (RobustGrowthPhase2 != null ? MoonPhase.MoonPhaseList.IndexOf(RobustGrowthPhase2) : -1);
         }
         #endregion
 
@@ -62,7 +62,7 @@ namespace PgMoon
                     if (_SelectedMoonPhase1 + 1 >= MoonPhase.MoonPhaseList.Count)
                         ResetSelectedMoonPhase1();
                     else
-                        NotifyPropertyChanged(nameof(PreferredPhase1));
+                        NotifyPropertyChanged(nameof(RobustGrowthPhase1));
                 }
             }
         }
@@ -79,14 +79,14 @@ namespace PgMoon
                     if (_SelectedMoonPhase2 + 1 >= MoonPhase.MoonPhaseList.Count)
                         ResetSelectedMoonPhase2();
                     else
-                        NotifyPropertyChanged(nameof(PreferredPhase2));
+                        NotifyPropertyChanged(nameof(RobustGrowthPhase2));
                 }
             }
         }
         private int _SelectedMoonPhase2;
 
-        public MoonPhase PreferredPhase1 { get { return (SelectedMoonPhase1 >= 0) ? MoonPhase.MoonPhaseList[SelectedMoonPhase1] : null; } }
-        public MoonPhase PreferredPhase2 { get { return (SelectedMoonPhase2 >= 0) ? MoonPhase.MoonPhaseList[SelectedMoonPhase2] : null; } }
+        public MoonPhase RobustGrowthPhase1 { get { return (SelectedMoonPhase1 >= 0) ? MoonPhase.MoonPhaseList[SelectedMoonPhase1] : null; } }
+        public MoonPhase RobustGrowthPhase2 { get { return (SelectedMoonPhase2 >= 0) ? MoonPhase.MoonPhaseList[SelectedMoonPhase2] : null; } }
         #endregion
 
         #region Implementation
@@ -109,13 +109,13 @@ namespace PgMoon
         {
             _SelectedMoonPhase1 = -1;
             NotifyPropertyChanged(nameof(SelectedMoonPhase1));
-            NotifyPropertyChanged(nameof(PreferredPhase1));
+            NotifyPropertyChanged(nameof(RobustGrowthPhase1));
         }
         private void OnResetSelectedMoonPhase2()
         {
             _SelectedMoonPhase2 = -1;
             NotifyPropertyChanged(nameof(SelectedMoonPhase2));
-            NotifyPropertyChanged(nameof(PreferredPhase2));
+            NotifyPropertyChanged(nameof(RobustGrowthPhase2));
         }
         #endregion
 

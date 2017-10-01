@@ -32,13 +32,14 @@ namespace PgMoon
             {
                 NotifyIcon NotifyIcon = new NotifyIcon();
                 NotifyIcon.Icon = Icon;
-                NotifyIcon.Text = ToolTipText;
+                NotifyIcon.Text = "";
                 NotifyIcon.Click += OnClick;
 
                 TaskbarIcon NewTaskbarIcon = new TaskbarIcon(NotifyIcon, Target);
                 NotifyIcon.ContextMenuStrip = NewTaskbarIcon.MenuToMenuStrip(Menu);
                 ActiveIconList.Add(NewTaskbarIcon);
 
+                NewTaskbarIcon.UpdateToolTipText(ToolTipText);
                 NotifyIcon.Visible = true;
 
                 return NewTaskbarIcon;
@@ -79,7 +80,44 @@ namespace PgMoon
 
         public void UpdateToolTipText(string ToolTipText)
         {
-            NotifyIcon.Text = ToolTipText;
+            for (;;)
+            {
+                try
+                {
+                    SetNotifyIconText(NotifyIcon, ToolTipText);
+                    return;
+                }
+                catch
+                {
+                    if (ToolTipText.Length == 0)
+                        throw;
+                    else
+                    {
+                        string[] Split = ToolTipText.Split('\r');
+
+                        ToolTipText = "";
+                        for (int i = 0; i + 1 < Split.Length; i++)
+                        {
+                            if (i > 0)
+                                ToolTipText += "\r";
+
+                            ToolTipText += Split[i];
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void SetNotifyIconText(NotifyIcon ni, string text)
+        {
+            if (text.Length >= 128)
+                throw new ArgumentOutOfRangeException("Text limited to 127 characters");
+
+            Type t = typeof(NotifyIcon);
+            System.Reflection.BindingFlags hidden = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
+            t.GetField("text", hidden).SetValue(ni, text);
+            if ((bool)t.GetField("added", hidden).GetValue(ni))
+                t.GetMethod("UpdateIcon", hidden).Invoke(ni, new object[] { true });
         }
 
         private bool GetMenuItemFromCommand(ICommand Command, out ToolStripMenuItem MenuItem)

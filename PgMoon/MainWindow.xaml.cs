@@ -33,8 +33,9 @@ namespace PgMoon
             InitSettings();
             InitMoonPhase();
             InitCalendar();
-            InitDarkChapel();
             InitMushroomFarming();
+            InitRahuBoat();
+            InitDarkChapel();
             InitTaskbarIcon();
         }
 
@@ -71,12 +72,9 @@ namespace PgMoon
 
         private object GetSettingKey(string ValueName)
         {
-            if (SettingKey == null)
-                return null;
-
             try
             {
-                return SettingKey.GetValue(ValueName);
+                return SettingKey?.GetValue(ValueName);
             }
             catch
             {
@@ -86,12 +84,9 @@ namespace PgMoon
 
         private void SetSettingKey(string ValueName, object Value, RegistryValueKind Kind)
         {
-            if (SettingKey == null)
-                return;
-
             try
             {
-                SettingKey.SetValue(ValueName, Value, Kind);
+                SettingKey?.SetValue(ValueName, Value, Kind);
             }
             catch
             {
@@ -107,8 +102,9 @@ namespace PgMoon
             MenuHeaderTable = new Dictionary<ICommand, string>();
             LoadAtStartupCommand = InitMenuCommand("LoadAtStartupCommand", LoadAtStartupHeader);
             ShowCalendarCommand = InitMenuCommand("ShowCalendarCommand", "Show Calendar");
-            ShowDarkChapelCommand = InitMenuCommand("ShowDarkChapelCommand", "Show Dark Chapel");
             ShowMushroomFarmingCommand = InitMenuCommand("ShowMushroomFarmingCommand", "Show Mushrooms");
+            ShowRahuBoatCommand = InitMenuCommand("ShowRahuBoatCommand", "Show Rahu Boat");
+            ShowDarkChapelCommand = InitMenuCommand("ShowDarkChapelCommand", "Show Dark Chapel");
             ExitCommand = InitMenuCommand("ExitCommand", "Exit");
 
             System.Drawing.Icon Icon = LoadIcon("Taskbar.ico");
@@ -182,17 +178,20 @@ namespace PgMoon
                     LoadAtStartup.Icon = LoadBitmap("UAC-16.png");
             }
 
-            MenuItem ShowCalendarMenu = LoadNotificationMenuItem(ShowCalendarCommand);
-            ShowCalendarMenu.IsChecked = ShowCalendar;
             MenuItem ShowDarkChapelMenu = LoadNotificationMenuItem(ShowDarkChapelCommand);
             ShowDarkChapelMenu.IsChecked = ShowDarkChapel;
+            MenuItem ShowRahuBoatMenu = LoadNotificationMenuItem(ShowRahuBoatCommand);
+            ShowRahuBoatMenu.IsChecked = ShowRahuBoat;
             MenuItem ShowMushroomFarmingMenu = LoadNotificationMenuItem(ShowMushroomFarmingCommand);
             ShowMushroomFarmingMenu.IsChecked = ShowMushroomFarming;
+            MenuItem ShowCalendarMenu = LoadNotificationMenuItem(ShowCalendarCommand);
+            ShowCalendarMenu.IsChecked = ShowCalendar;
             MenuItem ExitMenu = LoadNotificationMenuItem(ExitCommand);
 
             AddContextMenu(Result, LoadAtStartup, true);
             AddContextMenuSeparator(Result);
             AddContextMenu(Result, ShowDarkChapelMenu, true);
+            AddContextMenu(Result, ShowRahuBoatMenu, true);
             AddContextMenu(Result, ShowMushroomFarmingMenu, true);
             AddContextMenu(Result, ShowCalendarMenu, true);
             AddContextMenuSeparator(Result);
@@ -253,8 +252,9 @@ namespace PgMoon
         private static readonly string RemoveFromStartupHeader = "Remove from startup";
         private ICommand LoadAtStartupCommand;
         private ICommand ShowCalendarCommand;
-        private ICommand ShowDarkChapelCommand;
         private ICommand ShowMushroomFarmingCommand;
+        private ICommand ShowRahuBoatCommand;
+        private ICommand ShowDarkChapelCommand;
         private ICommand ExitCommand;
         private Dictionary<ICommand, string> MenuHeaderTable;
         #endregion
@@ -337,7 +337,15 @@ namespace PgMoon
 
         public string ToolTipText
         {
-            get { return PhaseCalculator.MoonPhase.Name + "\r\n" + TimeToNextPhaseText; }
+            get
+            {
+                string Result = PhaseCalculator.MoonPhase.Name + "\r\n" + TimeToNextPhaseText;
+                if (ShowRahuBoat)
+                    Result += "\r\n" + CalendarEntry.RahuBoatDestinationShortText + ": " + PhaseCalculator.MoonPhase.RahuBoatDestination;
+                Result += "\r\n" + CalendarEntry.PortToCircleShortText + ": " + PhaseCalculator.MoonPhase.FastPortMushroomShortText;
+
+                return Result;
+            }
         }
 
         private void UpdateMoonPhaseTimerCallback(object Parameter)
@@ -462,7 +470,7 @@ namespace PgMoon
 
                     if (!CalendarEntryTable.ContainsKey(PhaseStartTime))
                     {
-                        CalendarEntry NewCalendarEntry = new CalendarEntry(MoonMonth, MoonPhase, PhaseStartTime, PhaseEndTime);
+                        CalendarEntry NewCalendarEntry = new CalendarEntry(MoonMonth, MoonPhase, PhaseStartTime, PhaseEndTime, MushroomInfoList);
                         CalendarEntryTable.Add(PhaseStartTime, NewCalendarEntry);
                     }
 
@@ -538,42 +546,6 @@ namespace PgMoon
         private const int CalendarPageIncrement = 80;
         #endregion
 
-        #region Dark Chapel
-        private void InitDarkChapel()
-        {
-            int? ShowSetting = GetSettingKey(ShowDarkChapelSettingName) as int?;
-            _ShowDarkChapel = (ShowSetting.HasValue ? (ShowSetting.Value != 0): true);
-        }
-
-        public bool ShowDarkChapel
-        {
-            get { return _ShowDarkChapel; }
-            set
-            {
-                if (_ShowDarkChapel != value)
-                {
-                    _ShowDarkChapel = value;
-                    NotifyThisPropertyChanged();
-
-                    int? KeyValue = value ? 1 : 0;
-                    SetSettingKey(ShowDarkChapelSettingName, KeyValue, RegistryValueKind.DWord);
-                }
-            }
-        }
-        private bool _ShowDarkChapel;
-
-        private void OnShowDarkChapel(object sender, ExecutedRoutedEventArgs e)
-        {
-            TaskbarIcon SenderIcon = e.Parameter as TaskbarIcon;
-
-            bool IsChecked;
-            if (SenderIcon.ToggleChecked(e.Command, out IsChecked))
-                ShowDarkChapel = IsChecked;
-        }
-
-        private static readonly string ShowDarkChapelSettingName = "ShowDarkChapel";
-        #endregion
-
         #region Mushroom Farming
         private void InitMushroomFarming()
         {
@@ -589,7 +561,7 @@ namespace PgMoon
             SetSettingKey(MushroomListInitializedName, 1, RegistryValueKind.DWord);
 
             if (MushroomInfoList.Count == 0 && !IsMushroomListInitialized)
-                ResetMushroomListToDefault();
+                ResetMushroomListToDefault(false);
 
             MushroomInfoList.Add(new MushroomInfo("", "", null, null));
             MushroomInfoList.CollectionChanged += OnMushroomInfoListChanged;
@@ -640,9 +612,9 @@ namespace PgMoon
 
                             string Comment = ((Line.Length > 3) ? Line[3] : "");
 
-                            MoonPhase PreferredPhase1 = (SelectedPhase1 >= 0 ? MoonPhase.MoonPhaseList[SelectedPhase1] : null);
-                            MoonPhase PreferredPhase2 = (SelectedPhase2 >= 0 ? MoonPhase.MoonPhaseList[SelectedPhase2] : null);
-                            MushroomInfoList.Add(new MushroomInfo(Name, Comment, PreferredPhase1, PreferredPhase2));
+                            MoonPhase RobustGrowthPhase1 = (SelectedPhase1 >= 0 ? MoonPhase.MoonPhaseList[SelectedPhase1] : null);
+                            MoonPhase RobustGrowthPhase2 = (SelectedPhase2 >= 0 ? MoonPhase.MoonPhaseList[SelectedPhase2] : null);
+                            MushroomInfoList.Add(new MushroomInfo(Name, Comment, RobustGrowthPhase1, RobustGrowthPhase2));
                         }
                     }
                 }
@@ -677,28 +649,50 @@ namespace PgMoon
             SetSettingKey(MushroomListSettingName, Setting, RegistryValueKind.String);
         }
 
-        private void ResetMushroomListToDefault()
+        private void ResetMushroomListToDefault(bool KeepComment)
         {
+            List<MushroomInfo> NewList = new List<MushroomInfo>();
+
+            AddMushroomToList(NewList, MoonPhase.ParasolMushroomLongName, MoonPhase.FullMoon, MoonPhase.WaningCrescentMoon, KeepComment);
+            AddMushroomToList(NewList, MoonPhase.MycenaMushroomLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.FirstQuarterMoon, KeepComment);
+            AddMushroomToList(NewList, MoonPhase.BoletusMushroomLongName, MoonPhase.NewMoon, MoonPhase.WaningGibbousMoon, KeepComment);
+            AddMushroomToList(NewList, MoonPhase.FieldMushroomLongName, MoonPhase.WaxingGibbousMoon, MoonPhase.LastQuarterMoon, KeepComment);
+            AddMushroomToList(NewList, MoonPhase.BlusherMushroomLongName, MoonPhase.NewMoon, MoonPhase.WaningGibbousMoon, KeepComment);
+            AddMushroomToList(NewList, MoonPhase.GoblinPuffballLongName, MoonPhase.NewMoon, MoonPhase.WaxingGibbousMoon, KeepComment);
+            AddMushroomToList(NewList, MoonPhase.MilkCapMushroomLongName, MoonPhase.FullMoon, MoonPhase.WaningCrescentMoon, KeepComment);
+            AddMushroomToList(NewList, MoonPhase.BloodMushroomLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.LastQuarterMoon, KeepComment);
+            AddMushroomToList(NewList, MoonPhase.CoralMushroomLongName, MoonPhase.FirstQuarterMoon, MoonPhase.WaxingGibbousMoon, KeepComment);
+            AddMushroomToList(NewList, MoonPhase.IocaineMushroomLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.FirstQuarterMoon, KeepComment);
+            AddMushroomToList(NewList, MoonPhase.GroxmakMushroomLongName, MoonPhase.WaxingGibbousMoon, MoonPhase.LastQuarterMoon, KeepComment);
+            AddMushroomToList(NewList, MoonPhase.PorciniMushroomLongName, MoonPhase.FullMoon, MoonPhase.WaningGibbousMoon, KeepComment);
+            AddMushroomToList(NewList, MoonPhase.BlackFootMorelLongName, MoonPhase.NewMoon, MoonPhase.WaningCrescentMoon, KeepComment);
+            AddMushroomToList(NewList, MoonPhase.PixiesParasolLongName, MoonPhase.FirstQuarterMoon, MoonPhase.WaxingGibbousMoon, KeepComment);
+            AddMushroomToList(NewList, MoonPhase.FlyAmanitaLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.FullMoon, KeepComment);
+            AddMushroomToList(NewList, MoonPhase.BlastcapMushroomLongName, MoonPhase.FullMoon, MoonPhase.WaningGibbousMoon, KeepComment);
+            AddMushroomToList(NewList, MoonPhase.ChargedMyceliumLongName, null, null, KeepComment);
+            AddMushroomToList(NewList, MoonPhase.FalseAgaricLongName, MoonPhase.WaningCrescentMoon, MoonPhase.LastQuarterMoon, KeepComment);
+            AddMushroomToList(NewList, MoonPhase.WizardsMushroomLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.FirstQuarterMoon, KeepComment);
+
             MushroomInfoList.Clear();
-            MushroomInfoList.Add(new MushroomInfo("Parasol Mushroom", "", MoonPhase.FullMoon, MoonPhase.WaningCrescentMoon));
-            MushroomInfoList.Add(new MushroomInfo("Mycena Mushroom", "", MoonPhase.WaxingCrescentMoon, MoonPhase.FirstQuarterMoon));
-            MushroomInfoList.Add(new MushroomInfo("Boletus Mushroom", "", MoonPhase.NewMoon, null));
-            MushroomInfoList.Add(new MushroomInfo("Field Mushroom", "", MoonPhase.WaxingGibbousMoon, MoonPhase.LastQuarterMoon));
-            MushroomInfoList.Add(new MushroomInfo("Blusher Mushroom", "", MoonPhase.NewMoon, MoonPhase.WaningGibbousMoon));
-            MushroomInfoList.Add(new MushroomInfo("Milk Cap Mushroom", "", MoonPhase.FullMoon, MoonPhase.WaningCrescentMoon));
-            MushroomInfoList.Add(new MushroomInfo("Blood Mushroom", "", MoonPhase.WaxingCrescentMoon, MoonPhase.LastQuarterMoon));
-            MushroomInfoList.Add(new MushroomInfo("Coral Mushroom", "", MoonPhase.FirstQuarterMoon, MoonPhase.WaxingGibbousMoon));
-            MushroomInfoList.Add(new MushroomInfo("Iocaine Mushroom", "", MoonPhase.WaxingCrescentMoon, MoonPhase.FirstQuarterMoon));
-            MushroomInfoList.Add(new MushroomInfo("Groxmak Mushroom", "", MoonPhase.WaxingGibbousMoon, MoonPhase.LastQuarterMoon));
-            MushroomInfoList.Add(new MushroomInfo("Porcini Mushroom", "", MoonPhase.FullMoon, MoonPhase.WaningGibbousMoon));
-            MushroomInfoList.Add(new MushroomInfo("Black Foot Morel", "", MoonPhase.NewMoon, MoonPhase.WaningCrescentMoon));
-            MushroomInfoList.Add(new MushroomInfo("Pixie's Parasol", "", MoonPhase.FirstQuarterMoon, MoonPhase.WaxingGibbousMoon));
-            MushroomInfoList.Add(new MushroomInfo("Fly Amanita", "", MoonPhase.WaxingCrescentMoon, MoonPhase.FullMoon));
-            MushroomInfoList.Add(new MushroomInfo("Charged Mycelium", "", null, null));
-            MushroomInfoList.Add(new MushroomInfo("Goblin Puffball", "", MoonPhase.NewMoon, MoonPhase.WaxingGibbousMoon));
-            MushroomInfoList.Add(new MushroomInfo("Blastcap Mushroom", "", MoonPhase.FullMoon, MoonPhase.WaningGibbousMoon));
-            MushroomInfoList.Add(new MushroomInfo("False Agaric", "", MoonPhase.WaningCrescentMoon, null));
-            MushroomInfoList.Add(new MushroomInfo("Wizard's Mushroom", "", MoonPhase.WaxingCrescentMoon, null));
+            foreach (MushroomInfo Item in NewList)
+                MushroomInfoList.Add(Item);
+        }
+
+        private void AddMushroomToList(List<MushroomInfo> NewList, string Name, MoonPhase RobustGrowthPhase1, MoonPhase RobustGrowthPhase2, bool KeepComment)
+        {
+            string Comment = "";
+
+            if (KeepComment)
+            {
+                foreach (MushroomInfo Item in MushroomInfoList)
+                    if (Item.Name == Name)
+                    {
+                        Comment = Item.Comment;
+                        break;
+                    }
+            }
+
+            NewList.Add(new MushroomInfo(Name, Comment, RobustGrowthPhase1, RobustGrowthPhase2));
         }
 
         public bool ShowMushroomFarming
@@ -862,12 +856,20 @@ namespace PgMoon
             IsLocked = false;
         }
 
-        private void OnResetToDefault(object sender, ExecutedRoutedEventArgs e)
+        private void OnResetToDefaultKeepComment(object sender, ExecutedRoutedEventArgs e)
         {
-            if (MessageBox.Show("All your changes to the mushroom farming settings will be lost, are you sure?", "Reset Mushroom List To Default", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+            if (MessageBox.Show("This command will attempts to preserve comments, but all your other changes to the mushroom farming settings will be lost.\r\n\r\nAre you sure?", "Reset Mushroom List To Default", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
                 return;
 
-            ResetMushroomListToDefault();
+            ResetMushroomListToDefault(true);
+        }
+
+        private void OnResetToDefaultAll(object sender, ExecutedRoutedEventArgs e)
+        {
+            if (MessageBox.Show("All your changes to the mushroom farming settings will be lost.\r\n\r\nAre you sure?", "Reset Mushroom List To Default", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                return;
+
+            ResetMushroomListToDefault(false);
         }
 
         private object LocateSibling(object sender, string ElementName)
@@ -958,6 +960,81 @@ namespace PgMoon
         public ObservableCollection<string> MushroomNameList { get; private set; } = null;
         private FileSystemWatcher MushroomNameFileWatcher = null;
         private Timer UpdateMushroomNameListTimer;
+        #endregion
+
+        #region Rahu Boat
+        private void InitRahuBoat()
+        {
+            int? ShowSetting = GetSettingKey(ShowRahuBoatSettingName) as int?;
+            _ShowRahuBoat = (ShowSetting.HasValue ? (ShowSetting.Value != 0) : true);
+        }
+
+        public bool ShowRahuBoat
+        {
+            get { return _ShowRahuBoat; }
+            set
+            {
+                if (_ShowRahuBoat != value)
+                {
+                    _ShowRahuBoat = value;
+                    NotifyThisPropertyChanged();
+
+                    int? KeyValue = value ? 1 : 0;
+                    SetSettingKey(ShowRahuBoatSettingName, KeyValue, RegistryValueKind.DWord);
+
+                    if (TaskbarIcon != null)
+                        TaskbarIcon.UpdateToolTipText(ToolTipText);
+                }
+            }
+        }
+        private bool _ShowRahuBoat;
+
+        private void OnShowRahuBoat(object sender, ExecutedRoutedEventArgs e)
+        {
+            TaskbarIcon SenderIcon = e.Parameter as TaskbarIcon;
+
+            bool IsChecked;
+            if (SenderIcon.ToggleChecked(e.Command, out IsChecked))
+                ShowRahuBoat = IsChecked;
+        }
+
+        private static readonly string ShowRahuBoatSettingName = "ShowRahuBoat";
+        #endregion
+
+        #region Dark Chapel
+        private void InitDarkChapel()
+        {
+            int? ShowSetting = GetSettingKey(ShowDarkChapelSettingName) as int?;
+            _ShowDarkChapel = (ShowSetting.HasValue ? (ShowSetting.Value != 0): true);
+        }
+
+        public bool ShowDarkChapel
+        {
+            get { return _ShowDarkChapel; }
+            set
+            {
+                if (_ShowDarkChapel != value)
+                {
+                    _ShowDarkChapel = value;
+                    NotifyThisPropertyChanged();
+
+                    int? KeyValue = value ? 1 : 0;
+                    SetSettingKey(ShowDarkChapelSettingName, KeyValue, RegistryValueKind.DWord);
+                }
+            }
+        }
+        private bool _ShowDarkChapel;
+
+        private void OnShowDarkChapel(object sender, ExecutedRoutedEventArgs e)
+        {
+            TaskbarIcon SenderIcon = e.Parameter as TaskbarIcon;
+
+            bool IsChecked;
+            if (SenderIcon.ToggleChecked(e.Command, out IsChecked))
+                ShowDarkChapel = IsChecked;
+        }
+
+        private static readonly string ShowDarkChapelSettingName = "ShowDarkChapel";
         #endregion
 
         #region Events
