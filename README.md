@@ -1,6 +1,6 @@
 # Download
-Latest version [here](/PgMoon/Release/x64/Release.x64.1.1.0.145.zip).
-Files to enable support for Google Calendar [here](/PgMoon/Release/x64/GoogleAssemblies.x64.zip).
+Latest version [here](/Release/x64/Release.x64.1.1.0.145.zip).
+Files to enable support for Google Calendar [here](/Release/x64/GoogleAssemblies.x64.zip).
 
 # PgMoon
 Adds a little icon to the taskbar to show the moon phase in [Project:Gorgon](https://projectgorgon.com/) MMORPG.
