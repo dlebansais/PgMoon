@@ -47,7 +47,7 @@ The app can be configured to post entries in a calendar. Currently, only Google 
 
 # Screenshots
 
-![Alt text](/PgMoon/Screenshots/Menu.png?raw=true "The app menu")
+![Menu](/Screenshots/Menu.png?raw=true "The app menu")
 
-![Alt text](/PgMoon/Screenshots/MainScreen.png?raw=true "The app main screen")
+![Main Screen](/Screenshots/MainScreen.png?raw=true "The app main screen")
 
