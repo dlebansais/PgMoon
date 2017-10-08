@@ -3,6 +3,7 @@
 
 phase recorded.txt
 !**/Release/x64/*.zip
+!**/Google.Apis/
 
 # User-specific files
 *.suo
