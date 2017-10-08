@@ -34,15 +34,15 @@ The app can be configured to load at startup. There are two ways to do it:
 The same procedure can be used to stop loading at startup.
 Note that when loaded at startup, the app doesn't run as administrator.
 
-## Google Calandar
+## Google Calendar
 The app can be configured to post entries in a calendar. Currently, only Google Calendar is supported. You will need to follow these instructions:
-* Download files from [here](/PgMoon/Release/x64/GoogleAssemblies.x64.zip) and copy them alongside the application.
+* Download files from [here](/Release/x64/GoogleAssemblies.x64.zip) and copy them alongside the application.
 * If you're not the owner of the calendar, make sure you have permission to create events.
-* Follow step 1 of [these instructions](https://developers.google.com/google-apps/calendar/quickstart/dotnet/) to obtain your credential file. You don't need to perform other steps, just Step 1.
+* Follow step 1 of [these instructions](https://developers.google.com/google-apps/calendar/quickstart/dotnet/) to obtain your credential file. You don't need to perform other steps, just Step 1, and you don't need Visual Studio.
 * In the application menu, select "Share the calendar.."
 * Click Browse to select the credential file you have obtained. This should automatically list all calendars you have access to.
 * Select the calendar on which to post events.
-* In the information group, select what to putin the event description.
+* In the information group, select what to put in the event description.
 * Click Save, this will start posting events for the next 10 days, and more events as time goes.
 
 # Screenshots
