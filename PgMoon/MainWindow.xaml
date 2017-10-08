@@ -26,6 +26,7 @@
         <RoutedUICommand x:Key="ResetToDefaultKeepCommentCommand"/>
         <RoutedUICommand x:Key="ResetToDefaultAllCommand"/>
         <RoutedUICommand x:Key="DisplayCurrentCommand"/>
+        <RoutedUICommand x:Key="SharedCalendarCommand"/>
         <RoutedUICommand x:Key="ExitCommand"/>
         <CompositeCollection x:Key="VisibleCollapsed">
             <Visibility>Visible</Visibility>
@@ -82,14 +83,14 @@
                         <Rectangle Fill="White" Width="6" Height="6" Margin="-3,-3,0,0"/>
                     </DataTemplate>
                 </Canvas.Resources>
-                <ContentControl Canvas.Left="103" Canvas.Top="17" ContentTemplate="{Binding Source={x:Static app:MoonPhase.NewMoon}, Path=IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource DarkChapelTemplateCollection}}" ToolTip="North of the lake"/>
-                <ContentControl Canvas.Left="52" Canvas.Top="19" ContentTemplate="{Binding Source={x:Static app:MoonPhase.WaxingCrescentMoon}, Path=IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource DarkChapelTemplateCollection}}" ToolTip="By the meditation pillar"/>
-                <ContentControl Canvas.Left="25" Canvas.Top="30" ContentTemplate="{Binding Source={x:Static app:MoonPhase.FirstQuarterMoon}, Path=IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource DarkChapelTemplateCollection}}" ToolTip="At spiders"/>
-                <ContentControl Canvas.Left="9" Canvas.Top="82" ContentTemplate="{Binding Source={x:Static app:MoonPhase.WaxingGibbousMoon}, Path=IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource DarkChapelTemplateCollection}}" ToolTip="North of the portal to Serbule"/>
-                <ContentControl Canvas.Left="18" Canvas.Top="121" ContentTemplate="{Binding Source={x:Static app:MoonPhase.FullMoon}, Path=IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource DarkChapelTemplateCollection}}" ToolTip="By Percy's House"/>
-                <ContentControl Canvas.Left="60" Canvas.Top="135" ContentTemplate="{Binding Source={x:Static app:MoonPhase.WaningGibbousMoon}, Path=IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource DarkChapelTemplateCollection}}" ToolTip="West of Hogan's Keep"/>
-                <ContentControl Canvas.Left="109" Canvas.Top="118" ContentTemplate="{Binding Source={x:Static app:MoonPhase.LastQuarterMoon}, Path=IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource DarkChapelTemplateCollection}}" ToolTip="At gnashers"/>
-                <ContentControl Canvas.Left="132" Canvas.Top="60" ContentTemplate="{Binding Source={x:Static app:MoonPhase.WaningCrescentMoon}, Path=IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource DarkChapelTemplateCollection}}" ToolTip="North of the waterfall"/>
+                <ContentControl Canvas.Left="103" Canvas.Top="17" ContentTemplate="{Binding Source={x:Static app:MoonPhase.NewMoon}, Path=IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource DarkChapelTemplateCollection}}" ToolTip="{Binding Source={x:Static app:MoonPhase.NewMoon}, Path=DarkChapelTip}"/>
+                <ContentControl Canvas.Left="52" Canvas.Top="19" ContentTemplate="{Binding Source={x:Static app:MoonPhase.WaxingCrescentMoon}, Path=IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource DarkChapelTemplateCollection}}" ToolTip="{Binding Source={x:Static app:MoonPhase.WaxingCrescentMoon}, Path=DarkChapelTip}"/>
+                <ContentControl Canvas.Left="25" Canvas.Top="30" ContentTemplate="{Binding Source={x:Static app:MoonPhase.FirstQuarterMoon}, Path=IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource DarkChapelTemplateCollection}}" ToolTip="{Binding Source={x:Static app:MoonPhase.FirstQuarterMoon}, Path=DarkChapelTip}"/>
+                <ContentControl Canvas.Left="9" Canvas.Top="82" ContentTemplate="{Binding Source={x:Static app:MoonPhase.WaxingGibbousMoon}, Path=IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource DarkChapelTemplateCollection}}" ToolTip="{Binding Source={x:Static app:MoonPhase.WaxingGibbousMoon}, Path=DarkChapelTip}"/>
+                <ContentControl Canvas.Left="18" Canvas.Top="121" ContentTemplate="{Binding Source={x:Static app:MoonPhase.FullMoon}, Path=IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource DarkChapelTemplateCollection}}" ToolTip="{Binding Source={x:Static app:MoonPhase.FullMoon}, Path=DarkChapelTip}"/>
+                <ContentControl Canvas.Left="60" Canvas.Top="135" ContentTemplate="{Binding Source={x:Static app:MoonPhase.WaningGibbousMoon}, Path=IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource DarkChapelTemplateCollection}}" ToolTip="{Binding Source={x:Static app:MoonPhase.WaningGibbousMoon}, Path=DarkChapelTip}"/>
+                <ContentControl Canvas.Left="109" Canvas.Top="118" ContentTemplate="{Binding Source={x:Static app:MoonPhase.LastQuarterMoon}, Path=IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource DarkChapelTemplateCollection}}" ToolTip="{Binding Source={x:Static app:MoonPhase.LastQuarterMoon}, Path=DarkChapelTip}"/>
+                <ContentControl Canvas.Left="132" Canvas.Top="60" ContentTemplate="{Binding Source={x:Static app:MoonPhase.WaningCrescentMoon}, Path=IsCurrent, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource DarkChapelTemplateCollection}}" ToolTip="{Binding Source={x:Static app:MoonPhase.WaningCrescentMoon}, Path=DarkChapelTip}"/>
             </Canvas>
         </DockPanel>
         <DockPanel x:Key="RahuBoatSectionTemplate">
@@ -429,6 +430,7 @@
         <CommandBinding Command="{StaticResource ResetToDefaultKeepCommentCommand}" Executed="OnResetToDefaultKeepComment"/>
         <CommandBinding Command="{StaticResource ResetToDefaultAllCommand}" Executed="OnResetToDefaultAll"/>
         <CommandBinding Command="{StaticResource DisplayCurrentCommand}" Executed="OnDisplayCurrent"/>
+        <CommandBinding Command="{StaticResource SharedCalendarCommand}" Executed="OnSharedCalendar"/>
         <CommandBinding Command="{StaticResource ExitCommand}" Executed="OnExit"/>
     </Popup.CommandBindings>
     <Border BorderBrush="Gray" BorderThickness="1" Opacity="0.97">

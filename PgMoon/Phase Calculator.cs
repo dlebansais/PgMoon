@@ -235,6 +235,8 @@ namespace PgMoon
                             ip = 3; // WaxingGibbousMoon
                     break;
                 case 3: // WaxingGibbousMoon
+                    if (p > 0.9615)
+                        ip = 4; // FullMoon
                     break;
                 case 4: // FullMoon
                     if (nextp < p && p <= 0.985)

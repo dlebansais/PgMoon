@@ -105,15 +105,15 @@ namespace PgMoon
         #endregion
 
         #region Init
-        public static MoonPhase NewMoon = new MoonPhase("New Moon");
-        public static MoonPhase WaxingCrescentMoon = new MoonPhase("Waxing Crescent Moon");
-        public static MoonPhase FirstQuarterMoon = new MoonPhase("First-Quarter Moon");
-        public static MoonPhase WaxingGibbousMoon = new MoonPhase("Waxing Gibbous Moon");
-        public static MoonPhase FullMoon = new MoonPhase("Full Moon");
-        public static MoonPhase WaningGibbousMoon = new MoonPhase("Waning Gibbous Moon");
-        public static MoonPhase LastQuarterMoon = new MoonPhase("Last-Quarter Moon");
-        public static MoonPhase WaningCrescentMoon = new MoonPhase("Waning Crescent Moon");
-        private static MoonPhase NullMoonPhase = new MoonPhase("(Unselect)");
+        public static MoonPhase NewMoon = new MoonPhase("New Moon", "North of the easternmost lake");
+        public static MoonPhase WaxingCrescentMoon = new MoonPhase("Waxing Crescent Moon", "By the meditation pillar");
+        public static MoonPhase FirstQuarterMoon = new MoonPhase("First-Quarter Moon", "At spiders");
+        public static MoonPhase WaxingGibbousMoon = new MoonPhase("Waxing Gibbous Moon", "North of the portal to Serbule");
+        public static MoonPhase FullMoon = new MoonPhase("Full Moon", "By Percy's House");
+        public static MoonPhase WaningGibbousMoon = new MoonPhase("Waning Gibbous Moon", "West of Hogan's Keep");
+        public static MoonPhase LastQuarterMoon = new MoonPhase("Last-Quarter Moon", "At gnashers");
+        public static MoonPhase WaningCrescentMoon = new MoonPhase("Waning Crescent Moon", "North of the waterfall");
+        private static MoonPhase NullMoonPhase = new MoonPhase("(Unselect)", null);
 
         public static List<MoonPhase> MoonPhaseList = new List<MoonPhase>()
         {
@@ -128,9 +128,10 @@ namespace PgMoon
             NullMoonPhase,
         };
 
-        public MoonPhase(string Name)
+        public MoonPhase(string Name, string DarkChapelTip)
         {
             this.Name = Name;
+            this.DarkChapelTip = DarkChapelTip;
         }
         #endregion
 
@@ -140,6 +141,7 @@ namespace PgMoon
         public bool IsCurrent { get { return PhaseCalculator.MoonPhase == this; } }
         public string FastPortMushroomLongText { get { return FastPortMushroomText(true); } }
         public string FastPortMushroomShortText { get { return FastPortMushroomText(false); } }
+        public string DarkChapelTip { get; private set; }
 
         public string FastPortMushroomText(bool IsLong)
         {

@@ -36,6 +36,7 @@ namespace PgMoon
             InitMushroomFarming();
             InitRahuBoat();
             InitDarkChapel();
+            InitSharedCalendar();
             InitTaskbarIcon();
         }
 
@@ -105,6 +106,7 @@ namespace PgMoon
             ShowMushroomFarmingCommand = InitMenuCommand("ShowMushroomFarmingCommand", "Show Mushrooms");
             ShowRahuBoatCommand = InitMenuCommand("ShowRahuBoatCommand", "Show Rahu Boat");
             ShowDarkChapelCommand = InitMenuCommand("ShowDarkChapelCommand", "Show Dark Chapel");
+            SharedCalendarCommand = InitMenuCommand("SharedCalendarCommand", "Share the calendar...");
             ExitCommand = InitMenuCommand("ExitCommand", "Exit");
 
             System.Drawing.Icon Icon = LoadIcon("Taskbar.ico");
@@ -186,6 +188,7 @@ namespace PgMoon
             ShowMushroomFarmingMenu.IsChecked = ShowMushroomFarming;
             MenuItem ShowCalendarMenu = LoadNotificationMenuItem(ShowCalendarCommand);
             ShowCalendarMenu.IsChecked = ShowCalendar;
+            MenuItem SharedCalendarMenu = LoadNotificationMenuItem(SharedCalendarCommand);
             MenuItem ExitMenu = LoadNotificationMenuItem(ExitCommand);
 
             AddContextMenu(Result, LoadAtStartup, true);
@@ -194,6 +197,8 @@ namespace PgMoon
             AddContextMenu(Result, ShowRahuBoatMenu, true);
             AddContextMenu(Result, ShowMushroomFarmingMenu, true);
             AddContextMenu(Result, ShowCalendarMenu, true);
+            AddContextMenuSeparator(Result);
+            AddContextMenu(Result, SharedCalendarMenu, true);
             AddContextMenuSeparator(Result);
             AddContextMenu(Result, ExitMenu, true);
 
@@ -255,6 +260,7 @@ namespace PgMoon
         private ICommand ShowMushroomFarmingCommand;
         private ICommand ShowRahuBoatCommand;
         private ICommand ShowDarkChapelCommand;
+        private ICommand SharedCalendarCommand;
         private ICommand ExitCommand;
         private Dictionary<ICommand, string> MenuHeaderTable;
         #endregion
@@ -388,6 +394,8 @@ namespace PgMoon
             }
 
             PreviousUpdateChanged = false;
+
+            PostSharedEvents();
         }
 
         private Timer UpdateMoonPhaseTimer;
@@ -1035,6 +1043,70 @@ namespace PgMoon
         }
 
         private static readonly string ShowDarkChapelSettingName = "ShowDarkChapel";
+        #endregion
+
+        #region Shared Calendar
+        private void InitSharedCalendar()
+        {
+            ReadPostTime();
+        }
+
+        private void OnSharedCalendar(object sender, ExecutedRoutedEventArgs e)
+        {
+            string ExeName = Assembly.GetExecutingAssembly().Location;
+            string ExeFolder = Path.GetDirectoryName(ExeName);
+            string[] GoogleAssemblies = Directory.GetFiles(ExeFolder, "Google.*.dll");
+            if (GoogleAssemblies.Length == 0)
+            {
+                MessageBox.Show("This feature is not available without Google assemblies.\r\n\r\nPlease return to the site from where this application was downloaded, to find instructions on how to get them.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            ShareCalendarWindow Dlg = new ShareCalendarWindow();
+            bool? Result = Dlg.ShowDialog();
+            if (Result.HasValue && Result.Value)
+            {
+                if (Dlg.IsEventActive)
+                {
+                    if (PostTime == DateTime.MaxValue)
+                    {
+                        PostTime = App.Now();
+                        App.SetSettingString("SharedCalendarPost", PostTime.ToString());
+                    }
+
+                    PostSharedEvents();
+                }
+                else
+                {
+                    PostTime = DateTime.MaxValue;
+                    App.SetSettingString("SharedCalendarPost", null);
+                }
+            }
+        }
+
+        private void ReadPostTime()
+        {
+            PostTime = DateTime.MaxValue;
+
+            string SharedCalendarPost = App.GetSettingString("SharedCalendarPost", null);
+            if (SharedCalendarPost != null)
+                DateTime.TryParse(SharedCalendarPost, out PostTime);
+        }
+
+        private void PostSharedEvents()
+        {
+            DateTime Now = App.Now();
+            if (PostTime <= Now)
+            {
+                PostTime = Now + TimeSpan.FromHours(12);
+                App.SetSettingString("SharedCalendarPost", PostTime.ToString());
+
+                ShareCalendarWindow Dlg = new ShareCalendarWindow();
+                Dlg.PostSharedEvents(MushroomInfoList);
+            }
+        }
+
+        private DateTime PostTime;
         #endregion
 
         #region Events
