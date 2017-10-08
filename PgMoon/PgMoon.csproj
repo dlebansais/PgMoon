@@ -229,6 +229,9 @@
     <None Include="Screenshots\MainScreen.png" />
     <None Include="Screenshots\Menu.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="..\Release\x64\Release.x64.1.1.0.143.zip" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <PostBuildEvent>if exist "$(SolutionDir)signfile.bat" call "$(SolutionDir)signfile.bat" "$(SolutionDir)" "$(Configuration)-$(Platform)" "$(TargetPath)"</PostBuildEvent>
