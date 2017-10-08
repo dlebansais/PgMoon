@@ -7,8 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PgMoon", "PgMoon\PgMoon.csp
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{82305B74-9C86-4C99-8121-35B6447AC73B}"
 	ProjectSection(SolutionItems) = preProject
-		Release\x64\GoogleAssemblies.x64.zip = Release\x64\GoogleAssemblies.x64.zip
 		Release\x64\PgMoon.Release.x64.1.1.0.143.zip = Release\x64\PgMoon.Release.x64.1.1.0.143.zip
+		Release\x64\GoogleAssemblies.x64.zip = Release\x64\GoogleAssemblies.x64.zip
 	EndProjectSection
 EndProject
 Global
