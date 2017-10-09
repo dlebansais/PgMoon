@@ -1,6 +1,6 @@
 ﻿using System.Windows.Controls;
 
-namespace PgMoon
+namespace CustomControls
 {
     public partial class BusyIndicator : UserControl
     {

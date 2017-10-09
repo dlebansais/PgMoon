@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:app="clr-namespace:PgMoon"
+        xmlns:ctrl="clr-namespace:CustomControls"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:conv="clr-namespace:Converters"
         Title="Share the calendar"
@@ -109,7 +110,7 @@
                             <Button Command="{StaticResource ListCommand}" Visibility="{Binding IsListing, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource VisibleCollapsed}}" Width="120" Height="24">List</Button>
                             <Button Command="{StaticResource CancelListCommand}" Visibility="{Binding IsListing, Converter={StaticResource convBooleanToObject}, ConverterParameter={StaticResource CollapsedVisible}}" Width="120" Height="24">
                                 <StackPanel Orientation="Horizontal">
-                                    <app:BusyIndicator Foreground="Green" Width="12" Height="12"/>
+                                    <ctrl:BusyIndicator Foreground="Green" Width="12"/>
                                     <TextBlock IsEnabled="{Binding IsListingCancelable}" Margin="2,0,14,0">Cancel</TextBlock>
                                 </StackPanel>
                             </Button>
