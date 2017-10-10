@@ -3,7 +3,7 @@ Latest version [here](/Release/x64/Release.x64.1.1.0.145.zip).
 Files to enable support for Google Calendar [here](/Release/x64/GoogleAssemblies.x64.zip).
 
 # PgMoon
-Adds a little icon to the taskbar to show the moon phase in [Project:Gorgon](https://projectgorgon.com/) MMORPG.
+Adds a little icon to the taskbar to show the moon phase in [Project: Gorgon](https://projectgorgon.com/) MMORPG.
 
 ## Current Moon Phase
 The current moon phase is displayed in the main screen, as well as in the tooltip, with the remaining time to next phase.
@@ -15,7 +15,7 @@ The remaining time before full moon is show.
 All moon phases, past and future, can be seen in the calendar. To return to the current phase, double-click the calendar, or right-click to see the context menu and select "Display Current".
 
 ## Mushrooms
-In Project:Gorgon, one can grow mushrooms in boxes, and all mushrooms grow differently depending on the moon phase. For each mushroom type, there are two preferred phase when they grow robustly. The main screen allows one to add the name of a mushroom (or use predefined names) and select two corresponding moon phases. One can also add comments, such as the best substrates to use, the growth time or anything else.
+In Project: Gorgon, one can grow mushrooms in boxes, and all mushrooms grow differently depending on the moon phase. For each mushroom type, there are two preferred phase when they grow robustly. The main screen allows one to add the name of a mushroom (or use predefined names) and select two corresponding moon phases. One can also add comments, such as the best substrates to use, the growth time or anything else.
 
 If one of the moon phase is current, its name is in bold characters.
 
@@ -51,3 +51,6 @@ The app can be configured to post entries in a calendar. Currently, only Google 
 
 ![Main Screen](/Screenshots/MainScreen.png?raw=true "The app main screen")
 
+# Certification
+
+This program is digitally signed with a [CAcert](https://www.cacert.org/) certificate.
