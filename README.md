@@ -1,5 +1,5 @@
 # Download
-Latest version [here](/Release/x64/Release.x64.1.1.0.145.zip).
+Latest version [here](https://github.com/dlebansais/PgMoon/releases).
 Files to enable support for Google Calendar [here](/Release/x64/GoogleAssemblies.x64.zip).
 
 # PgMoon
