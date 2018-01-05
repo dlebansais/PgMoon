@@ -134,6 +134,12 @@ namespace PgMoon
             }
         }
 
+        public static bool IsBoolKeySet(string ValueName)
+        {
+            int? Value = GetSettingKey(ValueName) as int?;
+            return Value.HasValue;
+        }
+
         public static bool GetSettingBool(string ValueName, bool Default)
         {
             int? Value = GetSettingKey(ValueName) as int?;

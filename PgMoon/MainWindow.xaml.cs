@@ -30,7 +30,6 @@ namespace PgMoon
             DataContext = this;
 
             Placement = PlacementMode.Absolute;
-            InitSettings();
             InitMoonPhase();
             InitCalendar();
             InitMushroomFarming();
@@ -55,46 +54,6 @@ namespace PgMoon
                 return false;
             }
         }
-        #endregion
-
-        #region Settings
-        private void InitSettings()
-        {
-            try
-            {
-                RegistryKey Key = Registry.CurrentUser.OpenSubKey(@"Software", true);
-                Key = Key.CreateSubKey("Project Gorgon Tools");
-                SettingKey = Key.CreateSubKey("PgMoon");
-            }
-            catch
-            {
-            }
-        }
-
-        private object GetSettingKey(string ValueName)
-        {
-            try
-            {
-                return SettingKey?.GetValue(ValueName);
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        private void SetSettingKey(string ValueName, object Value, RegistryValueKind Kind)
-        {
-            try
-            {
-                SettingKey?.SetValue(ValueName, Value, Kind);
-            }
-            catch
-            {
-            }
-        }
-
-        private RegistryKey SettingKey = null;
         #endregion
 
         #region Taskbar Icon
@@ -405,8 +364,7 @@ namespace PgMoon
         #region Calendar
         private void InitCalendar()
         {
-            int? ShowSetting = GetSettingKey(ShowCalendarSettingName) as int?;
-            _ShowCalendar = (ShowSetting.HasValue ? (ShowSetting.Value != 0) : true);
+            _ShowCalendar = App.GetSettingBool(ShowCalendarSettingName, true);
             _CalendarStartTime = App.Now();
             BuildCalendar();
         }
@@ -421,8 +379,7 @@ namespace PgMoon
                     _ShowCalendar = value;
                     NotifyThisPropertyChanged();
 
-                    int? KeyValue = value ? 1 : 0;
-                    SetSettingKey(ShowCalendarSettingName, KeyValue, RegistryValueKind.DWord);
+                    App.SetSettingBool(ShowCalendarSettingName, value);
                 }
             }
         }
@@ -557,16 +514,14 @@ namespace PgMoon
         #region Mushroom Farming
         private void InitMushroomFarming()
         {
-            int? ShowMushroomFarmingSetting = GetSettingKey(ShowMushroomFarmingSettingName) as int?;
-            _ShowMushroomFarming = (ShowMushroomFarmingSetting.HasValue ? (ShowMushroomFarmingSetting.Value != 0) : true);
+            _ShowMushroomFarming = App.GetSettingBool(ShowMushroomFarmingSettingName, true);
             _IsMushroomListLarge = false;
-            int? IsLockedSetting = GetSettingKey(IsLockedSettingName) as int?;
-            _IsLocked = (IsLockedSetting.HasValue ? (IsLockedSetting.Value != 0) : false);
+            _IsLocked = App.GetSettingBool(IsLockedSettingName, false);
 
             LoadMushroomInfoList();
 
-            bool IsMushroomListInitialized = (GetSettingKey(MushroomListInitializedName) != null);
-            SetSettingKey(MushroomListInitializedName, 1, RegistryValueKind.DWord);
+            bool IsMushroomListInitialized = App.IsBoolKeySet(MushroomListInitializedName);
+            App.SetSettingBool(MushroomListInitializedName, true);
 
             if (MushroomInfoList.Count == 0 && !IsMushroomListInitialized)
                 ResetMushroomListToDefault(false);
@@ -584,7 +539,7 @@ namespace PgMoon
         {
             MushroomInfoList.Clear();
 
-            string MushroomListSetting = GetSettingKey(MushroomListSettingName) as string;
+            string MushroomListSetting = App.GetSettingString(MushroomListSettingName, null);
             if (MushroomListSetting != null)
             {
                 string[] SplitMushroomListSetting = MushroomListSetting.Split(MushroomListSeparator);
@@ -654,7 +609,7 @@ namespace PgMoon
                 Setting += Line;
             }
 
-            SetSettingKey(MushroomListSettingName, Setting, RegistryValueKind.String);
+            App.SetSettingString(MushroomListSettingName, Setting);
         }
 
         private void ResetMushroomListToDefault(bool KeepComment)
@@ -713,8 +668,7 @@ namespace PgMoon
                     _ShowMushroomFarming = value;
                     NotifyThisPropertyChanged();
 
-                    int? KeyValue = value ? 1 : 0;
-                    SetSettingKey(ShowMushroomFarmingSettingName, KeyValue, RegistryValueKind.DWord);
+                    App.SetSettingBool(ShowMushroomFarmingSettingName, value);
                 }
             }
         }
@@ -973,8 +927,7 @@ namespace PgMoon
         #region Rahu Boat
         private void InitRahuBoat()
         {
-            int? ShowSetting = GetSettingKey(ShowRahuBoatSettingName) as int?;
-            _ShowRahuBoat = (ShowSetting.HasValue ? (ShowSetting.Value != 0) : true);
+            _ShowRahuBoat = App.GetSettingBool(ShowRahuBoatSettingName, true);
         }
 
         public bool ShowRahuBoat
@@ -987,8 +940,7 @@ namespace PgMoon
                     _ShowRahuBoat = value;
                     NotifyThisPropertyChanged();
 
-                    int? KeyValue = value ? 1 : 0;
-                    SetSettingKey(ShowRahuBoatSettingName, KeyValue, RegistryValueKind.DWord);
+                    App.SetSettingBool(ShowRahuBoatSettingName, value);
 
                     if (TaskbarIcon != null)
                         TaskbarIcon.UpdateToolTipText(ToolTipText);
@@ -1012,8 +964,7 @@ namespace PgMoon
         #region Dark Chapel
         private void InitDarkChapel()
         {
-            int? ShowSetting = GetSettingKey(ShowDarkChapelSettingName) as int?;
-            _ShowDarkChapel = (ShowSetting.HasValue ? (ShowSetting.Value != 0): true);
+            _ShowDarkChapel = App.GetSettingBool(ShowDarkChapelSettingName, true);
         }
 
         public bool ShowDarkChapel
@@ -1026,8 +977,7 @@ namespace PgMoon
                     _ShowDarkChapel = value;
                     NotifyThisPropertyChanged();
 
-                    int? KeyValue = value ? 1 : 0;
-                    SetSettingKey(ShowDarkChapelSettingName, KeyValue, RegistryValueKind.DWord);
+                    App.SetSettingBool(ShowDarkChapelSettingName, value);
                 }
             }
         }
@@ -1156,7 +1106,7 @@ namespace PgMoon
         private void OnClosed(object sender, EventArgs e)
         {
             SaveMushroomInfoList();
-            SetSettingKey(IsLockedSettingName, IsLocked ? 1 : 0, RegistryValueKind.DWord);
+            App.SetSettingBool(IsLockedSettingName, IsLocked);
         }
 
         public void OnDeactivated()
