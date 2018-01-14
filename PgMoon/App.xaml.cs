@@ -2,6 +2,7 @@
 using System;
 using System.Threading;
 using System.Windows;
+using TaskbarTools;
 
 namespace PgMoon
 {

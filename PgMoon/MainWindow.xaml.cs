@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+﻿using SchedulerTools;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -18,6 +18,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
+using TaskbarTools;
 
 namespace PgMoon
 {
@@ -38,7 +39,9 @@ namespace PgMoon
             InitSharedCalendar();
             InitTaskbarIcon();
         }
+        #endregion
 
+        #region Properties
         public bool IsElevated
         {
             get
@@ -52,6 +55,19 @@ namespace PgMoon
                 }
 
                 return false;
+            }
+        }
+
+        public string ToolTipText
+        {
+            get
+            {
+                string Result = PhaseCalculator.MoonPhase.Name + "\r\n" + TimeToNextPhaseText;
+                if (ShowRahuBoat)
+                    Result += "\r\n" + CalendarEntry.RahuBoatDestinationShortText + ": " + PhaseCalculator.MoonPhase.RahuBoatDestination;
+                Result += "\r\n" + CalendarEntry.PortToCircleShortText + ": " + PhaseCalculator.MoonPhase.FastPortMushroomShortText;
+
+                return Result;
             }
         }
         #endregion
@@ -298,19 +314,6 @@ namespace PgMoon
         public bool IsNextPhaseFullMoon
         {
             get { return PhaseCalculator.MoonPhase == MoonPhase.WaxingGibbousMoon; }
-        }
-
-        public string ToolTipText
-        {
-            get
-            {
-                string Result = PhaseCalculator.MoonPhase.Name + "\r\n" + TimeToNextPhaseText;
-                if (ShowRahuBoat)
-                    Result += "\r\n" + CalendarEntry.RahuBoatDestinationShortText + ": " + PhaseCalculator.MoonPhase.RahuBoatDestination;
-                Result += "\r\n" + CalendarEntry.PortToCircleShortText + ": " + PhaseCalculator.MoonPhase.FastPortMushroomShortText;
-
-                return Result;
-            }
         }
 
         private void UpdateMoonPhaseTimerCallback(object Parameter)

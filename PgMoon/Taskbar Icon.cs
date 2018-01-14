@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Controls.Primitives;
 using System.Windows.Forms;
 using System.Windows.Input;
 
-namespace PgMoon
+namespace TaskbarTools
 {
     public class TaskbarIcon : IDisposable
     {

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Win32.TaskScheduler;
 using System.IO;
 
-namespace PgMoon
+namespace SchedulerTools
 {
     public static class Scheduler
     {

@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Forms;
 
-namespace PgMoon
+namespace TaskbarTools
 {
     public static class Taskbar
     {
@@ -77,6 +77,7 @@ namespace PgMoon
         public static Screen CurrentScreen;
         #endregion
 
+        #region User Interface
         // From a position, and a window size, all in screen coordinates, return the position the window should take
         // to be on the edge of the task bar. In screen coordinates.
         public static Point GetRelativePosition(Point Position, Size Size)
@@ -121,7 +122,9 @@ namespace PgMoon
 
             return new Point(X, Y);
         }
+        #endregion
 
+        #region Implementation
         private enum TaskBarLocation { Top, Bottom, Left, Right }
 
         private static TaskBarLocation GetTaskBarLocation(RECT TaskbarRect)
@@ -192,14 +195,14 @@ namespace PgMoon
         static extern bool GetWindowRect(IntPtr hWnd, ref RECT rect);
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct POINT
+        private struct POINT
         {
             public int X;
             public int Y;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct RECT
+        private struct RECT
         {
             public int Left;        // x position of upper-left corner
             public int Top;         // y position of upper-left corner
@@ -266,7 +269,7 @@ namespace PgMoon
             return false;
         }
 
-        public static bool ToScreen(ref Point Position)
+        private static bool ToScreen(ref Point Position)
         {
             POINT p1 = new POINT() { X = 0, Y = 0 };
             POINT p2 = new POINT() { X = 1000, Y = 1000 };
@@ -283,7 +286,7 @@ namespace PgMoon
             return false;
         }
 
-        public static bool ToScreen(ref Size Size)
+        private static bool ToScreen(ref Size Size)
         {
             POINT p1 = new POINT() { X = 0, Y = 0 };
             POINT p2 = new POINT() { X = 1000, Y = 1000 };
@@ -300,7 +303,7 @@ namespace PgMoon
             return false;
         }
 
-        public static bool ToClient(ref Point Position)
+        private static bool ToClient(ref Point Position)
         {
             POINT p1 = new POINT() { X = 0, Y = 0 };
             POINT p2 = new POINT() { X = 1000, Y = 1000 };
@@ -317,7 +320,7 @@ namespace PgMoon
             return false;
         }
 
-        public static bool ToClient(ref Size Size)
+        private static bool ToClient(ref Size Size)
         {
             POINT p1 = new POINT() { X = 0, Y = 0 };
             POINT p2 = new POINT() { X = 1000, Y = 1000 };
@@ -333,5 +336,6 @@ namespace PgMoon
 
             return false;
         }
+        #endregion
     }
 }

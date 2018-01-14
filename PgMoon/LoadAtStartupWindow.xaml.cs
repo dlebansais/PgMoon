@@ -17,7 +17,7 @@ namespace PgMoon
 
             try
             {
-                string ApplicationFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PgJsonParse");
+                string ApplicationFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PgMoon");
 
                 if (!Directory.Exists(ApplicationFolder))
                     Directory.CreateDirectory(ApplicationFolder);
