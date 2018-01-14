@@ -6,22 +6,45 @@ namespace SchedulerTools
     public static class Scheduler
     {
         #region Client Interface
-        public static bool AddTask(string ExeName)
+        public static bool AddTask(string TaskName, string ExeName)
         {
             try
             {
+                char[] InvalidChars = Path.GetInvalidFileNameChars();
+                foreach (char InvalidChar in InvalidChars)
+                    TaskName = TaskName.Replace(InvalidChar, ' ');
+
                 TaskService Scheduler = new TaskService();
                 Trigger LogonTrigger = Trigger.CreateTrigger(TaskTriggerType.Logon);
                 ExecAction RunAction = Action.CreateAction(TaskActionType.Execute) as ExecAction;
                 RunAction.Path = ExeName;
 
-                Task task = Scheduler.AddTask(null, LogonTrigger, RunAction);
-                return true;
+                Task task;
+                try
+                {
+                    // Try with a task name (mandatory on new versions of Windows)
+                    task = Scheduler.AddTask(TaskName, LogonTrigger, RunAction);
+                    return true;
+                }
+                catch
+                {
+                }
+
+                try
+                {
+                    // Try without a task name (mandatory on old versions of Windows)
+                    task = Scheduler.AddTask(null, LogonTrigger, RunAction);
+                    return true;
+                }
+                catch
+                {
+                }
             }
             catch
             {
-                return false;
             }
+
+            return false;
         }
 
         public static bool IsTaskActive(string ExeName)

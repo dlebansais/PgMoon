@@ -246,7 +246,7 @@ namespace PgMoon
             string ExeName = Assembly.GetExecutingAssembly().Location;
 
             if (Install)
-                Scheduler.AddTask(ExeName);
+                Scheduler.AddTask("Project Gorgon - Moon Phase", ExeName);
             else
                 Scheduler.RemoveTask(ExeName);
         }
