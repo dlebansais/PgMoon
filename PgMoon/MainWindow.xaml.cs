@@ -225,7 +225,7 @@ namespace PgMoon
             string ExeName = Assembly.GetExecutingAssembly().Location;
 
             if (IsElevated)
-                SenderIcon.Check(LoadAtStartupCommand, Scheduler.IsTaskActive(ExeName));
+                SenderIcon.SetCheck(LoadAtStartupCommand, Scheduler.IsTaskActive(ExeName));
             else
             {
                 if (Scheduler.IsTaskActive(ExeName))
@@ -464,9 +464,8 @@ namespace PgMoon
         {
             TaskbarIcon SenderIcon = e.Parameter as TaskbarIcon;
 
-            bool IsChecked;
-            if (SenderIcon.ToggleChecked(e.Command, out IsChecked))
-                ShowCalendar = IsChecked;
+            SenderIcon.ToggleChecked(e.Command, out bool IsChecked);
+            ShowCalendar = IsChecked;
         }
 
         private void OnCalendarUp(object sender, MouseButtonEventArgs e)
@@ -781,9 +780,8 @@ namespace PgMoon
         {
             TaskbarIcon SenderIcon = e.Parameter as TaskbarIcon;
 
-            bool IsChecked;
-            if (SenderIcon.ToggleChecked(e.Command, out IsChecked))
-                ShowMushroomFarming = IsChecked;
+            SenderIcon.ToggleChecked(e.Command, out bool IsChecked);
+            ShowMushroomFarming = IsChecked;
         }
 
         private void OnMushroomListUp(object sender, MouseButtonEventArgs e)
@@ -964,9 +962,8 @@ namespace PgMoon
         {
             TaskbarIcon SenderIcon = e.Parameter as TaskbarIcon;
 
-            bool IsChecked;
-            if (SenderIcon.ToggleChecked(e.Command, out IsChecked))
-                ShowRahuBoat = IsChecked;
+            SenderIcon.ToggleChecked(e.Command, out bool IsChecked);
+            ShowRahuBoat = IsChecked;
         }
 
         private static readonly string ShowRahuBoatSettingName = "ShowRahuBoat";
@@ -998,9 +995,8 @@ namespace PgMoon
         {
             TaskbarIcon SenderIcon = e.Parameter as TaskbarIcon;
 
-            bool IsChecked;
-            if (SenderIcon.ToggleChecked(e.Command, out IsChecked))
-                ShowDarkChapel = IsChecked;
+            SenderIcon.ToggleChecked(e.Command, out bool IsChecked);
+            ShowDarkChapel = IsChecked;
         }
 
         private static readonly string ShowDarkChapelSettingName = "ShowDarkChapel";
@@ -1136,9 +1132,8 @@ namespace PgMoon
 
             if (IsElevated)
             {
-                bool IsChecked;
-                if (SenderIcon.ToggleChecked(e.Command, out IsChecked))
-                    InstallLoad(IsChecked);
+                SenderIcon.ToggleChecked(e.Command, out bool IsChecked);
+                InstallLoad(IsChecked);
             }
             else
             {
