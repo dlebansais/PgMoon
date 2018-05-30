@@ -131,7 +131,7 @@
     </Compile>
     <Compile Include="SharedCalendarEntry.cs" />
     <Compile Include="SharedCalendarEvent.cs" />
-    <Compile Include="Taskbar\Taskbar Icon.cs" />
+    <Compile Include="Taskbar\TaskbarIcon.cs" />
     <Compile Include="Taskbar\Taskbar.cs" />
     <Compile Include="Validation\Empty Text Validation Rule.cs" />
     <Page Include="BusyIndicator.xaml">
