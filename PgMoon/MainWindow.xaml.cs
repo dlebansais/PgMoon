@@ -46,17 +46,25 @@ namespace PgMoon
         {
             get
             {
-                WindowsIdentity wi = WindowsIdentity.GetCurrent();
-                if (wi != null)
+                if (!_IsElevated.HasValue)
                 {
-                    WindowsPrincipal wp = new WindowsPrincipal(wi);
-                    if (wp != null)
-                        return wp.IsInRole(WindowsBuiltInRole.Administrator);
+                    WindowsIdentity wi = WindowsIdentity.GetCurrent();
+                    if (wi != null)
+                    {
+                        WindowsPrincipal wp = new WindowsPrincipal(wi);
+                        if (wp != null)
+                            _IsElevated = wp.IsInRole(WindowsBuiltInRole.Administrator);
+                        else
+                            _IsElevated = false;
+                    }
+                    else
+                        _IsElevated = false;
                 }
 
-                return false;
+                return _IsElevated.Value;
             }
         }
+        private bool? _IsElevated;
 
         public string ToolTipText
         {
