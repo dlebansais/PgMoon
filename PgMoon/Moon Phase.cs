@@ -106,7 +106,7 @@ namespace PgMoon
 
         #region Init
         public static MoonPhase NewMoon = new MoonPhase("New Moon", "South of the westernmost lake");
-        public static MoonPhase WaxingCrescentMoon = new MoonPhase("Waxing Crescent Moon", "By the meditation pillar");
+        public static MoonPhase WaxingCrescentMoon = new MoonPhase("Waxing Crescent Moon", "North and east of the portal to Serbule");
         public static MoonPhase FirstQuarterMoon = new MoonPhase("First-Quarter Moon", "At spiders");
         public static MoonPhase WaxingGibbousMoon = new MoonPhase("Waxing Gibbous Moon", "By the moutain, north of the lake's edge");
         public static MoonPhase FullMoon = new MoonPhase("Full Moon", "By Percy's House");
