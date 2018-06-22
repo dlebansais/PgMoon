@@ -28,6 +28,11 @@ namespace PgMoon
             get { return false; }
         }
 
+        public bool HasClickHandler
+        {
+            get { return true; }
+        }
+
         public void Initialize(bool isElevated, Dispatcher dispatcher, TaskbarIconHost.IPluginSettings settings, TaskbarIconHost.IPluginLogger logger)
         {
             IsElevated = isElevated;
@@ -61,10 +66,12 @@ namespace PgMoon
                               isCheckedHandler: () => MainPopup.ShowDarkChapel,
                               commandHandler: OnShowDarkChapel);
 
+            CommandList.Add(null);
+
             InitializeCommand("Share the calendar...",
                               isVisibleHandler: () => true,
                               isEnabledHandler: () => true,
-                              isCheckedHandler: () => true,
+                              isCheckedHandler: () => false,
                               commandHandler: OnSharedCalendar);
         }
 
@@ -128,7 +135,13 @@ namespace PgMoon
             return false;
         }
 
-        public Icon Icon { get { return LoadEmbeddedResource<Icon>("Taskbar.ico"); } }
+        public Icon Icon { get { return LoadEmbeddedResource<Icon>("Taskbar.ico", Logger); } }
+        public Bitmap SelectionBitmap { get { return LoadEmbeddedResource<Bitmap>("PgMoon.png", Logger); } }
+
+        public void IconClicked()
+        {
+            MainPopup.IconClicked();
+        }
 
         public bool GetIsToolTipChanged()
         {
@@ -176,7 +189,7 @@ namespace PgMoon
         public TaskbarIconHost.IPluginSettings Settings { get; private set; }
         public TaskbarIconHost.IPluginLogger Logger { get; private set; }
 
-        private T LoadEmbeddedResource<T>(string resourceName)
+        public static T LoadEmbeddedResource<T>(string resourceName, TaskbarIconHost.IPluginLogger logger)
         {
             // Loads an "Embedded Resource" of type T (ex: Bitmap for a PNG file).
             foreach (string ResourceName in Assembly.GetExecutingAssembly().GetManifestResourceNames())
@@ -185,13 +198,13 @@ namespace PgMoon
                     using (Stream rs = Assembly.GetExecutingAssembly().GetManifestResourceStream(ResourceName))
                     {
                         T Result = (T)Activator.CreateInstance(typeof(T), rs);
-                        Logger.AddLog($"Resource {resourceName} loaded");
+                        logger.AddLog($"Resource {resourceName} loaded");
 
                         return Result;
                     }
                 }
 
-            Logger.AddLog($"Resource {resourceName} not found");
+            logger.AddLog($"Resource {resourceName} not found");
             return default(T);
         }
 

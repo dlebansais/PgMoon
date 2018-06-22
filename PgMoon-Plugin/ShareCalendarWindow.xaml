@@ -10,7 +10,6 @@
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
         SizeToContent="WidthAndHeight"
-        Icon="pack://application:,,,/Resources/Main.ico"
         MaxWidth="500">
     <Window.Resources>
         <conv:BooleanToObjectConverter x:Key="convBooleanToObject"/>

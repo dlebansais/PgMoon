@@ -32,6 +32,7 @@ namespace PgMoon
             Settings = settings;
 
             Placement = PlacementMode.Absolute;
+            LastClosedTime = DateTime.MinValue;
             InitMoonPhase();
             InitCalendar();
             InitMushroomFarming();
@@ -896,6 +897,7 @@ namespace PgMoon
         {
             SaveMushroomInfoList();
             Settings.SetSettingBool(IsLockedSettingName, IsLocked);
+            LastClosedTime = DateTime.UtcNow;
         }
 
         public void OnDeactivated()
@@ -914,6 +916,19 @@ namespace PgMoon
             Application.Current.Shutdown();
         }
 
+        public void IconClicked()
+        {
+            if (!IsOpen)
+            {
+                // We rely on time to avoid a flickering popup.
+                if ((DateTime.UtcNow - LastClosedTime).TotalSeconds >= 1.0)
+                    IsOpen = true;
+                else
+                    LastClosedTime = DateTime.MinValue;
+            }
+        }
+
+        private DateTime LastClosedTime;
         private bool IsTopMostSet = false;
         #endregion
 

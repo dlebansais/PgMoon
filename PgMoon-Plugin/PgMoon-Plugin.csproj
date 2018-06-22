@@ -98,6 +98,8 @@
     <Resource Include="Resources\Close.png" />
     <Resource Include="Resources\BigLocked.png" />
     <EmbeddedResource Include="Resources\Taskbar.ico" />
+    <EmbeddedResource Include="Resources\PgMoon.png" />
+    <EmbeddedResource Include="Resources\Main.ico" />
     <Content Include="TaskbarIconHost\TaskbarIconShared.dll" />
   </ItemGroup>
   <ItemGroup>
