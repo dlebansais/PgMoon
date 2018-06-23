@@ -125,7 +125,7 @@ namespace PgMoon
         {
         }
 
-        public void ExecuteCommandHandler(ICommand Command)
+        public void OnExecuteCommand(ICommand Command)
         {
             MenuHandlerTable[Command]();
         }
@@ -138,7 +138,7 @@ namespace PgMoon
         public Icon Icon { get { return LoadEmbeddedResource<Icon>("Taskbar.ico", Logger); } }
         public Bitmap SelectionBitmap { get { return LoadEmbeddedResource<Bitmap>("PgMoon.png", Logger); } }
 
-        public void IconClicked()
+        public void OnIconClicked()
         {
             MainPopup.IconClicked();
         }
@@ -162,6 +162,15 @@ namespace PgMoon
 
                 return Result;
             }
+        }
+
+        public void OnActivated()
+        {
+        }
+
+        public void OnDeactivated()
+        {
+            MainPopup.OnDeactivated();
         }
 
         public bool CanClose(bool canClose)
