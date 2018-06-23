@@ -812,15 +812,6 @@ namespace PgMoon
 
         public void OnSharedCalendar()
         {
-            string ExeName = Assembly.GetExecutingAssembly().Location;
-            string ExeFolder = Path.GetDirectoryName(ExeName);
-            string[] GoogleAssemblies = Directory.GetFiles(ExeFolder, "Google.*.dll");
-            if (GoogleAssemblies.Length == 0)
-            {
-                MessageBox.Show("This feature is not available without Google assemblies.\r\n\r\nPlease return to the site from where this application was downloaded, to find instructions on how to get them.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
             ShareCalendarWindow Dlg = new ShareCalendarWindow(Settings);
             bool? Result = Dlg.ShowDialog();
             if (Result.HasValue && Result.Value)
