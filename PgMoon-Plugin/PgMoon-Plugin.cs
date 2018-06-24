@@ -9,7 +9,7 @@ using TaskbarIconHost;
 
 namespace PgMoon
 {
-    public class PgMoonPlugin : MarshalByRefObject, TaskbarIconHost.IPluginClient
+    public class PgMoonPlugin : TaskbarIconHost.IPluginClient
     {
         #region Plugin
         public string Name
