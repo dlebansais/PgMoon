@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PgMoon", "PgMoon\PgMoon.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PgMoon-Plugin", "PgMoon-Plugin\PgMoon-Plugin.csproj", "{7843B1FC-7B60-4815-B422-DFEEFA3D5E5D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SinglePluginHost", "SinglePluginHost\SinglePluginHost.csproj", "{1AA662FD-9DDE-4638-B2B5-2367268B5B96}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,10 @@ Global
 		{7843B1FC-7B60-4815-B422-DFEEFA3D5E5D}.Debug|x64.Build.0 = Debug|x64
 		{7843B1FC-7B60-4815-B422-DFEEFA3D5E5D}.Release|x64.ActiveCfg = Release|x64
 		{7843B1FC-7B60-4815-B422-DFEEFA3D5E5D}.Release|x64.Build.0 = Release|x64
+		{1AA662FD-9DDE-4638-B2B5-2367268B5B96}.Debug|x64.ActiveCfg = Debug|x64
+		{1AA662FD-9DDE-4638-B2B5-2367268B5B96}.Debug|x64.Build.0 = Debug|x64
+		{1AA662FD-9DDE-4638-B2B5-2367268B5B96}.Release|x64.ActiveCfg = Release|x64
+		{1AA662FD-9DDE-4638-B2B5-2367268B5B96}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

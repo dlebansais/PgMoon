@@ -6,7 +6,7 @@
         ResizeMode="NoResize"
         SizeToContent="Height"
         WindowStartupLocation="CenterScreen"
-        Icon="pack://application:,,,/Resources/Main.ico"
+        Icon="pack://application:,,,/Resources/main.ico"
         Topmost="True"
         Width="640">
     <Window.Resources>

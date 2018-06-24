@@ -89,6 +89,7 @@
     <Compile Include="Mushroom Info.cs" />
     <Compile Include="PgMoon-Plugin.cs" />
     <Compile Include="Phase Calculator.cs" />
+    <Compile Include="PluginDetails.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ShareCalendarWindow.xaml.cs">
       <DependentUpon>ShareCalendarWindow.xaml</DependentUpon>

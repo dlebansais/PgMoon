@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
-using System.Threading;
 using System.Windows.Input;
 using System.Windows.Threading;
+using TaskbarIconHost;
 
 namespace PgMoon
 {
@@ -15,12 +14,12 @@ namespace PgMoon
         #region Plugin
         public string Name
         {
-            get { return "PgMoon"; }
+            get { return PluginDetails.Name; }
         }
 
         public Guid Guid
         {
-            get { return new Guid("{AA25BA4F-9922-4018-B1B4-588A6B59CE62}"); }
+            get { return PluginDetails.Guid; }
         }
 
         public bool RequireElevated

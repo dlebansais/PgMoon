@@ -36,7 +36,7 @@ namespace PgMoon
 
             Settings = settings;
 
-            LoadEmbeddedIcon("Main.ico");
+            LoadEmbeddedIcon("main.ico");
 
             AddEvents = Settings.GetSettingBool("AddEvents", false);
             ApplicationName = Settings.GetSettingString("EventsApplicationName", DefaultApplicationName);
