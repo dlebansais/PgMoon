@@ -1,5 +1,5 @@
 # Download
-The latest version is [here](https://github.com/dlebansais/PgMoon/releases).
+The latest version is [here](https://github.com/dlebansais/PgMoon/releases). Please read the release notice, as your settings must be reapplied.
 
 # PgMoon
 Adds a little icon to the taskbar to show the moon phase in [Project: Gorgon](https://projectgorgon.com/) MMORPG.
