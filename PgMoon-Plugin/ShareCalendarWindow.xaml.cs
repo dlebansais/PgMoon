@@ -10,14 +10,13 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using TaskbarIconHost;
 
 namespace PgMoon
 {
@@ -36,7 +35,7 @@ namespace PgMoon
 
             Settings = settings;
 
-            LoadEmbeddedIcon("main.ico");
+            Icon = ResourceTools.LoadEmbeddedIcon("main.ico");
 
             AddEvents = Settings.GetSettingBool("AddEvents", false);
             ApplicationName = Settings.GetSettingString("EventsApplicationName", DefaultApplicationName);
@@ -54,20 +53,6 @@ namespace PgMoon
             InitCalendarList();
             InitCredential();
             InitStatus();
-        }
-
-        private void LoadEmbeddedIcon(string iconName)
-        {
-            foreach (string ResourceName in Assembly.GetExecutingAssembly().GetManifestResourceNames())
-                if (ResourceName.EndsWith(iconName))
-                {
-                    using (Stream rs = Assembly.GetExecutingAssembly().GetManifestResourceStream(ResourceName))
-                    {
-                        //Decode the icon from the stream and set the first frame to the BitmapSource
-                        BitmapDecoder decoder = IconBitmapDecoder.Create(rs, BitmapCreateOptions.None, BitmapCacheOption.None);
-                        Icon = decoder.Frames[0];
-                    }
-                }
         }
 
         public TaskbarIconHost.IPluginSettings Settings { get; private set; }
