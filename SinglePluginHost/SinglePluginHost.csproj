@@ -104,6 +104,7 @@
       <DependentUpon>RemoveFromStartupWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Scheduler.cs" />
+    <Compile Include="Taskbar\TaskbarBalloon.cs" />
     <Compile Include="Taskbar\TaskbarIcon.cs" />
   </ItemGroup>
   <ItemGroup>
