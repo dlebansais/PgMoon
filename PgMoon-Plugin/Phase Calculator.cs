@@ -220,62 +220,65 @@ namespace PgMoon
             if (utcTime < LunationTable[0].NewMoon)
                 return (7 - (int)((LunationTable[0].NewMoon - utcTime).TotalDays / OrbitalPeriod)) % 8;
 
-            DateTime ThisNewMoon;
-            DateTime ThisFullMoon;
-            DateTime NextNewMoon = new DateTime();
+            DateTime[] Moons = new DateTime[5];
 
             for (int i = 0; i < LunationTable.Length; i++)
             {
-                ThisNewMoon = LunationTable[i].NewMoon;
-                ThisFullMoon = LunationTable[i].FullMoon;
+                // Gets dates for this cycle.
+                Moons[0] = LunationTable[i].NewMoon;
+                Moons[1] = LunationTable[i].FirstQuarterMoon;
+                Moons[2] = LunationTable[i].FullMoon;
+                Moons[3] = LunationTable[i].LastQuarterMoon;
+                Moons[4] = i + 1 < LunationTable.Length ? LunationTable[i + 1].NewMoon : LunationTable[i].NewMoon + LunationTable[i].Duration;
 
-                if (utcTime >= ThisNewMoon && utcTime < ThisFullMoon)
-                    return HalfCycleMoonPhase(ThisNewMoon, utcTime, ThisFullMoon);
+                // Apply this offset to all moon phases, the table is off for some reason.
+                double d = 17.75;
+                for (int j = 0; j < 5; j++)
+                    Moons[j] -= TimeSpan.FromHours(d);
 
-                NextNewMoon = i + 1 < LunationTable.Length ? LunationTable[i + 1].NewMoon : LunationTable[i].NewMoon + LunationTable[i].Duration;
+                for (int j = 0; j < 4; j++)
+                {
+                    if ((Moons[j].Hour == 0 && Moons[j].Minute < 10) || (Moons[j].Hour == 23 && Moons[j].Minute > 50))
+                        WriteLimitMoon(Moons[j]);
 
-                if (utcTime >= ThisFullMoon && utcTime < NextNewMoon)
-                    return (HalfCycleMoonPhase(ThisFullMoon, utcTime, NextNewMoon) + 4) % 8;
+                    if (utcTime >= Moons[j] && utcTime < Moons[j + 1])
+                    {
+                        // If we're in this particulary part of the cycle, gets a phase number. 0 if at start, 2 if at end, 1 if in the middle.
+                        int QuarterPhase = QuarterCycleMoonPhase(Moons[j], utcTime, Moons[j + 1]);
+
+                        // Four parts, this gives a value between 0 and 8. Round it to next cycle if 8.
+                        return (QuarterPhase + (j * 2)) % 8;
+                    }
+                }
             }
 
             // Fallback for very late times.
-            return ((int)((utcTime - NextNewMoon).TotalDays / OrbitalPeriod)) % 8;
+            return ((int)((utcTime - Moons[4]).TotalDays / OrbitalPeriod)) % 8;
         }
 
-        private static int HalfCycleMoonPhase(DateTime startTime, DateTime time, DateTime endTime)
+        private static int QuarterCycleMoonPhase(DateTime startTime, DateTime time, DateTime endTime)
         {
-            // Gets the end time of the first phase of this half cycle: next day, rounded up.
-            DateTime FirstPhaseEndTime = startTime + TimeSpan.FromDays(1);
-            FirstPhaseEndTime = new DateTime(FirstPhaseEndTime.Year, FirstPhaseEndTime.Month, FirstPhaseEndTime.Day) + TimeSpan.FromDays(1);
+            // Gets the end time of the first phase of this quarter cycle.
+            DateTime FirstPhaseEndTime = new DateTime(startTime.Year, startTime.Month, startTime.Day) + TimeSpan.FromDays(3);
 
             // Still within this first phase?
             if (time < FirstPhaseEndTime)
                 return 0;
             else
             {
-                // Gets the start time of the last phase of this half cycle: previous day, rounded down.
-                DateTime LastPhaseStartTime = endTime - TimeSpan.FromDays(1);
-                LastPhaseStartTime = new DateTime(LastPhaseStartTime.Year, LastPhaseStartTime.Month, LastPhaseStartTime.Day);
+                // Gets the start time of the last phase of this quarter cycle.
+                DateTime LastPhaseStartTime = new DateTime(endTime.Year, endTime.Month, endTime.Day);
 
-                // Already within this last phase?
+                // Already within this last phase? If not, we're in between (a Waxing or Waning phase).
                 if (time >= LastPhaseStartTime)
-                    return 4;
-
-                TimeSpan PhaseSeparation = new TimeSpan((LastPhaseStartTime.Ticks - FirstPhaseEndTime.Ticks) / 3);
-
-                // Calculate the start time of each intermediate phase. Round days up.
-                DateTime IntermediatePhase1 = FirstPhaseEndTime + PhaseSeparation;
-                IntermediatePhase1 = new DateTime(IntermediatePhase1.Year, IntermediatePhase1.Month, IntermediatePhase1.Day) + TimeSpan.FromDays(1);
-                DateTime IntermediatePhase2 = FirstPhaseEndTime + PhaseSeparation + PhaseSeparation;
-                IntermediatePhase2 = new DateTime(IntermediatePhase2.Year, IntermediatePhase2.Month, IntermediatePhase2.Day) + TimeSpan.FromDays(1);
-
-                if (time < IntermediatePhase1)
-                    return 1;
-                else if (time < IntermediatePhase2)
                     return 2;
                 else
-                    return 3;
+                    return 1;
             }
+        }
+
+        private static void WriteLimitMoon(DateTime t)
+        {
         }
 
         private void CalculateBasicMoonPhase(DateTime Time)
