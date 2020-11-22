@@ -1,30 +1,39 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.ComponentModel;
-using System.IO;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Security.Principal;
-using System.Text;
-using System.Threading;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Input;
-using System.Windows.Interop;
-using System.Windows.Media;
-using System.Windows.Threading;
-using TaskbarIconHost;
-
-namespace PgMoon
+﻿namespace PgMoon
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+    using System.Collections.Specialized;
+    using System.ComponentModel;
+    using System.Globalization;
+    using System.IO;
+    using System.Reflection;
+    using System.Runtime.CompilerServices;
+    using System.Runtime.InteropServices;
+    using System.Security.Principal;
+    using System.Text;
+    using System.Threading;
+    using System.Windows;
+    using System.Windows.Controls;
+    using System.Windows.Controls.Primitives;
+    using System.Windows.Input;
+    using System.Windows.Interop;
+    using System.Windows.Media;
+    using System.Windows.Threading;
+    using RegistryTools;
+    using TaskbarIconHost;
+
+    /// <summary>
+    /// Represents the application main window.
+    /// </summary>
     public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     {
         #region Init
-        public MainWindow(TaskbarIconHost.IPluginSettings settings)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MainWindow"/> class.
+        /// </summary>
+        /// <param name="settings">The registry settings.</param>
+        public MainWindow(Settings settings)
         {
             InitializeComponent();
             DataContext = this;
@@ -41,34 +50,43 @@ namespace PgMoon
             InitSharedCalendar();
         }
 
-        public TaskbarIconHost.IPluginSettings Settings { get; private set; }
+        /// <summary>
+        /// Gets the registry settings.
+        /// </summary>
+        public Settings Settings { get; private set; }
         #endregion
 
         #region Properties
+        /// <summary>
+        /// Gets a value indicating whether the application is running as administrator.
+        /// </summary>
         public bool IsElevated
         {
             get
             {
-                if (!_IsElevated.HasValue)
+                if (!IsElevatedInternal.HasValue)
                 {
                     WindowsIdentity wi = WindowsIdentity.GetCurrent();
                     if (wi != null)
                     {
                         WindowsPrincipal wp = new WindowsPrincipal(wi);
                         if (wp != null)
-                            _IsElevated = wp.IsInRole(WindowsBuiltInRole.Administrator);
+                            IsElevatedInternal = wp.IsInRole(WindowsBuiltInRole.Administrator);
                         else
-                            _IsElevated = false;
+                            IsElevatedInternal = false;
                     }
                     else
-                        _IsElevated = false;
+                        IsElevatedInternal = false;
                 }
 
-                return _IsElevated.Value;
+                return IsElevatedInternal.Value;
             }
         }
-        private bool? _IsElevated;
+        private bool? IsElevatedInternal;
 
+        /// <summary>
+        /// Gets the tooltip text.
+        /// </summary>
         public string ToolTipText
         {
             get
@@ -92,56 +110,75 @@ namespace PgMoon
             UpdateMoonPhaseTimer.Change(UpdateInterval, UpdateInterval);
         }
 
+        /// <summary>
+        /// Gets the time to next phase.
+        /// </summary>
+#pragma warning disable CA1822 // Mark members as static
         public string TimeToNextPhaseText
+#pragma warning restore CA1822 // Mark members as static
         {
             get { return FriendlyTimeString(PhaseCalculator.TimeToNextPhase, "Changing soon"); }
         }
 
+        /// <summary>
+        /// Gets the time to full moon.
+        /// </summary>
+#pragma warning disable CA1822 // Mark members as static
         public string TimeToFullMoonText
+#pragma warning restore CA1822 // Mark members as static
         {
             get { return FriendlyTimeString(PhaseCalculator.TimeToFullMoon, "Soon"); }
         }
 
-        private string FriendlyTimeString(TimeSpan Duration, string SoonText)
+        private static string FriendlyTimeString(TimeSpan duration, string soonText)
         {
-            string Result = "";
+            string Result = string.Empty;
 
-            if (Duration.TotalDays >= 1)
+            if (duration.TotalDays >= 1)
             {
-                int Days = (int)Duration.TotalDays;
-                Duration -= TimeSpan.FromDays(Days);
+                int Days = (int)duration.TotalDays;
+                duration -= TimeSpan.FromDays(Days);
 
                 if (Days > 1)
-                    Result += Days.ToString() + " days";
+                    Result += Days.ToString(CultureInfo.InvariantCulture) + " days";
                 else
-                    Result += Days.ToString() + " day";
+                    Result += Days.ToString(CultureInfo.InvariantCulture) + " day";
             }
 
-            if (Duration.TotalHours >= 1)
+            if (duration.TotalHours >= 1)
             {
-                int Hours = (int)Duration.TotalHours;
-                Duration -= TimeSpan.FromHours(Hours);
+                int Hours = (int)duration.TotalHours;
+                duration -= TimeSpan.FromHours(Hours);
 
                 if (Result.Length > 0)
                     Result += ", ";
 
                 if (Hours > 1)
-                    Result += Hours.ToString() + " hours";
+                    Result += Hours.ToString(CultureInfo.InvariantCulture) + " hours";
                 else
-                    Result += Hours.ToString() + " hour";
+                    Result += Hours.ToString(CultureInfo.InvariantCulture) + " hour";
             }
 
             if (Result.Length == 0)
-                return SoonText;
+                return soonText;
             else
                 return Result + " left";
         }
 
+        /// <summary>
+        /// Gets a value indicating whether the current Moon phase is Full Moon.
+        /// </summary>
+#pragma warning disable CA1822 // Mark members as static
         public bool IsFullMoon
+#pragma warning restore CA1822 // Mark members as static
         {
             get { return PhaseCalculator.MoonPhase == MoonPhase.FullMoon; }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether the tooltip changed asn resets this flag.
+        /// </summary>
+        /// <returns>True if the tooltip changed; otherwise, false.</returns>
         public bool GetIsToolTipChanged()
         {
             bool Result = IsToolTipChanged;
@@ -150,12 +187,24 @@ namespace PgMoon
             return Result;
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the tooltip changed.
+        /// </summary>
+#pragma warning disable CA1721 // Property names should not match get methods
+        public bool IsToolTipChanged { get; set; }
+#pragma warning restore CA1721 // Property names should not match get methods
+
+        /// <summary>
+        /// Gets a value indicating whether the next Moon phase is Full Moon.
+        /// </summary>
+#pragma warning disable CA1822 // Mark members as static
         public bool IsNextPhaseFullMoon
+#pragma warning restore CA1822 // Mark members as static
         {
             get { return PhaseCalculator.MoonPhase == MoonPhase.WaxingGibbousMoon; }
         }
 
-        private void UpdateMoonPhaseTimerCallback(object Parameter)
+        private void UpdateMoonPhaseTimerCallback(object? parameter)
         {
             Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, new UpdateMoonPhaseHandler(OnUpdateMoonPhase));
         }
@@ -164,8 +213,7 @@ namespace PgMoon
 
         private void OnUpdateMoonPhase()
         {
-            //IncreaseNow(); //Debug only
-
+            // IncreaseNow(); //Debug only
             PhaseCalculator.Update();
             NotifyPropertyChanged(nameof(TimeToNextPhaseText));
             NotifyPropertyChanged(nameof(TimeToFullMoonText));
@@ -198,63 +246,74 @@ namespace PgMoon
             PostSharedEvents();
         }
 
-        private Timer UpdateMoonPhaseTimer;
+        private Timer UpdateMoonPhaseTimer = new Timer(new TimerCallback((object? state) => { }));
         private bool PreviousUpdateChanged;
-        private bool IsToolTipChanged;
         #endregion
 
         #region Calendar
         private void InitCalendar()
         {
-            _ShowCalendar = Settings.GetSettingBool(ShowCalendarSettingName, true);
-            _CalendarStartTime = Now();
+            ShowCalendarInternal = Settings.GetBool(ShowCalendarSettingName, true);
+            CalendarStartTimeInternal = Now();
             BuildCalendar();
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the calendar should be shown.
+        /// </summary>
         public bool ShowCalendar
         {
-            get { return _ShowCalendar; }
+            get { return ShowCalendarInternal; }
             set
             {
-                if (_ShowCalendar != value)
+                if (ShowCalendarInternal != value)
                 {
-                    _ShowCalendar = value;
+                    ShowCalendarInternal = value;
                     NotifyThisPropertyChanged();
 
-                    Settings.SetSettingBool(ShowCalendarSettingName, value);
+                    Settings.SetBool(ShowCalendarSettingName, value);
                 }
             }
         }
-        private bool _ShowCalendar;
+        private bool ShowCalendarInternal;
 
+        /// <summary>
+        /// Gets or sets the calendar start time.
+        /// </summary>
         public DateTime CalendarStartTime
         {
-            get { return _CalendarStartTime; }
+            get { return CalendarStartTimeInternal; }
             set
             {
-                if (_CalendarStartTime != value)
+                if (CalendarStartTimeInternal != value)
                 {
-                    _CalendarStartTime = value;
+                    CalendarStartTimeInternal = value;
                     NotifyThisPropertyChanged();
                     NotifyPropertyChanged(nameof(CalendarStartTimeYear));
                 }
             }
         }
+        private DateTime CalendarStartTimeInternal;
+
+        /// <summary>
+        /// Gets the calendar start time year.
+        /// </summary>
         public string CalendarStartTimeYear
         {
             get
             {
                 int Year = CalendarStartTime.Year;
                 if (Year == Now().Year)
-                    return "";
+                    return string.Empty;
                 else
-                    return CalendarStartTime.Year.ToString();
+                    return CalendarStartTime.Year.ToString(CultureInfo.InvariantCulture);
             }
         }
-        private DateTime _CalendarStartTime;
 
+        /// <summary>
+        /// Gets the list of calendar entries.
+        /// </summary>
         public ObservableCollection<CalendarEntry> CalendarEntryList { get; private set; } = new ObservableCollection<CalendarEntry>();
-        private Dictionary<DateTime, CalendarEntry> CalendarEntryTable = new Dictionary<DateTime, CalendarEntry>();
 
         private void BuildCalendar()
         {
@@ -340,26 +399,26 @@ namespace PgMoon
             PreviousUpdateChanged = true;
         }
 
-        private static readonly string ShowCalendarSettingName = "ShowCalendar";
-        private const int CalendarPageIncrement = 80;
+        private const string ShowCalendarSettingName = "ShowCalendar";
+        private Dictionary<DateTime, CalendarEntry> CalendarEntryTable = new Dictionary<DateTime, CalendarEntry>();
         #endregion
 
         #region Mushroom Farming
         private void InitMushroomFarming()
         {
-            _ShowMushroomFarming = Settings.GetSettingBool(ShowMushroomFarmingSettingName, true);
-            _IsMushroomListLarge = false;
-            _IsLocked = Settings.GetSettingBool(IsLockedSettingName, false);
+            ShowMushroomFarmingInternal = Settings.GetBool(ShowMushroomFarmingSettingName, true);
+            IsMushroomListLargeInternal = false;
+            IsLockedInternal = Settings.GetBool(IsLockedSettingName, false);
 
             LoadMushroomInfoList();
 
-            bool IsMushroomListInitialized = Settings.IsBoolKeySet(MushroomListInitializedName);
-            Settings.SetSettingBool(MushroomListInitializedName, true);
+            bool IsMushroomListInitialized = Settings.IsValueSet(MushroomListInitializedName);
+            Settings.SetBool(MushroomListInitializedName, true);
 
             if (MushroomInfoList.Count == 0 && !IsMushroomListInitialized)
                 ResetMushroomListToDefault(false);
 
-            MushroomInfoList.Add(new MushroomInfo(Dispatcher, "", "", null, null));
+            MushroomInfoList.Add(new MushroomInfo(Dispatcher, string.Empty, string.Empty, null, null));
             MushroomInfoList.CollectionChanged += OnMushroomInfoListChanged;
 
             string ApplicationFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PgJsonParse");
@@ -372,7 +431,7 @@ namespace PgMoon
         {
             MushroomInfoList.Clear();
 
-            string MushroomListSetting = Settings.GetSettingString(MushroomListSettingName, null);
+            string MushroomListSetting = Settings.GetString(MushroomListSettingName, string.Empty);
             if (MushroomListSetting != null)
             {
                 string[] SplitMushroomListSetting = MushroomListSetting.Split(MushroomListSeparator);
@@ -406,10 +465,10 @@ namespace PgMoon
                                 SelectedPhase2 = -1;
                             }
 
-                            string Comment = ((Line.Length > 3) ? Line[3] : "");
+                            string Comment = (Line.Length > 3) ? Line[3] : string.Empty;
 
-                            MoonPhase RobustGrowthPhase1 = (SelectedPhase1 >= 0 ? MoonPhase.MoonPhaseList[SelectedPhase1] : null);
-                            MoonPhase RobustGrowthPhase2 = (SelectedPhase2 >= 0 ? MoonPhase.MoonPhaseList[SelectedPhase2] : null);
+                            MoonPhase? RobustGrowthPhase1 = SelectedPhase1 >= 0 ? MoonPhase.MoonPhaseList[SelectedPhase1] : null;
+                            MoonPhase? RobustGrowthPhase2 = SelectedPhase2 >= 0 ? MoonPhase.MoonPhaseList[SelectedPhase2] : null;
                             MushroomInfoList.Add(new MushroomInfo(Dispatcher, Name, Comment, RobustGrowthPhase1, RobustGrowthPhase2));
                         }
                     }
@@ -419,21 +478,21 @@ namespace PgMoon
 
         private void SaveMushroomInfoList()
         {
-            string Setting = "";
+            string Setting = string.Empty;
 
             foreach (MushroomInfo Info in MushroomInfoList)
             {
                 if (Info.Name.Length == 0)
                     continue;
 
-                string Line = "";
+                string Line = string.Empty;
                 Line += Info.Name;
                 Line += MushroomSeparator;
                 if (Info.SelectedMoonPhase1 >= 0)
-                    Line += Info.SelectedMoonPhase1.ToString();
+                    Line += Info.SelectedMoonPhase1.ToString(CultureInfo.InvariantCulture);
                 Line += MushroomSeparator;
                 if (Info.SelectedMoonPhase2 >= 0)
-                    Line += Info.SelectedMoonPhase2.ToString();
+                    Line += Info.SelectedMoonPhase2.ToString(CultureInfo.InvariantCulture);
                 Line += MushroomSeparator;
                 Line += Info.Comment;
 
@@ -442,110 +501,132 @@ namespace PgMoon
                 Setting += Line;
             }
 
-            Settings.SetSettingString(MushroomListSettingName, Setting);
+            Settings.SetString(MushroomListSettingName, Setting);
         }
 
-        private void ResetMushroomListToDefault(bool KeepComment)
+        private void ResetMushroomListToDefault(bool keepComment)
         {
             List<MushroomInfo> NewList = new List<MushroomInfo>();
 
-            AddMushroomToList(NewList, MoonPhase.ParasolMushroomLongName, MoonPhase.FullMoon, MoonPhase.WaningCrescentMoon, KeepComment);
-            AddMushroomToList(NewList, MoonPhase.MycenaMushroomLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.FirstQuarterMoon, KeepComment);
-            AddMushroomToList(NewList, MoonPhase.BoletusMushroomLongName, MoonPhase.NewMoon, MoonPhase.WaningGibbousMoon, KeepComment);
-            AddMushroomToList(NewList, MoonPhase.FieldMushroomLongName, MoonPhase.WaxingGibbousMoon, MoonPhase.LastQuarterMoon, KeepComment);
-            AddMushroomToList(NewList, MoonPhase.BlusherMushroomLongName, MoonPhase.NewMoon, MoonPhase.WaningGibbousMoon, KeepComment);
-            AddMushroomToList(NewList, MoonPhase.GoblinPuffballLongName, MoonPhase.NewMoon, MoonPhase.WaxingGibbousMoon, KeepComment);
-            AddMushroomToList(NewList, MoonPhase.MilkCapMushroomLongName, MoonPhase.FullMoon, MoonPhase.WaningCrescentMoon, KeepComment);
-            AddMushroomToList(NewList, MoonPhase.BloodMushroomLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.LastQuarterMoon, KeepComment);
-            AddMushroomToList(NewList, MoonPhase.CoralMushroomLongName, MoonPhase.FirstQuarterMoon, MoonPhase.WaxingGibbousMoon, KeepComment);
-            AddMushroomToList(NewList, MoonPhase.IocaineMushroomLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.FirstQuarterMoon, KeepComment);
-            AddMushroomToList(NewList, MoonPhase.GroxmakMushroomLongName, MoonPhase.WaxingGibbousMoon, MoonPhase.LastQuarterMoon, KeepComment);
-            AddMushroomToList(NewList, MoonPhase.PorciniMushroomLongName, MoonPhase.FullMoon, MoonPhase.WaningGibbousMoon, KeepComment);
-            AddMushroomToList(NewList, MoonPhase.BlackFootMorelLongName, MoonPhase.NewMoon, MoonPhase.WaningCrescentMoon, KeepComment);
-            AddMushroomToList(NewList, MoonPhase.PixiesParasolLongName, MoonPhase.FirstQuarterMoon, MoonPhase.WaxingGibbousMoon, KeepComment);
-            AddMushroomToList(NewList, MoonPhase.FlyAmanitaLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.FullMoon, KeepComment);
-            AddMushroomToList(NewList, MoonPhase.BlastcapMushroomLongName, MoonPhase.FullMoon, MoonPhase.WaningGibbousMoon, KeepComment);
-            AddMushroomToList(NewList, MoonPhase.ChargedMyceliumLongName, null, null, KeepComment);
-            AddMushroomToList(NewList, MoonPhase.FalseAgaricLongName, MoonPhase.WaningCrescentMoon, MoonPhase.LastQuarterMoon, KeepComment);
-            AddMushroomToList(NewList, MoonPhase.WizardsMushroomLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.FirstQuarterMoon, KeepComment);
+            AddMushroomToList(NewList, MoonPhase.ParasolMushroomLongName, MoonPhase.FullMoon, MoonPhase.WaningCrescentMoon, keepComment);
+            AddMushroomToList(NewList, MoonPhase.MycenaMushroomLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.FirstQuarterMoon, keepComment);
+            AddMushroomToList(NewList, MoonPhase.BoletusMushroomLongName, MoonPhase.NewMoon, MoonPhase.WaningGibbousMoon, keepComment);
+            AddMushroomToList(NewList, MoonPhase.FieldMushroomLongName, MoonPhase.WaxingGibbousMoon, MoonPhase.LastQuarterMoon, keepComment);
+            AddMushroomToList(NewList, MoonPhase.BlusherMushroomLongName, MoonPhase.NewMoon, MoonPhase.WaningGibbousMoon, keepComment);
+            AddMushroomToList(NewList, MoonPhase.GoblinPuffballLongName, MoonPhase.NewMoon, MoonPhase.WaxingGibbousMoon, keepComment);
+            AddMushroomToList(NewList, MoonPhase.MilkCapMushroomLongName, MoonPhase.FullMoon, MoonPhase.WaningCrescentMoon, keepComment);
+            AddMushroomToList(NewList, MoonPhase.BloodMushroomLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.LastQuarterMoon, keepComment);
+            AddMushroomToList(NewList, MoonPhase.CoralMushroomLongName, MoonPhase.FirstQuarterMoon, MoonPhase.WaxingGibbousMoon, keepComment);
+            AddMushroomToList(NewList, MoonPhase.IocaineMushroomLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.FirstQuarterMoon, keepComment);
+            AddMushroomToList(NewList, MoonPhase.GroxmakMushroomLongName, MoonPhase.WaxingGibbousMoon, MoonPhase.LastQuarterMoon, keepComment);
+            AddMushroomToList(NewList, MoonPhase.PorciniMushroomLongName, MoonPhase.FullMoon, MoonPhase.WaningGibbousMoon, keepComment);
+            AddMushroomToList(NewList, MoonPhase.BlackFootMorelLongName, MoonPhase.NewMoon, MoonPhase.WaningCrescentMoon, keepComment);
+            AddMushroomToList(NewList, MoonPhase.PixiesParasolLongName, MoonPhase.FirstQuarterMoon, MoonPhase.WaxingGibbousMoon, keepComment);
+            AddMushroomToList(NewList, MoonPhase.FlyAmanitaLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.FullMoon, keepComment);
+            AddMushroomToList(NewList, MoonPhase.BlastcapMushroomLongName, MoonPhase.FullMoon, MoonPhase.WaningGibbousMoon, keepComment);
+            AddMushroomToList(NewList, MoonPhase.ChargedMyceliumLongName, null, null, keepComment);
+            AddMushroomToList(NewList, MoonPhase.FalseAgaricLongName, MoonPhase.WaningCrescentMoon, MoonPhase.LastQuarterMoon, keepComment);
+            AddMushroomToList(NewList, MoonPhase.WizardsMushroomLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.FirstQuarterMoon, keepComment);
 
             MushroomInfoList.Clear();
             foreach (MushroomInfo Item in NewList)
                 MushroomInfoList.Add(Item);
         }
 
-        private void AddMushroomToList(List<MushroomInfo> NewList, string Name, MoonPhase RobustGrowthPhase1, MoonPhase RobustGrowthPhase2, bool KeepComment)
+        private void AddMushroomToList(List<MushroomInfo> newList, string name, MoonPhase? robustGrowthPhase1, MoonPhase? robustGrowthPhase2, bool keepComment)
         {
-            string Comment = "";
+            string Comment = string.Empty;
 
-            if (KeepComment)
+            if (keepComment)
             {
                 foreach (MushroomInfo Item in MushroomInfoList)
-                    if (Item.Name == Name)
+                    if (Item.Name == name)
                     {
                         Comment = Item.Comment;
                         break;
                     }
             }
 
-            NewList.Add(new MushroomInfo(Dispatcher, Name, Comment, RobustGrowthPhase1, RobustGrowthPhase2));
+            newList.Add(new MushroomInfo(Dispatcher, name, Comment, robustGrowthPhase1, robustGrowthPhase2));
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the mushroom farming should be shown.
+        /// </summary>
         public bool ShowMushroomFarming
         {
-            get { return _ShowMushroomFarming; }
+            get { return ShowMushroomFarmingInternal; }
             set
             {
-                if (_ShowMushroomFarming != value)
+                if (ShowMushroomFarmingInternal != value)
                 {
-                    _ShowMushroomFarming = value;
+                    ShowMushroomFarmingInternal = value;
                     NotifyThisPropertyChanged();
 
-                    Settings.SetSettingBool(ShowMushroomFarmingSettingName, value);
+                    Settings.SetBool(ShowMushroomFarmingSettingName, value);
                 }
             }
         }
-        private bool _ShowMushroomFarming;
+        private bool ShowMushroomFarmingInternal;
 
+        /// <summary>
+        /// Gets a value indicating whether the mushroom list is small.
+        /// </summary>
         public bool IsMushroomListSmall
         {
             get { return MushroomInfoList.Count < 2; }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the mushroom list is large.
+        /// </summary>
         public bool IsMushroomListLarge
         {
-            get { return _IsMushroomListLarge; }
+            get { return IsMushroomListLargeInternal; }
             set
             {
-                if (_IsMushroomListLarge != value)
+                if (IsMushroomListLargeInternal != value)
                 {
-                    _IsMushroomListLarge = value;
+                    IsMushroomListLargeInternal = value;
                     NotifyThisPropertyChanged();
                 }
             }
         }
-        private bool _IsMushroomListLarge;
+        private bool IsMushroomListLargeInternal;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the mushroom list is locked.
+        /// </summary>
         public bool IsLocked
         {
-            get { return _IsLocked; }
+            get { return IsLockedInternal; }
             set
             {
-                if (_IsLocked != value)
+                if (IsLockedInternal != value)
                 {
-                    _IsLocked = value;
+                    IsLockedInternal = value;
                     NotifyThisPropertyChanged();
                 }
             }
         }
-        private bool _IsLocked;
+        private bool IsLockedInternal;
+
+        /// <summary>
+        /// Gets the mushroom info list.
+        /// </summary>
+        public ObservableCollection<MushroomInfo> MushroomInfoList { get; private set; } = new ObservableCollection<MushroomInfo>();
+
+        /// <summary>
+        /// Gets the mushroom name list.
+        /// </summary>
+        public ObservableCollection<string>? MushroomNameList { get; private set; }
 
         private void OnMushroomNameFileChanged(object sender, FileSystemEventArgs e)
         {
             UpdateMushroomNameListTimer.Change(TimeSpan.FromSeconds(1), Timeout.InfiniteTimeSpan);
         }
 
-        private void UpdateMushroomNameListTimerCallback(object Parameter)
+        private void UpdateMushroomNameListTimerCallback(object? parameter)
         {
             Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, new UpdateMushroomNameListHandler(OnUpdateMushroomNameList));
         }
@@ -562,27 +643,24 @@ namespace PgMoon
             try
             {
                 using (FileStream fs = new FileStream(MushroomNameFile, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (StreamReader sr = new StreamReader(fs, Encoding.ASCII))
+                for (;;)
                 {
-                    using (StreamReader sr = new StreamReader(fs, Encoding.ASCII))
-                    {
-                        for (;;)
-                        {
-                            string MushroomName = sr.ReadLine();
-                            if (MushroomName == null || MushroomName.Length == 0)
-                                break;
+                    string? MushroomName = sr.ReadLine();
+                    if (MushroomName == null || MushroomName.Length == 0)
+                        break;
 
-                            if (MushroomNameList == null)
-                                MushroomNameList = new ObservableCollection<string>();
+                    if (MushroomNameList == null)
+                        MushroomNameList = new ObservableCollection<string>();
 
-                            MushroomNameList.Add(MushroomName);
-                        }
-                    }
+                    MushroomNameList.Add(MushroomName);
                 }
 
                 if (MushroomNameList != null && MushroomNameFileWatcher == null)
                 {
-                    string FolderPath = Path.GetDirectoryName(MushroomNameFile);
-                    string FileName = Path.GetFileName(MushroomNameFile);
+                    Contracts.Contract.RequireNotNull(Path.GetDirectoryName(MushroomNameFile), out string FolderPath);
+                    Contracts.Contract.RequireNotNull(Path.GetFileName(MushroomNameFile), out string FileName);
+
                     MushroomNameFileWatcher = new FileSystemWatcher(FolderPath, FileName);
                     MushroomNameFileWatcher.NotifyFilter = NotifyFilters.LastWrite;
                     MushroomNameFileWatcher.Changed += new FileSystemEventHandler(OnMushroomNameFileChanged);
@@ -594,38 +672,38 @@ namespace PgMoon
             }
         }
 
-        private void OnMushroomInfoListChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnMushroomInfoListChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             NotifyPropertyChanged(nameof(IsMushroomListSmall));
         }
 
         private void OnMushroomListUp(object sender, MouseButtonEventArgs e)
         {
-            ScrollViewer listviewMushrooms = LocateSibling(sender, nameof(listviewMushrooms)) as ScrollViewer;
+            ScrollViewer listviewMushrooms = (ScrollViewer)LocateSibling(sender, nameof(listviewMushrooms));
             listviewMushrooms.LineUp();
         }
 
         private void OnMushroomListUpPage(object sender, MouseButtonEventArgs e)
         {
-            ScrollViewer listviewMushrooms = LocateSibling(sender, nameof(listviewMushrooms)) as ScrollViewer;
+            ScrollViewer listviewMushrooms = (ScrollViewer)LocateSibling(sender, nameof(listviewMushrooms));
             listviewMushrooms.PageUp();
         }
 
         private void OnMushroomListDown(object sender, MouseButtonEventArgs e)
         {
-            ScrollViewer listviewMushrooms = LocateSibling(sender, nameof(listviewMushrooms)) as ScrollViewer;
+            ScrollViewer listviewMushrooms = (ScrollViewer)LocateSibling(sender, nameof(listviewMushrooms));
             listviewMushrooms.LineDown();
         }
 
         private void OnMushroomListDownPage(object sender, MouseButtonEventArgs e)
         {
-            ScrollViewer listviewMushrooms = LocateSibling(sender, nameof(listviewMushrooms)) as ScrollViewer;
+            ScrollViewer listviewMushrooms = (ScrollViewer)LocateSibling(sender, nameof(listviewMushrooms));
             listviewMushrooms.PageDown();
         }
 
         private void OnLockMushroomList(object sender, MouseButtonEventArgs e)
         {
-            FrameworkElement Element = sender as FrameworkElement;
+            FrameworkElement Element = (FrameworkElement)sender;
             ContextMenu ContextMenu = Element.ContextMenu;
             ContextMenu.IsOpen = true;
             ContextMenu.PlacementTarget = this;
@@ -658,35 +736,35 @@ namespace PgMoon
             ResetMushroomListToDefault(false);
         }
 
-        private object LocateSibling(object sender, string ElementName)
+        private static object LocateSibling(object sender, string elementName)
         {
-            FrameworkElement CurrentElement = sender as FrameworkElement;
-            object SiblingElement = null;
+            FrameworkElement? CurrentElement = sender as FrameworkElement;
+            object? SiblingElement = null;
 
             while (CurrentElement != null && SiblingElement == null)
             {
                 CurrentElement = VisualTreeHelper.GetParent(CurrentElement) as FrameworkElement;
                 if (CurrentElement != null)
-                    SiblingElement = LogicalTreeHelper.FindLogicalNode(CurrentElement, ElementName);
+                    SiblingElement = LogicalTreeHelper.FindLogicalNode(CurrentElement, elementName);
             }
 
-            return SiblingElement;
+            return SiblingElement !;
         }
 
         private void OnMushroomListSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            FrameworkElement Control = sender as FrameworkElement;
+            FrameworkElement Control = (FrameworkElement)sender;
             if (!double.IsNaN(Control.ActualHeight) && !double.IsNaN(Control.MaxHeight))
             {
-                IsMushroomListLarge = (Control.ActualHeight >= Control.MaxHeight);
+                IsMushroomListLarge = Control.ActualHeight >= Control.MaxHeight;
             }
         }
 
         private void OnMushroomNameValidationError(object sender, ValidationErrorEventArgs e)
         {
-            ComboBox Control = sender as ComboBox;
-            MushroomInfo Line = Control.DataContext as MushroomInfo;
-            Line.Name = "";
+            ComboBox Control = (ComboBox)sender;
+            MushroomInfo Line = (MushroomInfo)Control.DataContext;
+            Line.Name = string.Empty;
         }
 
         private void OnMushroomNameLostFocus(object sender, RoutedEventArgs e)
@@ -694,7 +772,7 @@ namespace PgMoon
             if (MushroomInfoList.Count > 0 && MushroomInfoList.Count < MaxMushroomRows)
             {
                 if (MushroomInfoList[MushroomInfoList.Count - 1].Name.Length > 0)
-                    MushroomInfoList.Add(new MushroomInfo(Dispatcher, "", "", null, null));
+                    MushroomInfoList.Add(new MushroomInfo(Dispatcher, string.Empty, string.Empty, null, null));
                 else
                 {
                     bool Continue = true;
@@ -720,7 +798,7 @@ namespace PgMoon
 
         private void OnUnlockMushroomList(object sender, MouseButtonEventArgs e)
         {
-            FrameworkElement Element = sender as FrameworkElement;
+            FrameworkElement Element = (FrameworkElement)sender;
             ContextMenu ContextMenu = Element.ContextMenu;
             ContextMenu.IsOpen = true;
             ContextMenu.PlacementTarget = this;
@@ -729,74 +807,78 @@ namespace PgMoon
 
         private void OnContextMenuClosed(object sender, RoutedEventArgs e)
         {
-            ContextMenu ContextMenu = sender as ContextMenu;
+            ContextMenu ContextMenu = (ContextMenu)sender;
             ContextMenu.Closed -= OnContextMenuClosed;
             ContextMenu.PlacementTarget = null;
         }
 
-        private static readonly string ShowMushroomFarmingSettingName = "ShowMushroomFarming";
-        private static readonly string MushroomListSettingName = "MushroomList";
-        private static readonly string MushroomListInitializedName = "MushroomListInitialized";
-        private static readonly string IsLockedSettingName = "MushroomListLocked";
+        private const string ShowMushroomFarmingSettingName = "ShowMushroomFarming";
+        private const string MushroomListSettingName = "MushroomList";
+        private const string MushroomListInitializedName = "MushroomListInitialized";
+        private const string IsLockedSettingName = "MushroomListLocked";
         private const int MaxMushroomRows = 40;
         private const char MushroomListSeparator = '\u2551';
         private const char MushroomSeparator = '\u2550';
-        public ObservableCollection<MushroomInfo> MushroomInfoList { get; private set; } = new ObservableCollection<MushroomInfo>();
-        private string MushroomNameFile;
-        public ObservableCollection<string> MushroomNameList { get; private set; } = null;
-        private FileSystemWatcher MushroomNameFileWatcher = null;
-        private Timer UpdateMushroomNameListTimer;
+        private string MushroomNameFile = string.Empty;
+        private FileSystemWatcher? MushroomNameFileWatcher;
+        private Timer UpdateMushroomNameListTimer = new Timer(new TimerCallback((object? state) => { }));
         #endregion
 
         #region Rahu Boat
         private void InitRahuBoat()
         {
-            _ShowRahuBoat = Settings.GetSettingBool(ShowRahuBoatSettingName, true);
+            ShowRahuBoatInternal = Settings.GetBool(ShowRahuBoatSettingName, true);
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the rahu boat should be shown.
+        /// </summary>
         public bool ShowRahuBoat
         {
-            get { return _ShowRahuBoat; }
+            get { return ShowRahuBoatInternal; }
             set
             {
-                if (_ShowRahuBoat != value)
+                if (ShowRahuBoatInternal != value)
                 {
-                    _ShowRahuBoat = value;
+                    ShowRahuBoatInternal = value;
                     NotifyThisPropertyChanged();
 
-                    Settings.SetSettingBool(ShowRahuBoatSettingName, value);
+                    Settings.SetBool(ShowRahuBoatSettingName, value);
                     IsToolTipChanged = true;
                 }
             }
         }
-        private bool _ShowRahuBoat;
+        private bool ShowRahuBoatInternal;
 
-        private static readonly string ShowRahuBoatSettingName = "ShowRahuBoat";
+        private const string ShowRahuBoatSettingName = "ShowRahuBoat";
         #endregion
 
         #region Dark Chapel
         private void InitDarkChapel()
         {
-            _ShowDarkChapel = Settings.GetSettingBool(ShowDarkChapelSettingName, true);
+            ShowDarkChapelInternal = Settings.GetBool(ShowDarkChapelSettingName, true);
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the dark chapel statue should be shown.
+        /// </summary>
         public bool ShowDarkChapel
         {
-            get { return _ShowDarkChapel; }
+            get { return ShowDarkChapelInternal; }
             set
             {
-                if (_ShowDarkChapel != value)
+                if (ShowDarkChapelInternal != value)
                 {
-                    _ShowDarkChapel = value;
+                    ShowDarkChapelInternal = value;
                     NotifyThisPropertyChanged();
 
-                    Settings.SetSettingBool(ShowDarkChapelSettingName, value);
+                    Settings.SetBool(ShowDarkChapelSettingName, value);
                 }
             }
         }
-        private bool _ShowDarkChapel;
+        private bool ShowDarkChapelInternal;
 
-        private static readonly string ShowDarkChapelSettingName = "ShowDarkChapel";
+        private const string ShowDarkChapelSettingName = "ShowDarkChapel";
         #endregion
 
         #region Shared Calendar
@@ -810,9 +892,12 @@ namespace PgMoon
             OnSharedCalendar();
         }
 
+        /// <summary>
+        /// Handles the shared calendar event.
+        /// </summary>
         public void OnSharedCalendar()
         {
-            ShareCalendarWindow Dlg = new ShareCalendarWindow(Settings);
+            using ShareCalendarWindow Dlg = new ShareCalendarWindow(Settings);
             bool? Result = Dlg.ShowDialog();
             if (Result.HasValue && Result.Value)
             {
@@ -821,7 +906,7 @@ namespace PgMoon
                     if (PostTime == DateTime.MaxValue)
                     {
                         PostTime = Now();
-                        Settings.SetSettingString("SharedCalendarPost", PostTime.ToString());
+                        Settings.SetString("SharedCalendarPost", PostTime.ToString(CultureInfo.InvariantCulture));
                     }
 
                     PostSharedEvents();
@@ -829,7 +914,7 @@ namespace PgMoon
                 else
                 {
                     PostTime = DateTime.MaxValue;
-                    Settings.SetSettingString("SharedCalendarPost", null);
+                    Settings.SetString("SharedCalendarPost", string.Empty);
                 }
             }
         }
@@ -838,9 +923,9 @@ namespace PgMoon
         {
             PostTime = DateTime.MaxValue;
 
-            string SharedCalendarPost = Settings.GetSettingString("SharedCalendarPost", null);
+            string SharedCalendarPost = Settings.GetString("SharedCalendarPost", string.Empty);
             if (SharedCalendarPost != null)
-                DateTime.TryParse(SharedCalendarPost, out PostTime);
+                DateTime.TryParse(SharedCalendarPost, CultureInfo.InvariantCulture, DateTimeStyles.None, out PostTime);
         }
 
         private void PostSharedEvents()
@@ -849,9 +934,9 @@ namespace PgMoon
             if (PostTime <= _Now)
             {
                 PostTime = _Now + TimeSpan.FromHours(12);
-                Settings.SetSettingString("SharedCalendarPost", PostTime.ToString());
+                Settings.SetString("SharedCalendarPost", PostTime.ToString(CultureInfo.InvariantCulture));
 
-                ShareCalendarWindow Dlg = new ShareCalendarWindow(Settings);
+                using ShareCalendarWindow Dlg = new ShareCalendarWindow(Settings);
                 Dlg.PostSharedEvents(MushroomInfoList);
             }
         }
@@ -862,7 +947,7 @@ namespace PgMoon
         #region Events
         private void OnOpened(object sender, EventArgs e)
         {
-            Point RelativePosition = Taskbar.GetRelativePosition(Child as FrameworkElement);
+            Point RelativePosition = TaskbarTools.TaskbarLocation.GetRelativePosition((FrameworkElement)Child);
             if (!double.IsNaN(RelativePosition.X) && !double.IsNaN(RelativePosition.X))
             {
                 HorizontalOffset = RelativePosition.X;
@@ -878,19 +963,22 @@ namespace PgMoon
             if (!IsTopMostSet)
             {
                 IsTopMostSet = true;
-                SetWindowPos(source.Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE);
+                NativeMethods.SetWindowPos(source.Handle, NativeMethods.HWND_TOPMOST, 0, 0, 0, 0, NativeMethods.SWP_NOMOVE | NativeMethods.SWP_NOSIZE | NativeMethods.SWP_SHOWWINDOW | NativeMethods.SWP_NOACTIVATE);
             }
 
-            SetForegroundWindow(source.Handle);
+            NativeMethods.SetForegroundWindow(source.Handle);
         }
 
         private void OnClosed(object sender, EventArgs e)
         {
             SaveMushroomInfoList();
-            Settings.SetSettingBool(IsLockedSettingName, IsLocked);
+            Settings.SetBool(IsLockedSettingName, IsLocked);
             LastClosedTime = DateTime.UtcNow;
         }
 
+        /// <summary>
+        /// Handles the deactivated event.
+        /// </summary>
         public void OnDeactivated()
         {
             IsOpen = false;
@@ -907,6 +995,9 @@ namespace PgMoon
             Application.Current.Shutdown();
         }
 
+        /// <summary>
+        /// Handles the incon clicked event.
+        /// </summary>
         public void IconClicked()
         {
             if (!IsOpen)
@@ -920,30 +1011,21 @@ namespace PgMoon
         }
 
         private DateTime LastClosedTime;
-        private bool IsTopMostSet = false;
-        #endregion
-
-        #region Window Handle Management
-        [DllImport("User32.dll")]
-        public static extern bool SetForegroundWindow(IntPtr hWnd);
-
-        const int SWP_NOMOVE = 0x0002;
-        const int SWP_NOSIZE = 0x0001;
-        const int SWP_SHOWWINDOW = 0x0040;
-        const int SWP_NOACTIVATE = 0x0010;
-        const int HWND_TOPMOST = -1;
-
-        [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
-        public static extern IntPtr SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int x, int Y, int cx, int cy, int wFlags);
+        private bool IsTopMostSet;
         #endregion
 
         #region Current Time
-        // Use this for debugging purpose only.
+        /// <summary>
+        /// Use this for debugging purpose only.
+        /// </summary>
         public static void IncreaseNow()
         {
             TimeOffset += TimeSpan.FromDays(1);
         }
 
+        /// <summary>
+        /// Gets the current time with the offset applied.
+        /// </summary>
         public static DateTime Now()
         {
             return DateTime.UtcNow + TimeOffset;
@@ -954,61 +1036,88 @@ namespace PgMoon
 
         #region Implementation of INotifyPropertyChanged
         /// <summary>
-        ///     Implements the PropertyChanged event.
+        /// Implements the PropertyChanged event.
         /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        internal void NotifyPropertyChanged(string propertyName)
+        /// <summary>
+        /// Invoke handlers of the <see cref="PropertyChanged"/> event.
+        /// </summary>
+        /// <param name="propertyName">Name of the property that changed.</param>
+        protected void NotifyPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed", Justification = "Default parameter is mandatory with [CallerMemberName]")]
-        internal void NotifyThisPropertyChanged([CallerMemberName] string propertyName = "")
+        /// <summary>
+        /// Invoke handlers of the <see cref="PropertyChanged"/> event.
+        /// </summary>
+        /// <param name="propertyName">Name of the property that changed.</param>
+        protected void NotifyThisPropertyChanged([CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
         #endregion
 
         #region Implementation of IDisposable
+        /// <summary>
+        /// Called when an object should release its resources.
+        /// </summary>
+        /// <param name="isDisposing">Indicates if resources must be disposed now.</param>
         protected virtual void Dispose(bool isDisposing)
         {
-            if (isDisposing)
-                DisposeNow();
-        }
-
-        private void DisposeNow()
-        {
-            if (UpdateMoonPhaseTimer != null)
+            if (!IsDisposed)
             {
-                UpdateMoonPhaseTimer.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
-                UpdateMoonPhaseTimer.Dispose();
-                UpdateMoonPhaseTimer = null;
-            }
+                IsDisposed = true;
 
-            if (UpdateMushroomNameListTimer != null)
-            {
-                UpdateMushroomNameListTimer.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
-                UpdateMushroomNameListTimer.Dispose();
-                UpdateMushroomNameListTimer = null;
-            }
-
-            if (MushroomNameFileWatcher != null)
-            {
-                MushroomNameFileWatcher.EnableRaisingEvents = false;
-                MushroomNameFileWatcher.Dispose();
+                if (isDisposing)
+                    DisposeNow();
             }
         }
 
+        /// <summary>
+        /// Called when an object should release its resources.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Finalizes an instance of the <see cref="MainWindow"/> class.
+        /// </summary>
         ~MainWindow()
         {
             Dispose(false);
+        }
+
+        /// <summary>
+        /// True after <see cref="Dispose(bool)"/> has been invoked.
+        /// </summary>
+        private bool IsDisposed;
+
+        /// <summary>
+        /// Disposes of every reference that must be cleaned up.
+        /// </summary>
+        private void DisposeNow()
+        {
+            using (UpdateMoonPhaseTimer)
+            {
+                UpdateMoonPhaseTimer.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+            }
+
+            using (UpdateMushroomNameListTimer)
+            {
+                UpdateMushroomNameListTimer.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+            }
+
+            if (MushroomNameFileWatcher != null)
+            {
+                MushroomNameFileWatcher.EnableRaisingEvents = false;
+                MushroomNameFileWatcher.Dispose();
+                MushroomNameFileWatcher = null;
+            }
         }
         #endregion
     }

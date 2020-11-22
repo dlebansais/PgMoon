@@ -1,15 +1,17 @@
-﻿using System;
-
-namespace PgMoon
+﻿namespace PgMoon
 {
+    using System;
+
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning disable SA1600 // Elements should be documented
     public class SharedCalendarEvent
     {
-        public SharedCalendarEvent(MoonPhase MoonPhase, int MoonMonth, DateTime PhaseStartTime, DateTime PhaseEndTime)
+        public SharedCalendarEvent(MoonPhase moonPhase, int moonMonth, DateTime phaseStartTime, DateTime phaseEndTime)
         {
-            this.MoonPhase = MoonPhase;
-            this.MoonMonth = MoonMonth;
-            this.PhaseStartTime = PhaseStartTime;
-            this.PhaseEndTime = PhaseEndTime;
+            MoonPhase = moonPhase;
+            MoonMonth = moonMonth;
+            PhaseStartTime = phaseStartTime;
+            PhaseEndTime = phaseEndTime;
         }
 
         public MoonPhase MoonPhase { get; private set; }
@@ -17,12 +19,12 @@ namespace PgMoon
         public DateTime PhaseStartTime { get; private set; }
         public DateTime PhaseEndTime { get; private set; }
 
-        public static bool TryParse(DateTime? StartDate, DateTime? EndDate, out SharedCalendarEvent Event)
+        public static bool TryParse(DateTime? startDate, DateTime? endDate, out SharedCalendarEvent? calendarEvent)
         {
-            if (StartDate.HasValue && EndDate.HasValue)
+            if (startDate.HasValue && endDate.HasValue)
             {
-                DateTime StartTime = StartDate.Value.ToUniversalTime();
-                DateTime EndTime = EndDate.Value.ToUniversalTime();
+                DateTime StartTime = startDate.Value.ToUniversalTime();
+                DateTime EndTime = endDate.Value.ToUniversalTime();
 
                 int MoonMonth;
                 MoonPhase MoonPhase;
@@ -34,13 +36,15 @@ namespace PgMoon
 
                 if (PhaseStartTime == StartTime && PhaseEndTime == EndTime)
                 {
-                    Event = new SharedCalendarEvent(MoonPhase, MoonMonth, PhaseStartTime, PhaseEndTime);
+                    calendarEvent = new SharedCalendarEvent(MoonPhase, MoonMonth, PhaseStartTime, PhaseEndTime);
                     return true;
                 }
             }
 
-            Event = null;
+            calendarEvent = null;
             return false;
         }
     }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning restore SA1600 // Elements should be documented
 }

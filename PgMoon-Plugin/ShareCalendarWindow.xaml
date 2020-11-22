@@ -5,6 +5,7 @@
         xmlns:app="clr-namespace:PgMoon"
         xmlns:ctrl="clr-namespace:CustomControls"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:convlib="clr-namespace:Converters;assembly=XamlConverterLibrary"
         xmlns:conv="clr-namespace:Converters"
         Title="Share the calendar"
         WindowStartupLocation="CenterScreen"
@@ -12,7 +13,7 @@
         SizeToContent="WidthAndHeight"
         MaxWidth="500">
     <Window.Resources>
-        <conv:BooleanToObjectConverter x:Key="convBooleanToObject"/>
+        <convlib:BooleanToObjectConverter x:Key="convBooleanToObject"/>
         <RoutedCommand x:Key="BrowseCommand"/>
         <RoutedCommand x:Key="ListCommand"/>
         <RoutedCommand x:Key="SaveCommand"/>

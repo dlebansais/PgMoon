@@ -1,26 +1,28 @@
-﻿using Google.Apis.Auth.OAuth2;
-using Google.Apis.Calendar.v3;
-using Google.Apis.Calendar.v3.Data;
-using Google.Apis.Services;
-using Google.Apis.Util.Store;
-using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Threading;
-using TaskbarIconHost;
-
-namespace PgMoon
+﻿namespace PgMoon
 {
-    public partial class ShareCalendarWindow : Window, INotifyPropertyChanged
+    using System;
+    using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+    using System.ComponentModel;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Runtime.CompilerServices;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using System.Windows;
+    using System.Windows.Input;
+    using System.Windows.Threading;
+    using Google.Apis.Auth.OAuth2;
+    using Google.Apis.Calendar.v3;
+    using Google.Apis.Calendar.v3.Data;
+    using Google.Apis.Services;
+    using Google.Apis.Util.Store;
+    using Microsoft.Win32;
+
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning disable SA1600 // Elements should be documented
+#pragma warning disable SA1601 // Partial elements should be documented
+    public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisposable
     {
         #region Constants
         public static readonly string DefaultApplicationName = "PgMoon";
@@ -28,123 +30,123 @@ namespace PgMoon
         #endregion
 
         #region Init
-        public ShareCalendarWindow(TaskbarIconHost.IPluginSettings settings)
+        public ShareCalendarWindow(RegistryTools.Settings settings)
         {
             InitializeComponent();
             DataContext = this;
 
             Settings = settings;
 
-            Icon = ResourceTools.LoadEmbeddedIcon("main.ico");
+            if (ResourceTools.ResourceLoader.LoadIcon("main.ico", string.Empty, out System.Windows.Media.ImageSource LoadedIcon))
+                Icon = LoadedIcon;
 
-            AddEvents = Settings.GetSettingBool("AddEvents", false);
-            ApplicationName = Settings.GetSettingString("EventsApplicationName", DefaultApplicationName);
-            SecretFileName = Settings.GetSettingString("EventsSecretFileName", null);
-            CalendarId = Settings.GetSettingString("EventsCalendarId", null);
-            UpcomingDays = (uint)Settings.GetSettingInt("EventsUpcomingDays", DefaultUpcomingDays);
-            WithPhaseName = Settings.GetSettingBool("EventsWithPhaseName", true);
-            WithMushroomFarming = Settings.GetSettingBool("EventsWithMushroomFarming", true);
-            WithMushroomFarmingComments = Settings.GetSettingBool("EventsWithMushroomFarmingComments", false);
-            WithRahuBoat = Settings.GetSettingBool("EventsWithRahuBoat", true);
-            WithDarkChapel = Settings.GetSettingBool("EventsWithDarkChapel", true);
-            WithFreeText = Settings.GetSettingBool("EventsWithFreeText", false);
-            FreeText = Settings.GetSettingString("EventsFreeText", null);
+            AddEvents = Settings.GetBool("AddEvents", false);
+            ApplicationName = Settings.GetString("EventsApplicationName", DefaultApplicationName);
+            SecretFileName = Settings.GetString("EventsSecretFileName", string.Empty);
+            CalendarId = Settings.GetString("EventsCalendarId", string.Empty);
+            UpcomingDays = (uint)Settings.GetInt("EventsUpcomingDays", DefaultUpcomingDays);
+            WithPhaseName = Settings.GetBool("EventsWithPhaseName", true);
+            WithMushroomFarming = Settings.GetBool("EventsWithMushroomFarming", true);
+            WithMushroomFarmingComments = Settings.GetBool("EventsWithMushroomFarmingComments", false);
+            WithRahuBoat = Settings.GetBool("EventsWithRahuBoat", true);
+            WithDarkChapel = Settings.GetBool("EventsWithDarkChapel", true);
+            WithFreeText = Settings.GetBool("EventsWithFreeText", false);
+            FreeText = Settings.GetString("EventsFreeText", string.Empty);
 
             InitCalendarList();
             InitCredential();
             InitStatus();
         }
 
-        public TaskbarIconHost.IPluginSettings Settings { get; private set; }
+        public RegistryTools.Settings Settings { get; private set; }
         #endregion
 
         #region Properties
         public bool AddEvents
         {
-            get { return _AddEvents; }
+            get { return AddEventsInternal; }
             set
             {
-                if (_AddEvents != value)
+                if (AddEventsInternal != value)
                 {
-                    _AddEvents = value;
+                    AddEventsInternal = value;
                     NotifyThisPropertyChanged();
                     UpdateStatus();
                 }
             }
         }
-        private bool _AddEvents;
+        private bool AddEventsInternal;
 
         public string ApplicationName
         {
-            get { return _ApplicationName; }
+            get { return ApplicationNameInternal; }
             set
             {
                 string NewName = value;
                 if (NewName == null)
                     NewName = DefaultApplicationName;
 
-                if (_ApplicationName != NewName)
+                if (ApplicationNameInternal != NewName)
                 {
-                    _ApplicationName = NewName;
+                    ApplicationNameInternal = NewName;
                     NotifyThisPropertyChanged();
                     UpdateStatus();
                 }
             }
         }
-        private string _ApplicationName;
+        private string ApplicationNameInternal = string.Empty;
         #endregion
 
         #region Calendar List
         private void InitCalendarList()
         {
-            _IsListing = false;
-            _IsListingCancelable = true;
-            _SelectedCalendarEntry = null;
+            IsListingInternal = false;
+            IsListingCancelableInternal = true;
             ListTimer = new Timer(new TimerCallback(ListTimerCallback));
         }
 
         public bool IsListing
         {
-            get { return _IsListing; }
+            get { return IsListingInternal; }
             set
             {
-                if (_IsListing != value)
+                if (IsListingInternal != value)
                 {
-                    _IsListing = value;
+                    IsListingInternal = value;
                     NotifyThisPropertyChanged();
                 }
             }
         }
-        private bool _IsListing;
+        private bool IsListingInternal;
 
         public bool IsListingCancelable
         {
-            get { return _IsListingCancelable; }
+            get { return IsListingCancelableInternal; }
             set
             {
-                if (_IsListingCancelable != value)
+                if (IsListingCancelableInternal != value)
                 {
-                    _IsListingCancelable = value;
+                    IsListingCancelableInternal = value;
                     NotifyThisPropertyChanged();
                 }
             }
         }
-        private bool _IsListingCancelable;
+        private bool IsListingCancelableInternal;
 
         public SharedCalendarEntry SelectedCalendarEntry
         {
-            get { return _SelectedCalendarEntry; }
+            get { return SelectedCalendarEntryInternal; }
             set
             {
-                if (_SelectedCalendarEntry != value)
+                if (SelectedCalendarEntryInternal != value)
                 {
-                    _SelectedCalendarEntry = value;
+                    SelectedCalendarEntryInternal = value;
                     NotifyThisPropertyChanged();
                     UpdateStatus();
                 }
             }
         }
-        private SharedCalendarEntry _SelectedCalendarEntry;
+        private SharedCalendarEntry SelectedCalendarEntryInternal = SharedCalendarEntry.None;
         private string CalendarId;
 
         public ObservableCollection<SharedCalendarEntry> SharedCalendarEntryList { get; } = new ObservableCollection<SharedCalendarEntry>();
@@ -153,7 +155,7 @@ namespace PgMoon
         {
             SharedCalendarEntryList.Clear();
 
-            if (ApplicationName == null || ApplicationName.Length == 0)
+            if (ApplicationName.Length == 0)
                 return;
 
             if (CredentialToken == null)
@@ -165,11 +167,7 @@ namespace PgMoon
             try
             {
                 // Create Google Calendar API service.
-                CalendarService service = new CalendarService(new BaseClientService.Initializer()
-                {
-                    HttpClientInitializer = CredentialToken,
-                    ApplicationName = ApplicationName,
-                });
+                using CalendarService service = new CalendarService(new BaseClientService.Initializer() { HttpClientInitializer = CredentialToken, ApplicationName = ApplicationName });
 
                 // Define parameters of requestCalendarList.
                 CalendarListResource.ListRequest requestCalendarList = service.CalendarList.List();
@@ -188,7 +186,7 @@ namespace PgMoon
             }
         }
 
-        private void ListTimerCallback(object Parameter)
+        private void ListTimerCallback(object? parameter)
         {
             Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, new ListTimerHandler(OnListTimer));
         }
@@ -203,35 +201,35 @@ namespace PgMoon
             IsListing = false;
             IsListingCancelable = true;
 
-            CalendarList Result = ListTaskCancellation.IsCancellationRequested ? null : ListTask.Result;
+            CalendarList? Result = ListTaskCancellation.IsCancellationRequested ? null : ListTask.Result;
             ListTask = null;
 
             ParseCalendarListResult(Result);
         }
 
-        private void ParseCalendarListResult(CalendarList Result)
+        private void ParseCalendarListResult(CalendarList? result)
         {
             try
             {
-                if (Result != null)
+                if (result != null)
                 {
-                    SharedCalendarEntry ReselectedEntry = null;
+                    SharedCalendarEntry ReselectedEntry = SharedCalendarEntry.None;
 
-                    foreach (CalendarListEntry Entry in Result.Items)
+                    foreach (CalendarListEntry Entry in result.Items)
                     {
                         string Id = Entry.Id;
                         string Name = Entry.Summary;
                         if (Id != null && Id.Length > 0 && Name != null && Name.Length > 0)
                         {
-                            bool CanWrite = ((Entry.AccessRole == "owner") || (Entry.AccessRole == "writer"));
+                            bool CanWrite = (Entry.AccessRole == "owner") || (Entry.AccessRole == "writer");
                             SharedCalendarEntry NewEntry = new SharedCalendarEntry(Id, Name, CanWrite);
                             SharedCalendarEntryList.Add(NewEntry);
 
-                            if (SelectedCalendarEntry != null && NewEntry.Id == SelectedCalendarEntry.Id)
+                            if (SelectedCalendarEntry != SharedCalendarEntry.None && NewEntry.Id == SelectedCalendarEntry.Id)
                                 ReselectedEntry = NewEntry;
-                            else if (SelectedCalendarEntry == null && NewEntry.Id == CalendarId)
+                            else if (SelectedCalendarEntry == SharedCalendarEntry.None && NewEntry.Id == CalendarId)
                             {
-                                CalendarId = null;
+                                CalendarId = string.Empty;
                                 ReselectedEntry = NewEntry;
                             }
                         }
@@ -258,11 +256,11 @@ namespace PgMoon
             IsListingCancelable = false;
         }
 
-        private Timer ListTimer;
+        private Timer ListTimer = new Timer(new TimerCallback((object? state) => { }));
         private static readonly TimeSpan ListTimerStart = TimeSpan.FromSeconds(3);
         private static readonly TimeSpan ListTimerInterval = TimeSpan.FromSeconds(1);
-        private Task<CalendarList> ListTask;
-        private CancellationTokenSource ListTaskCancellation;
+        private Task<CalendarList>? ListTask;
+        private CancellationTokenSource ListTaskCancellation = new CancellationTokenSource();
         #endregion
 
         #region Credentials
@@ -278,18 +276,18 @@ namespace PgMoon
 
         public string SecretFileName
         {
-            get { return _SecretFileName; }
+            get { return SecretFileNameInternal; }
             set
             {
-                if (_SecretFileName != value)
+                if (SecretFileNameInternal != value)
                 {
-                    _SecretFileName = value;
+                    SecretFileNameInternal = value;
                     NotifyThisPropertyChanged();
                 }
             }
         }
 
-        private string CredentialFile
+        private static string CredentialFile
         {
             get
             {
@@ -306,22 +304,23 @@ namespace PgMoon
                 return Path.Combine(CredentialFolder, "pgmoon.json");
             }
         }
+
         public bool IsCredentialConfirmed
         {
             get
             {
                 bool Result;
 
-                Result = _SecretFileName != null && 
-                    ApplicationName != null && 
-                    ApplicationName.Length > 0 && 
-                    File.Exists(_SecretFileName) && 
+                Result = SecretFileNameInternal.Length > 0 &&
+                    ApplicationName.Length > 0 &&
+                    File.Exists(SecretFileNameInternal) &&
                     (File.Exists(CredentialFile) || Directory.Exists(CredentialFile));
 
                 return Result;
             }
         }
-        private string _SecretFileName;
+
+        private string SecretFileNameInternal = string.Empty;
 
         private void OnBrowse(object sender, ExecutedRoutedEventArgs e)
         {
@@ -343,7 +342,7 @@ namespace PgMoon
             }
         }
 
-        private void ObtainCredentialToken(bool UpdateCalendarList)
+        private void ObtainCredentialToken(bool updateCalendarList)
         {
             try
             {
@@ -363,11 +362,11 @@ namespace PgMoon
                 return;
             }
 
-            if (UpdateCalendarList)
+            if (updateCalendarList)
                 StartUpdatingCalendarList();
         }
 
-        private UserCredential CredentialToken;
+        private UserCredential? CredentialToken;
         #endregion
 
         #region Status
@@ -390,17 +389,17 @@ namespace PgMoon
                 return;
             }
 
-            if (ApplicationName == null || ApplicationName.Length == 0)
+            if (ApplicationName.Length == 0)
                 StatusList.Add("Application Name is empty.");
 
-            if (SecretFileName == null || SecretFileName.Length == 0)
+            if (SecretFileName.Length == 0)
                 StatusList.Add("No credential file selected.");
             else if (!File.Exists(SecretFileName))
                 StatusList.Add("Credential file doesn't exist.");
             else if (!IsCredentialConfirmed)
                 StatusList.Add("Credential not confirmed.");
 
-            if (SelectedCalendarEntry == null)
+            if (SelectedCalendarEntry == SharedCalendarEntry.None)
                 if (SharedCalendarEntryList.Count == 0)
                     StatusList.Add("The list of calendar names is empty.");
                 else
@@ -430,22 +429,22 @@ namespace PgMoon
         public bool WithRahuBoat { get; set; }
         public bool WithDarkChapel { get; set; }
         public bool WithFreeText { get; set; }
-        public string FreeText { get; set; }
+        public string FreeText { get; set; } = string.Empty;
 
         public uint UpcomingDays
         {
-            get { return _UpcomingDays; }
+            get { return UpcomingDaysInternal; }
             set
             {
-                if (_UpcomingDays != value)
+                if (UpcomingDaysInternal != value)
                 {
-                    _UpcomingDays = value;
+                    UpcomingDaysInternal = value;
                     NotifyThisPropertyChanged();
                     UpdateStatus();
                 }
             }
         }
-        private uint _UpcomingDays;
+        private uint UpcomingDaysInternal;
 
         private void OnInfoChanged(object sender, RoutedEventArgs e)
         {
@@ -456,18 +455,18 @@ namespace PgMoon
         #region Save/Cancel
         private void OnSave(object sender, ExecutedRoutedEventArgs e)
         {
-            Settings.SetSettingBool("AddEvents", AddEvents);
-            Settings.SetSettingString("EventsApplicationName", ApplicationName);
-            Settings.SetSettingString("EventsSecretFileName", SecretFileName);
-            Settings.SetSettingString("EventsCalendarId", (SelectedCalendarEntry != null) ? SelectedCalendarEntry.Id : null);
-            Settings.SetSettingInt("EventsUpcomingDays", (int)UpcomingDays);
-            Settings.SetSettingBool("EventsWithPhaseName", WithPhaseName);
-            Settings.SetSettingBool("EventsWithMushroomFarming", WithMushroomFarming);
-            Settings.SetSettingBool("EventsWithMushroomFarmingComments", WithMushroomFarmingComments);
-            Settings.SetSettingBool("EventsWithRahuBoat", WithRahuBoat);
-            Settings.SetSettingBool("EventsWithDarkChapel", WithDarkChapel);
-            Settings.SetSettingBool("EventsWithFreeText", WithFreeText);
-            Settings.SetSettingString("EventsFreeText", FreeText);
+            Settings.SetBool("AddEvents", AddEvents);
+            Settings.SetString("EventsApplicationName", ApplicationName);
+            Settings.SetString("EventsSecretFileName", SecretFileName);
+            Settings.SetString("EventsCalendarId", SelectedCalendarEntry.Id);
+            Settings.SetInt("EventsUpcomingDays", (int)UpcomingDays);
+            Settings.SetBool("EventsWithPhaseName", WithPhaseName);
+            Settings.SetBool("EventsWithMushroomFarming", WithMushroomFarming);
+            Settings.SetBool("EventsWithMushroomFarmingComments", WithMushroomFarmingComments);
+            Settings.SetBool("EventsWithRahuBoat", WithRahuBoat);
+            Settings.SetBool("EventsWithDarkChapel", WithDarkChapel);
+            Settings.SetBool("EventsWithFreeText", WithFreeText);
+            Settings.SetString("EventsFreeText", FreeText);
 
             DialogResult = true;
             Close();
@@ -481,19 +480,21 @@ namespace PgMoon
         #endregion
 
         #region Post Events
-        public void PostSharedEvents(ICollection<MushroomInfo> MushroomInfoList)
+        public void PostSharedEvents(ICollection<MushroomInfo> mushroomInfoList)
         {
+            if (mushroomInfoList == null)
+                return;
+
             if (!IsEventActive)
                 return;
 
             if (CredentialToken == null)
                 ObtainCredentialToken(true);
 
-            if (CredentialToken == null || SelectedCalendarEntry == null)
+            if (CredentialToken == null || SelectedCalendarEntry == SharedCalendarEntry.None)
                 return;
 
-            List<SharedCalendarEvent> ExistingEvents = ReadExistingEvents();
-            if (ExistingEvents == null)
+            if (!ReadExistingEvents(out List<SharedCalendarEvent> ExistingEvents))
                 return;
 
             DateTime Now = MainWindow.Now();
@@ -501,7 +502,7 @@ namespace PgMoon
             DateTime MaxEventTime = Now + TimeSpan.FromDays(UpcomingDays);
             List<SharedCalendarEvent> MissingEvents = new List<SharedCalendarEvent>();
 
-            for(;;)
+            for (;;)
             {
                 int MoonMonth;
                 MoonPhase MoonPhase;
@@ -524,21 +525,17 @@ namespace PgMoon
             }
 
             if (MissingEvents.Count > 0)
-                WriteMissingEvents(MissingEvents, MushroomInfoList);
+                WriteMissingEvents(MissingEvents, mushroomInfoList);
         }
 
-        private List<SharedCalendarEvent> ReadExistingEvents()
+        private bool ReadExistingEvents(out List<SharedCalendarEvent> existingEvents)
         {
+            existingEvents = new List<SharedCalendarEvent>();
+
             try
             {
-                List<SharedCalendarEvent> EventList = new List<SharedCalendarEvent>();
-
                 // Create Google Calendar API service.
-                CalendarService service = new CalendarService(new BaseClientService.Initializer()
-                {
-                    HttpClientInitializer = CredentialToken,
-                    ApplicationName = ApplicationName,
-                });
+                using CalendarService service = new CalendarService(new BaseClientService.Initializer() { HttpClientInitializer = CredentialToken, ApplicationName = ApplicationName });
 
                 // Define parameters of requestList.
                 EventsResource.ListRequest requestList = service.Events.List(SelectedCalendarEntry.Id);
@@ -551,51 +548,46 @@ namespace PgMoon
                 // List events.
                 Events events = requestList.Execute();
                 if (events.Items == null)
-                    return null;
+                    return false;
 
                 foreach (var eventItem in events.Items)
                 {
                     DateTime? StartDate = eventItem.Start.DateTime;
                     DateTime? EndDate = eventItem.End.DateTime;
 
-                    SharedCalendarEvent NewEvent;
-                    if (SharedCalendarEvent.TryParse(StartDate, EndDate, out NewEvent))
-                        EventList.Add(NewEvent);
+                    if (SharedCalendarEvent.TryParse(StartDate, EndDate, out SharedCalendarEvent? NewEvent) && NewEvent != null)
+                        existingEvents.Add(NewEvent);
                 }
 
-                return EventList;
+                return true;
             }
             catch (Exception e)
             {
                 Debug.Print(e.Message);
             }
 
-            return null;
+            return false;
         }
 
-        private void WriteMissingEvents(List<SharedCalendarEvent> EventList, ICollection<MushroomInfo> MushroomInfoList)
+        private void WriteMissingEvents(List<SharedCalendarEvent> eventList, ICollection<MushroomInfo> mushroomInfoList)
         {
             try
             {
                 // Create Google Calendar API service.
-                CalendarService service = new CalendarService(new BaseClientService.Initializer()
-                {
-                    HttpClientInitializer = CredentialToken,
-                    ApplicationName = ApplicationName,
-                });
+                using CalendarService service = new CalendarService(new BaseClientService.Initializer() { HttpClientInitializer = CredentialToken, ApplicationName = ApplicationName });
 
-                foreach (SharedCalendarEvent Event in EventList)
+                foreach (SharedCalendarEvent Event in eventList)
                 {
-                    string Description = "";
+                    string Description = string.Empty;
 
                     if (WithPhaseName)
                         Description += "This moon phase is " + Event.MoonPhase.Name;
 
                     if (WithMushroomFarming)
                     {
-                        string MushroomList = "";
+                        string MushroomList = string.Empty;
 
-                        foreach (MushroomInfo Info in MushroomInfoList)
+                        foreach (MushroomInfo Info in mushroomInfoList)
                             if (Event.MoonPhase == Info.RobustGrowthPhase1 || Event.MoonPhase == Info.RobustGrowthPhase2)
                             {
                                 if (MushroomList.Length > 0)
@@ -628,7 +620,7 @@ namespace PgMoon
                         Description += "The entrance to the Dark Chapel is: " + Event.MoonPhase.DarkChapelTip;
                     }
 
-                    if (WithFreeText && FreeText != null && FreeText.Length > 0)
+                    if (WithFreeText && FreeText.Length > 0)
                     {
                         if (Description.Length > 0)
                             Description += "\n\n";
@@ -659,20 +651,83 @@ namespace PgMoon
 
         #region Implementation of INotifyPropertyChanged
         /// <summary>
-        ///     Implements the PropertyChanged event.
+        /// Implements the PropertyChanged event.
         /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        internal void NotifyPropertyChanged(string propertyName)
+        /// <summary>
+        /// Invoke handlers of the <see cref="PropertyChanged"/> event.
+        /// </summary>
+        /// <param name="propertyName">Name of the property that changed.</param>
+        protected void NotifyPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed", Justification = "Default parameter is mandatory with [CallerMemberName]")]
-        internal void NotifyThisPropertyChanged([CallerMemberName] string propertyName = "")
+        /// <summary>
+        /// Invoke handlers of the <see cref="PropertyChanged"/> event.
+        /// </summary>
+        /// <param name="propertyName">Name of the property that changed.</param>
+        protected void NotifyThisPropertyChanged([CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
         #endregion
+
+        #region Implementation of IDisposable
+        /// <summary>
+        /// Called when an object should release its resources.
+        /// </summary>
+        /// <param name="isDisposing">Indicates if resources must be disposed now.</param>
+        protected virtual void Dispose(bool isDisposing)
+        {
+            if (!IsDisposed)
+            {
+                IsDisposed = true;
+
+                if (isDisposing)
+                    DisposeNow();
+            }
+        }
+
+        /// <summary>
+        /// Called when an object should release its resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Finalizes an instance of the <see cref="ShareCalendarWindow"/> class.
+        /// </summary>
+        ~ShareCalendarWindow()
+        {
+            Dispose(false);
+        }
+
+        /// <summary>
+        /// True after <see cref="Dispose(bool)"/> has been invoked.
+        /// </summary>
+        private bool IsDisposed;
+
+        /// <summary>
+        /// Disposes of every reference that must be cleaned up.
+        /// </summary>
+        private void DisposeNow()
+        {
+            using (ListTaskCancellation)
+            {
+            }
+
+            using (ListTimer)
+            {
+            }
+        }
+        #endregion
     }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning restore SA1600 // Elements should be documented
+#pragma warning restore SA1601 // Partial elements should be documented
 }
