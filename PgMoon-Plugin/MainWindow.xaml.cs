@@ -524,7 +524,7 @@
             AddMushroomToList(NewList, MoonPhase.PixiesParasolLongName, MoonPhase.FirstQuarterMoon, MoonPhase.WaxingGibbousMoon, keepComment);
             AddMushroomToList(NewList, MoonPhase.FlyAmanitaLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.FullMoon, keepComment);
             AddMushroomToList(NewList, MoonPhase.BlastcapMushroomLongName, MoonPhase.FullMoon, MoonPhase.WaningGibbousMoon, keepComment);
-            AddMushroomToList(NewList, MoonPhase.ChargedMyceliumLongName, null, null, keepComment);
+            AddMushroomToList(NewList, MoonPhase.ChargedMyceliumLongName, MoonPhase.NewMoon, MoonPhase.WaningGibbousMoon, keepComment);
             AddMushroomToList(NewList, MoonPhase.FalseAgaricLongName, MoonPhase.WaningCrescentMoon, MoonPhase.LastQuarterMoon, keepComment);
             AddMushroomToList(NewList, MoonPhase.WizardsMushroomLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.FirstQuarterMoon, keepComment);
 
