@@ -9,14 +9,14 @@
     <Platforms>x64</Platforms>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>1.1.1</Version>
+    <Version>1.1.2</Version>
     <Authors>David Le Bansais</Authors>
     <Company />
     <Product>PgMoon</Product>
     <Description>Shows the moon phase in Project: Gorgon</Description>
     <Copyright>Copyright © David Le Bansais 2019</Copyright>
-    <AssemblyVersion>1.1.1.320</AssemblyVersion>
-    <FileVersion>1.1.1.306</FileVersion>
+    <AssemblyVersion>1.1.2.320</AssemblyVersion>
+    <FileVersion>1.1.2.306</FileVersion>
     <RepositoryUrl>https://github.com/dlebansais/PgMoon</RepositoryUrl>
     <NeutralLanguage>en-US</NeutralLanguage>
     <RootNamespace>PgMoon</RootNamespace>

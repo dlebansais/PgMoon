@@ -7,14 +7,14 @@
     <Nullable>enable</Nullable>
     <Platforms>x64</Platforms>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>1.1.1</Version>
+    <Version>1.1.2</Version>
     <Authors>David Le Bansais</Authors>
     <Company />
     <Product />
     <Description>Shows the moon phase in Project: Gorgon</Description>
     <Copyright>Copyright © David Le Bansais 2019</Copyright>
-    <AssemblyVersion>1.1.1.320</AssemblyVersion>
-    <FileVersion>1.1.1.320</FileVersion>
+    <AssemblyVersion>1.1.2.320</AssemblyVersion>
+    <FileVersion>1.1.2.320</FileVersion>
     <RepositoryUrl>https://github.com/dlebansais/PgMoon</RepositoryUrl>
     <NeutralLanguage>en-US</NeutralLanguage>
     <RootNamespace>PgMoon</RootNamespace>
@@ -41,6 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Google.Apis.Calendar.v3" Version="1.49.0.2142" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -79,27 +80,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Google.Apis">
-      <HintPath>..\Google.Apis\x64\Google.Apis.dll</HintPath>
-    </Reference>
-    <Reference Include="Google.Apis.Auth">
-      <HintPath>..\Google.Apis\x64\Google.Apis.Auth.dll</HintPath>
-    </Reference>
-    <Reference Include="Google.Apis.Auth.PlatformServices">
-      <HintPath>..\Google.Apis\x64\Google.Apis.Auth.PlatformServices.dll</HintPath>
-    </Reference>
-    <Reference Include="Google.Apis.Calendar.v3">
-      <HintPath>..\Google.Apis\x64\Google.Apis.Calendar.v3.dll</HintPath>
-    </Reference>
-    <Reference Include="Google.Apis.Core">
-      <HintPath>..\Google.Apis\x64\Google.Apis.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Google.Apis.PlatformServices">
-      <HintPath>..\Google.Apis\x64\Google.Apis.PlatformServices.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\Google.Apis\x64\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <PackageReference Include="XamlConverterLibrary-Debug" Version="1.0.3" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
     <PackageReference Include="XamlConverterLibrary" Version="1.0.3" Condition="'$(Configuration)|$(Platform)'!='Debug|x64'" />
   </ItemGroup>
