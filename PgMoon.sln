@@ -17,6 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PgMoon-PluginTest", "PgMoon-PluginTest\PgMoon-PluginTest.csproj", "{3B7BF6DC-6C3C-494D-9702-A03580416B0C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -35,6 +37,10 @@ Global
 		{C78CB83D-81B6-4A8C-8DC5-DE0D2055710A}.Debug|x64.Build.0 = Debug|x64
 		{C78CB83D-81B6-4A8C-8DC5-DE0D2055710A}.Release|x64.ActiveCfg = Release|x64
 		{C78CB83D-81B6-4A8C-8DC5-DE0D2055710A}.Release|x64.Build.0 = Release|x64
+		{3B7BF6DC-6C3C-494D-9702-A03580416B0C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3B7BF6DC-6C3C-494D-9702-A03580416B0C}.Debug|x64.Build.0 = Debug|Any CPU
+		{3B7BF6DC-6C3C-494D-9702-A03580416B0C}.Release|x64.ActiveCfg = Release|Any CPU
+		{3B7BF6DC-6C3C-494D-9702-A03580416B0C}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
