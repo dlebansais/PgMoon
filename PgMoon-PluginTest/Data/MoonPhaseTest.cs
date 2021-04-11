@@ -29,6 +29,27 @@ namespace PgMoonTest.Data
         }
 
         [DataTestMethod]
+        [DynamicData(nameof(MoonPhaseNameMapping), DynamicDataSourceType.Method)]
+        public void MoonPhaseName(MoonPhaseV2 expectedMoonPhase, string expectedMoonName)
+        {
+            string actualMoonName = expectedMoonPhase.Name;
+            Assert.AreEqual(expectedMoonName, actualMoonName);
+        }
+
+        public static IEnumerable<object[]> MoonPhaseNameMapping()
+        {
+            yield return new object[] { MoonPhaseV2.UNKNOWN, "Unknown Moon" };
+            yield return new object[] { MoonPhaseV2.FULL_MOON, "Full Moon" };
+            yield return new object[] { MoonPhaseV2.WANING_GIBBOUS, "Waning Gibbous Moon" };
+            yield return new object[] { MoonPhaseV2.LAST_QUARTER, "Last Quarter Moon" };
+            yield return new object[] { MoonPhaseV2.WANING_CRESCENT, "Waning Crescent Moon" };
+            yield return new object[] { MoonPhaseV2.NEW_MOON, "New Moon" };
+            yield return new object[] { MoonPhaseV2.WAXING_CRESCENT, "Waxing Crescent Moon" };
+            yield return new object[] { MoonPhaseV2.FIRST_QUARTER, "First Quarter Moon" };
+            yield return new object[] { MoonPhaseV2.WAXING_GIBBOUS, "Waxing Gibbous Moon" };
+        }
+
+        [DataTestMethod]
         [DynamicData(nameof(AngleReturnsMoonPhaseData), DynamicDataSourceType.Method)]
         public void AngleReturnsMoonPhase(MoonPhaseV2 expectedMoonPhase, double inputAngle)
         {
