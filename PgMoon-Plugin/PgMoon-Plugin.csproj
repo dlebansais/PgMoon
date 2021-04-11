@@ -18,6 +18,7 @@
     <RepositoryUrl>https://github.com/dlebansais/PgMoon</RepositoryUrl>
     <NeutralLanguage>en-US</NeutralLanguage>
     <RootNamespace>PgMoon</RootNamespace>
+    <NoWarn>CS1591,SA1600</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

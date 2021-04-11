@@ -30,9 +30,9 @@ namespace PgMoonTest.Data
 
         [DataTestMethod]
         [DynamicData(nameof(MoonPhaseNameMapping), DynamicDataSourceType.Method)]
-        public void MoonPhaseName(MoonPhaseV2 expectedMoonPhase, string expectedMoonName)
+        public void MoonPhaseName(MoonPhaseV2 moonPhase, string expectedMoonName)
         {
-            string actualMoonName = expectedMoonPhase.Name;
+            string actualMoonName = moonPhase.Name;
             Assert.AreEqual(expectedMoonName, actualMoonName);
         }
 
@@ -47,6 +47,27 @@ namespace PgMoonTest.Data
             yield return new object[] { MoonPhaseV2.WAXING_CRESCENT, "Waxing Crescent Moon" };
             yield return new object[] { MoonPhaseV2.FIRST_QUARTER, "First Quarter Moon" };
             yield return new object[] { MoonPhaseV2.WAXING_GIBBOUS, "Waxing Gibbous Moon" };
+        }
+
+        [DataTestMethod]
+        [DynamicData(nameof(MoonPhaseTipMapping), DynamicDataSourceType.Method)]
+        public void MoonPhaseChapelTip(MoonPhaseV2 moonPhase, string expectedChapelTip)
+        {
+            string actualChapelTip = moonPhase.GetTip();
+            Assert.AreEqual(expectedChapelTip, actualChapelTip);
+        }
+
+        public static IEnumerable<object[]> MoonPhaseTipMapping()
+        {
+            yield return new object[] { MoonPhaseV2.UNKNOWN, string.Empty };
+            yield return new object[] { MoonPhaseV2.FULL_MOON, "By Percy's House" };
+            yield return new object[] { MoonPhaseV2.WANING_GIBBOUS, "East of Hogan's Keep" };
+            yield return new object[] { MoonPhaseV2.LAST_QUARTER, "At Gnashers" };
+            yield return new object[] { MoonPhaseV2.WANING_CRESCENT, "South of the Waterfall" };
+            yield return new object[] { MoonPhaseV2.NEW_MOON, "South of the westernmost Lake" };
+            yield return new object[] { MoonPhaseV2.WAXING_CRESCENT, "North and east of the Portal to Serbule" };
+            yield return new object[] { MoonPhaseV2.FIRST_QUARTER, "At Spiders" };
+            yield return new object[] { MoonPhaseV2.WAXING_GIBBOUS, "By the Mountain, north of the Lake's edge" };
         }
 
         [DataTestMethod]
