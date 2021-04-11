@@ -84,12 +84,23 @@ namespace PgMoon_PluginTest
 
             return (result != null) ? result : TestMoonPhase.UNKNOWN;
         }
+
+        public static TestMoonPhase From(double inputAngle)
+        {
+            TestMoonPhase result = GetAll().SingleOrDefault<TestMoonPhase>
+            (
+                moonPhase => {
+                    return moonPhase == TestMoonPhase.FULL_MOON;
+                }
+            );
+
+            return (result != null) ? result : TestMoonPhase.UNKNOWN;
+        }
     }
 
     [TestClass]
     public class CalendarToMoonPhase
     {
-
 
         [DataTestMethod]
         [DynamicData(nameof(EnumIdReturnsMoonPhaseData), DynamicDataSourceType.Method)]
@@ -110,6 +121,20 @@ namespace PgMoon_PluginTest
             yield return new object[] { TestMoonPhase.WAXING_CRESCENT };
             yield return new object[] { TestMoonPhase.FIRST_QUARTER };
             yield return new object[] { TestMoonPhase.WAXING_GIBBOUS };
+        }
+
+        [DataTestMethod]
+        [DynamicData(nameof(AngleReturnsMoonPhaseData), DynamicDataSourceType.Method)]
+        public void AngleReturnsMoonPhase(TestMoonPhase expectedMoonPhase, double inputAngle)
+        {
+            TestMoonPhase actualMoonPhase = TestMoonPhase.From(inputAngle);
+            Assert.AreEqual(expectedMoonPhase, actualMoonPhase);
+        }
+
+        public static IEnumerable<object[]> AngleReturnsMoonPhaseData()
+        {
+            yield return new object[] { TestMoonPhase.FULL_MOON, -180.0 };
+            yield return new object[] { TestMoonPhase.FULL_MOON, -134.9 };
         }
     }
 }
