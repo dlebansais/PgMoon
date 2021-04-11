@@ -17,7 +17,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PgMoon-PluginTest", "PgMoon-PluginTest\PgMoon-PluginTest.csproj", "{3B7BF6DC-6C3C-494D-9702-A03580416B0C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PgMoon-PluginTest", "PgMoon-PluginTest\PgMoon-PluginTest.csproj", "{3B7BF6DC-6C3C-494D-9702-A03580416B0C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5645BD67-AA6A-4398-96C0-C9594D2F33E5} = {5645BD67-AA6A-4398-96C0-C9594D2F33E5}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
