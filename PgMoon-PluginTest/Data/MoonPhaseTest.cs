@@ -111,14 +111,14 @@ namespace PgMoonTest.Data
         public static IEnumerable<object[]> MoonPhaseMushroomPreferenceData()
         {
             yield return new object[] { MoonPhaseV2.UNKNOWN, new List<MushroomInfo>() };
-            yield return new object[] { MoonPhaseV2.FULL_MOON, new List<MushroomInfo>() };
-            yield return new object[] { MoonPhaseV2.WANING_GIBBOUS, new List<MushroomInfo>() };
-            yield return new object[] { MoonPhaseV2.LAST_QUARTER, new List<MushroomInfo>() };
-            yield return new object[] { MoonPhaseV2.WANING_CRESCENT, new List<MushroomInfo>() };
-            yield return new object[] { MoonPhaseV2.NEW_MOON, new List<MushroomInfo>() };
-            yield return new object[] { MoonPhaseV2.WAXING_CRESCENT, new List<MushroomInfo>() };
-            yield return new object[] { MoonPhaseV2.FIRST_QUARTER, new List<MushroomInfo>() };
-            yield return new object[] { MoonPhaseV2.WAXING_GIBBOUS, new List<MushroomInfo>() };
+            yield return new object[] { MoonPhaseV2.FULL_MOON, new List<MushroomInfo>() { MushroomInfo.FIELD, MushroomInfo.BLACK_FOOT_MOREL, MushroomInfo.FALSE_AGARIC } };
+            yield return new object[] { MoonPhaseV2.WANING_GIBBOUS, new List<MushroomInfo>() { MushroomInfo.BLUSHER, MushroomInfo.PIXIES_PARASOL } };
+            yield return new object[] { MoonPhaseV2.LAST_QUARTER, new List<MushroomInfo>() { MushroomInfo.MILK_CAP, MushroomInfo.FLY_AMANITA, MushroomInfo.WIZARDS } };
+            yield return new object[] { MoonPhaseV2.WANING_CRESCENT, new List<MushroomInfo>() { MushroomInfo.BLOOD, MushroomInfo.CHARGED_MYCELIUM } };
+            yield return new object[] { MoonPhaseV2.NEW_MOON, new List<MushroomInfo>() { MushroomInfo.GOBLIN_PUFFBALL, MushroomInfo.CORAL } };
+            yield return new object[] { MoonPhaseV2.WAXING_CRESCENT, new List<MushroomInfo>() { MushroomInfo.IOCAINE } };
+            yield return new object[] { MoonPhaseV2.FIRST_QUARTER, new List<MushroomInfo>() { MushroomInfo.MYCENA, MushroomInfo.GROXMAX, MushroomInfo.BLASTCAP } };
+            yield return new object[] { MoonPhaseV2.WAXING_GIBBOUS, new List<MushroomInfo>() { MushroomInfo.BOLETUS, MushroomInfo.PORCINI } };
         }
     }
 }

@@ -7,14 +7,14 @@ namespace PgMoon.Data
     public class MoonPhaseV2 : Enumeration
     {
         public static readonly MoonPhaseV2 UNKNOWN = new(-1, "Unknown", new Tuple<double, double>(-360, -360), BoatDestination.UNKNOWN, new List<MushroomInfo>());
-        public static readonly MoonPhaseV2 FULL_MOON = new(0, "Full", new Tuple<double, double>(-180.0, -135.0), BoatDestination.KUR_MOUNTAINS, new List<MushroomInfo>() { });
-        public static readonly MoonPhaseV2 WANING_GIBBOUS = new(1, "Waning Gibbous", new Tuple<double, double>(-135.0, -90.0), BoatDestination.KUR_MOUNTAINS, new List<MushroomInfo>() { });
-        public static readonly MoonPhaseV2 LAST_QUARTER = new(2, "Last Quarter", new Tuple<double, double>(-90.0, -45.0), BoatDestination.SUN_VALE, new List<MushroomInfo>() { });
-        public static readonly MoonPhaseV2 WANING_CRESCENT = new(3, "Waning Crescent", new Tuple<double, double>(-45.0, 0.0), BoatDestination.SUN_VALE, new List<MushroomInfo>() { });
-        public static readonly MoonPhaseV2 NEW_MOON = new(4, "New", new Tuple<double, double>(0.0, 45.0), BoatDestination.SERBULE, new List<MushroomInfo>() { });
-        public static readonly MoonPhaseV2 WAXING_CRESCENT = new(5, "Waxing Crescent", new Tuple<double, double>(45.0, 90.0), BoatDestination.SERBULE, new List<MushroomInfo>() { });
-        public static readonly MoonPhaseV2 FIRST_QUARTER = new(6, "First Quarter", new Tuple<double, double>(90.0, 135.0), BoatDestination.SERBULE, new List<MushroomInfo>() { });
-        public static readonly MoonPhaseV2 WAXING_GIBBOUS = new(7, "Waxing Gibbous", new Tuple<double, double>(135.0, 180.0), BoatDestination.KUR_MOUNTAINS, new List<MushroomInfo>() { });
+        public static readonly MoonPhaseV2 FULL_MOON = new(0, "Full", new Tuple<double, double>(-180.0, -135.0), BoatDestination.KUR_MOUNTAINS, new List<MushroomInfo>() { MushroomInfo.FIELD, MushroomInfo.BLACK_FOOT_MOREL, MushroomInfo.FALSE_AGARIC });
+        public static readonly MoonPhaseV2 WANING_GIBBOUS = new(1, "Waning Gibbous", new Tuple<double, double>(-135.0, -90.0), BoatDestination.KUR_MOUNTAINS, new List<MushroomInfo>() {MushroomInfo.BLUSHER, MushroomInfo.PIXIES_PARASOL });
+        public static readonly MoonPhaseV2 LAST_QUARTER = new(2, "Last Quarter", new Tuple<double, double>(-90.0, -45.0), BoatDestination.SUN_VALE, new List<MushroomInfo>() {MushroomInfo.MILK_CAP, MushroomInfo.FLY_AMANITA, MushroomInfo.WIZARDS });
+        public static readonly MoonPhaseV2 WANING_CRESCENT = new(3, "Waning Crescent", new Tuple<double, double>(-45.0, 0.0), BoatDestination.SUN_VALE, new List<MushroomInfo>() {MushroomInfo.BLOOD, MushroomInfo.CHARGED_MYCELIUM });
+        public static readonly MoonPhaseV2 NEW_MOON = new(4, "New", new Tuple<double, double>(0.0, 45.0), BoatDestination.SERBULE, new List<MushroomInfo>() {MushroomInfo.GOBLIN_PUFFBALL, MushroomInfo.CORAL });
+        public static readonly MoonPhaseV2 WAXING_CRESCENT = new(5, "Waxing Crescent", new Tuple<double, double>(45.0, 90.0), BoatDestination.SERBULE, new List<MushroomInfo>() { MushroomInfo.IOCAINE });
+        public static readonly MoonPhaseV2 FIRST_QUARTER = new(6, "First Quarter", new Tuple<double, double>(90.0, 135.0), BoatDestination.SERBULE, new List<MushroomInfo>() {MushroomInfo.MYCENA, MushroomInfo.GROXMAX, MushroomInfo.BLASTCAP });
+        public static readonly MoonPhaseV2 WAXING_GIBBOUS = new(7, "Waxing Gibbous", new Tuple<double, double>(135.0, 180.0), BoatDestination.KUR_MOUNTAINS, new List<MushroomInfo>() {MushroomInfo.BOLETUS, MushroomInfo.PORCINI });
 
         private readonly Tuple<double, double> angleBounds;
         private readonly BoatDestination destination;
