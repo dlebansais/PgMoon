@@ -45,19 +45,41 @@ namespace PgMoon_PluginTest
 
     public class TestMoonPhase : Enumeration
     {
-        public static TestMoonPhase UNKNOWN = new TestMoonPhase(-1, "Unknown Moon");
-        public static TestMoonPhase FULL_MOON = new TestMoonPhase(0, "Full Moon");
-        public static TestMoonPhase WANING_GIBBOUS = new TestMoonPhase(1, "Waning Gibbous");
-        public static TestMoonPhase LAST_QUARTER = new TestMoonPhase(2, "Last Quarter");
-        public static TestMoonPhase WANING_CRESCENT = new TestMoonPhase(3, "Waning Crescent");
-        public static TestMoonPhase NEW_MOON = new TestMoonPhase(4, "New Moon");
-        public static TestMoonPhase WAXING_CRESCENT = new TestMoonPhase(5, "Waxing Crescent");
-        public static TestMoonPhase FIRST_QUARTER = new TestMoonPhase(6, "First Quarter");
-        public static TestMoonPhase WAXING_GIBBOUS = new TestMoonPhase(7, "Waxing Gibbous");
+        public static readonly TestMoonPhase UNKNOWN = new TestMoonPhase(-1, "Unknown Moon", -360, -360);
+        public static readonly TestMoonPhase FULL_MOON = new TestMoonPhase(0, "Full Moon", -180.0, -135.0);
+        public static readonly TestMoonPhase WANING_GIBBOUS = new TestMoonPhase(1, "Waning Gibbous", -135.0, -90.0);
+        public static readonly TestMoonPhase LAST_QUARTER = new TestMoonPhase(2, "Last Quarter", -90.0, -45.0);
+        public static readonly TestMoonPhase WANING_CRESCENT = new TestMoonPhase(3, "Waning Crescent", -45.0, 0.0);
+        public static readonly TestMoonPhase NEW_MOON = new TestMoonPhase(4, "New Moon", 0.0, 45.0);
+        public static readonly TestMoonPhase WAXING_CRESCENT = new TestMoonPhase(5, "Waxing Crescent", 45.0, 90.0);
+        public static readonly TestMoonPhase FIRST_QUARTER = new TestMoonPhase(6, "First Quarter", 90.0, 135.0);
+        public static readonly TestMoonPhase WAXING_GIBBOUS = new TestMoonPhase(7, "Waxing Gibbous", 135.0, 180.0);
 
-        private TestMoonPhase(int enumId, string enumName) : base(enumId, enumName)
+        private readonly double minAngle;
+        private readonly double maxAngle;
+
+        private TestMoonPhase
+        (
+            int enumId,
+            string enumName,
+            double minAngle,
+            double maxAngle
+        ) : base(enumId, enumName)
         {
+            this.minAngle = minAngle;
+            this.maxAngle = maxAngle;
+        }
 
+        public Boolean IsAngleWithinLimits(double inputAngle)
+        {
+            Boolean result = inputAngle >= minAngle && inputAngle < maxAngle;
+            
+            if (this.Equals(TestMoonPhase.WAXING_GIBBOUS))
+            {
+                result = inputAngle >= minAngle && inputAngle <= maxAngle;
+            }
+
+            return result;
         }
 
         public static List<TestMoonPhase> GetAll()
@@ -79,7 +101,7 @@ namespace PgMoon_PluginTest
         {
             TestMoonPhase result = GetAll().SingleOrDefault<TestMoonPhase>
             (
-                (moonPhase => enumId == moonPhase.Id)
+                moonPhase => enumId == moonPhase.Id
             );
 
             return (result != null) ? result : TestMoonPhase.UNKNOWN;
@@ -89,9 +111,7 @@ namespace PgMoon_PluginTest
         {
             TestMoonPhase result = GetAll().SingleOrDefault<TestMoonPhase>
             (
-                moonPhase => {
-                    return moonPhase == TestMoonPhase.FULL_MOON;
-                }
+                moonPhase => moonPhase.IsAngleWithinLimits(inputAngle)
             );
 
             return (result != null) ? result : TestMoonPhase.UNKNOWN;
@@ -134,7 +154,21 @@ namespace PgMoon_PluginTest
         public static IEnumerable<object[]> AngleReturnsMoonPhaseData()
         {
             yield return new object[] { TestMoonPhase.FULL_MOON, -180.0 };
-            yield return new object[] { TestMoonPhase.FULL_MOON, -134.9 };
+            yield return new object[] { TestMoonPhase.FULL_MOON, -135.1 };
+            yield return new object[] { TestMoonPhase.WANING_GIBBOUS, -135.0 };
+            yield return new object[] { TestMoonPhase.WANING_GIBBOUS, -90.1 };
+            yield return new object[] { TestMoonPhase.LAST_QUARTER, -90.0 };
+            yield return new object[] { TestMoonPhase.LAST_QUARTER, -45.1 };
+            yield return new object[] { TestMoonPhase.WANING_CRESCENT, -45.0 };
+            yield return new object[] { TestMoonPhase.WANING_CRESCENT, -0.1 };
+            yield return new object[] { TestMoonPhase.NEW_MOON, 0.0 };
+            yield return new object[] { TestMoonPhase.NEW_MOON, 44.9 };
+            yield return new object[] { TestMoonPhase.WAXING_CRESCENT, 45.0 };
+            yield return new object[] { TestMoonPhase.WAXING_CRESCENT, 89.9 };
+            yield return new object[] { TestMoonPhase.FIRST_QUARTER, 90.0 };
+            yield return new object[] { TestMoonPhase.FIRST_QUARTER, 134.9 };
+            yield return new object[] { TestMoonPhase.WAXING_GIBBOUS, 135.0 };
+            yield return new object[] { TestMoonPhase.WAXING_GIBBOUS, 180.0 };
         }
     }
 }
