@@ -1,13 +1,12 @@
-﻿namespace PgMoonTest.Data
+namespace PgMoonTest.Data
 {
     using System.Collections.Generic;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using PgMoon.Data;
 
     [TestClass]
-    public class CalendarToMoonPhase
+    public class MoonPhaseTest
     {
-
         [DataTestMethod]
         [DynamicData(nameof(EnumIdReturnsMoonPhaseData), DynamicDataSourceType.Method)]
         public void EnumIdReturnsMoonPhase(MoonPhaseV2 expectedMoonPhase)
@@ -56,5 +55,19 @@
             yield return new object[] { MoonPhaseV2.WAXING_GIBBOUS, 135.0 };
             yield return new object[] { MoonPhaseV2.WAXING_GIBBOUS, 180.0 };
         }
+
+        [DataTestMethod]
+        [DynamicData(nameof(MoonPhaseMappingData), DynamicDataSourceType.Method)]
+        public void MoonPhaseContainsBoatDestination(MoonPhaseV2 moonPhase, BoatDestination expectedDestination)
+        {
+            BoatDestination actualBoatDestination = moonPhase.GetBoatDestination();
+            Assert.AreEqual(expectedDestination, actualBoatDestination);
+        }
+
+        public static IEnumerable<object[]> MoonPhaseMappingData()
+        {
+            yield return new object[] { MoonPhaseV2.FULL_MOON, BoatDestination.UNKNOWN };
+        }
+
     }
 }

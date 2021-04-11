@@ -17,18 +17,20 @@ namespace PgMoon.Data
         public static readonly MoonPhaseV2 WAXING_GIBBOUS = new(7, "Waxing Gibbous", new Tuple<double, double>(135.0, 180.0));
 
         private readonly Tuple<double, double> angleBounds;
+        private readonly BoatDestination destination;
 
         private MoonPhaseV2(int enumId, string enumName, Tuple<double, double> angleBounds)
         : base(enumId, enumName)
         {
             this.angleBounds = angleBounds;
+            this.destination = BoatDestination.UNKNOWN;
         }
 
         public bool IsAngleWithinLimits(double inputAngle)
         {
             bool result = inputAngle >= angleBounds.Item1 && inputAngle < angleBounds.Item2;
 
-            if (this.Equals(MoonPhaseV2.WAXING_GIBBOUS))
+            if (this.Equals(WAXING_GIBBOUS))
             {
                 result = inputAngle >= angleBounds.Item1 && inputAngle <= angleBounds.Item2;
             }
@@ -36,31 +38,30 @@ namespace PgMoon.Data
             return result;
         }
 
-        public static List<MoonPhaseV2> GetAll()
+        public BoatDestination GetBoatDestination() => this.destination;
+
+        public static List<MoonPhaseV2> GetAll() => new()
         {
-            return new List<MoonPhaseV2>()
-            {
-                FULL_MOON,
-                WANING_GIBBOUS,
-                LAST_QUARTER,
-                WANING_CRESCENT,
-                NEW_MOON,
-                WAXING_CRESCENT,
-                FIRST_QUARTER,
-                WAXING_GIBBOUS,
-            };
-        }
+            FULL_MOON,
+            WANING_GIBBOUS,
+            LAST_QUARTER,
+            WANING_CRESCENT,
+            NEW_MOON,
+            WAXING_CRESCENT,
+            FIRST_QUARTER,
+            WAXING_GIBBOUS,
+        };
 
         public static MoonPhaseV2 From(int enumId)
         {
             MoonPhaseV2 result = GetAll().SingleOrDefault<MoonPhaseV2>(moonPhase => enumId == moonPhase.Id);
-            return result ?? MoonPhaseV2.UNKNOWN;
+            return result ?? UNKNOWN;
         }
 
         public static MoonPhaseV2 From(double inputAngle)
         {
             MoonPhaseV2 result = GetAll().SingleOrDefault<MoonPhaseV2>(moonPhase => moonPhase.IsAngleWithinLimits(inputAngle));
-            return result ?? MoonPhaseV2.UNKNOWN;
+            return result ?? UNKNOWN;
         }
     }
 }
