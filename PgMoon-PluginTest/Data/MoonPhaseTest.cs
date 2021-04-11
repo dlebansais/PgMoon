@@ -66,8 +66,15 @@ namespace PgMoonTest.Data
 
         public static IEnumerable<object[]> MoonPhaseMappingData()
         {
-            yield return new object[] { MoonPhaseV2.FULL_MOON, BoatDestination.UNKNOWN };
+            yield return new object[] { MoonPhaseV2.UNKNOWN, BoatDestination.UNKNOWN };
+            yield return new object[] { MoonPhaseV2.FULL_MOON, BoatDestination.KUR_MOUNTAINS };
+            yield return new object[] { MoonPhaseV2.WANING_GIBBOUS, BoatDestination.KUR_MOUNTAINS };
+            yield return new object[] { MoonPhaseV2.LAST_QUARTER, BoatDestination.SUN_VALE };
+            yield return new object[] { MoonPhaseV2.WANING_CRESCENT, BoatDestination.SUN_VALE };
+            yield return new object[] { MoonPhaseV2.NEW_MOON, BoatDestination.SERBULE };
+            yield return new object[] { MoonPhaseV2.WAXING_CRESCENT, BoatDestination.SERBULE };
+            yield return new object[] { MoonPhaseV2.FIRST_QUARTER, BoatDestination.SERBULE };
+            yield return new object[] { MoonPhaseV2.WAXING_GIBBOUS, BoatDestination.KUR_MOUNTAINS };
         }
-
     }
 }
