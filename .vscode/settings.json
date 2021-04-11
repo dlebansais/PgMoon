@@ -1,2 +1,6 @@
 {
+    "csharp.semanticHighlighting.enabled": true,
+    "omnisharp.enableRoslynAnalyzers": true,
+    "omnisharp.organizeImportsOnFormat": true,
+    "omnisharp.useEditorFormattingSettings": false
 }
