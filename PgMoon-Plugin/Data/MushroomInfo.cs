@@ -70,5 +70,11 @@ namespace PgMoon.Data
             MushroomInfo result = GetAll().SingleOrDefault<MushroomInfo>(mushroom => enumId == mushroom.Id);
             return result ?? UNKNOWN;
         }
+
+        public string GetInformation(bool useLongName)
+        {
+            string nameToUse = useLongName ? Name : shortName;
+            return $"{nameToUse} ({refreshRate}h)";
+        }
     }
 }
