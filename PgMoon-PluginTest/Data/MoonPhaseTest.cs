@@ -97,5 +97,28 @@ namespace PgMoonTest.Data
             yield return new object[] { MoonPhaseV2.FIRST_QUARTER, BoatDestination.SERBULE };
             yield return new object[] { MoonPhaseV2.WAXING_GIBBOUS, BoatDestination.KUR_MOUNTAINS };
         }
+
+        [DataTestMethod]
+        [DynamicData(nameof(MoonPhaseMushroomPreferenceData), DynamicDataSourceType.Method)]
+        public void MoonPhaseContainsPreferentialMushrooms(MoonPhaseV2 moonPhase, List<MushroomInfo> preferentialMushrooms)
+        {
+            foreach (var mushroom in MushroomInfo.GetAll())
+            {
+                Assert.AreEqual(preferentialMushrooms.Contains(mushroom), moonPhase.isPreferable(mushroom));
+            }
+        }
+
+        public static IEnumerable<object[]> MoonPhaseMushroomPreferenceData()
+        {
+            yield return new object[] { MoonPhaseV2.UNKNOWN, new List<MushroomInfo>() };
+            yield return new object[] { MoonPhaseV2.FULL_MOON, new List<MushroomInfo>() };
+            yield return new object[] { MoonPhaseV2.WANING_GIBBOUS, new List<MushroomInfo>() };
+            yield return new object[] { MoonPhaseV2.LAST_QUARTER, new List<MushroomInfo>() };
+            yield return new object[] { MoonPhaseV2.WANING_CRESCENT, new List<MushroomInfo>() };
+            yield return new object[] { MoonPhaseV2.NEW_MOON, new List<MushroomInfo>() };
+            yield return new object[] { MoonPhaseV2.WAXING_CRESCENT, new List<MushroomInfo>() };
+            yield return new object[] { MoonPhaseV2.FIRST_QUARTER, new List<MushroomInfo>() };
+            yield return new object[] { MoonPhaseV2.WAXING_GIBBOUS, new List<MushroomInfo>() };
+        }
     }
 }
