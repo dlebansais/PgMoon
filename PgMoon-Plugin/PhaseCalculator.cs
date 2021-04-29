@@ -48,6 +48,7 @@
                 }
             }
         }
+
         private static int MoonMonthInternal;
 
         public static MoonPhase MoonPhase
@@ -64,6 +65,7 @@
                 }
             }
         }
+
         private static MoonPhase MoonPhaseInternal = MoonPhase.NullMoonPhase;
 
         public static double ProgressWithinPhase
@@ -78,6 +80,7 @@
                 }
             }
         }
+
         private static double ProgressWithinPhaseInternal;
 
         public static double ProgressToFullMoon
@@ -92,6 +95,7 @@
                 }
             }
         }
+
         private static double ProgressToFullMoonInternal;
 
         public static TimeSpan TimeToNextPhase
@@ -106,6 +110,7 @@
                 }
             }
         }
+
         private static TimeSpan TimeToNextPhaseInternal;
 
         public static TimeSpan TimeToFullMoon
@@ -120,6 +125,7 @@
                 }
             }
         }
+
         private static TimeSpan TimeToFullMoonInternal;
         #endregion
 

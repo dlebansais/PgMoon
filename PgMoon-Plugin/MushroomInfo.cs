@@ -40,6 +40,7 @@
                 }
             }
         }
+
         private string NameInternal;
 
         public string Comment
@@ -54,6 +55,7 @@
                 }
             }
         }
+
         private string CommentInternal;
 
         public int SelectedMoonPhase1
@@ -71,6 +73,7 @@
                 }
             }
         }
+
         private int SelectedMoonPhase1Internal;
 
         public int SelectedMoonPhase2
@@ -88,6 +91,7 @@
                 }
             }
         }
+
         private int SelectedMoonPhase2Internal;
 
         public MoonPhase? RobustGrowthPhase1 { get { return (SelectedMoonPhase1 >= 0) ? MoonPhase.MoonPhaseList[SelectedMoonPhase1] : null; } }
@@ -112,6 +116,7 @@
             NotifyPropertyChanged(nameof(SelectedMoonPhase1));
             NotifyPropertyChanged(nameof(RobustGrowthPhase1));
         }
+
         private void OnResetSelectedMoonPhase2()
         {
             SelectedMoonPhase2Internal = -1;

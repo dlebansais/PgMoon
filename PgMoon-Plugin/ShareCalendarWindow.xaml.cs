@@ -75,6 +75,7 @@
                 }
             }
         }
+
         private bool AddEventsInternal;
 
         public string ApplicationName
@@ -94,6 +95,7 @@
                 }
             }
         }
+
         private string ApplicationNameInternal = string.Empty;
         #endregion
 
@@ -117,6 +119,7 @@
                 }
             }
         }
+
         private bool IsListingInternal;
 
         public bool IsListingCancelable
@@ -131,6 +134,7 @@
                 }
             }
         }
+
         private bool IsListingCancelableInternal;
 
         public SharedCalendarEntry SelectedCalendarEntry
@@ -146,6 +150,7 @@
                 }
             }
         }
+
         private SharedCalendarEntry SelectedCalendarEntryInternal = SharedCalendarEntry.None;
         private string CalendarId;
 
@@ -444,6 +449,7 @@
                 }
             }
         }
+
         private uint UpcomingDaysInternal;
 
         private void OnInfoChanged(object sender, RoutedEventArgs e)
@@ -502,7 +508,7 @@
             DateTime MaxEventTime = Now + TimeSpan.FromDays(UpcomingDays);
             List<SharedCalendarEvent> MissingEvents = new List<SharedCalendarEvent>();
 
-            for (;;)
+            for (; ;)
             {
                 int MoonMonth;
                 MoonPhase MoonPhase;

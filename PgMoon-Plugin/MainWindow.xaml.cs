@@ -82,6 +82,7 @@
                 return IsElevatedInternal.Value;
             }
         }
+
         private bool? IsElevatedInternal;
 
         /// <summary>
@@ -275,6 +276,7 @@
                 }
             }
         }
+
         private bool ShowCalendarInternal;
 
         /// <summary>
@@ -293,6 +295,7 @@
                 }
             }
         }
+
         private DateTime CalendarStartTimeInternal;
 
         /// <summary>
@@ -567,6 +570,7 @@
                 }
             }
         }
+
         private bool ShowMushroomFarmingInternal;
 
         /// <summary>
@@ -592,6 +596,7 @@
                 }
             }
         }
+
         private bool IsMushroomListLargeInternal;
 
         /// <summary>
@@ -609,6 +614,7 @@
                 }
             }
         }
+
         private bool IsLockedInternal;
 
         /// <summary>
@@ -644,7 +650,7 @@
             {
                 using (FileStream fs = new FileStream(MushroomNameFile, FileMode.Open, FileAccess.Read, FileShare.Read))
                 using (StreamReader sr = new StreamReader(fs, Encoding.ASCII))
-                for (;;)
+                for (; ;)
                 {
                     string? MushroomName = sr.ReadLine();
                     if (MushroomName == null || MushroomName.Length == 0)
@@ -848,6 +854,7 @@
                 }
             }
         }
+
         private bool ShowRahuBoatInternal;
 
         private const string ShowRahuBoatSettingName = "ShowRahuBoat";
@@ -876,6 +883,7 @@
                 }
             }
         }
+
         private bool ShowDarkChapelInternal;
 
         private const string ShowDarkChapelSettingName = "ShowDarkChapel";
