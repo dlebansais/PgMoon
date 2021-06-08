@@ -68,7 +68,7 @@
             Settings = settings;
             Logger = logger;
 
-            MainPopup = new MainWindow(Settings);
+            MainPopup = new MainWindow(Settings, Logger);
 
             InitializeCommand("ShowCalendar",
                               isVisibleHandler: () => true,

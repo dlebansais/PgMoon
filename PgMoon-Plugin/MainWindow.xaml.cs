@@ -22,6 +22,7 @@
     using System.Windows.Threading;
     using RegistryTools;
     using TaskbarIconHost;
+    using Tracing;
 
     /// <summary>
     /// Represents the application main window.
@@ -33,12 +34,14 @@
         /// Initializes a new instance of the <see cref="MainWindow"/> class.
         /// </summary>
         /// <param name="settings">The registry settings.</param>
-        public MainWindow(Settings settings)
+        /// <param name="logger">an interface to log events asynchronously.</param>
+        public MainWindow(Settings settings, ITracer logger)
         {
             InitializeComponent();
             DataContext = this;
 
             Settings = settings;
+            Logger = logger;
 
             Placement = PlacementMode.Absolute;
             LastClosedTime = DateTime.MinValue;
@@ -54,6 +57,11 @@
         /// Gets the registry settings.
         /// </summary>
         public Settings Settings { get; private set; }
+
+        /// <summary>
+        /// Gets an interface to log events asynchronously.
+        /// </summary>
+        public ITracer Logger { get; private set; }
         #endregion
 
         #region Properties
@@ -105,10 +113,8 @@
         #region Moon Phase
         private void InitMoonPhase()
         {
-            UpdateMoonPhaseTimer = new Timer(new TimerCallback(UpdateMoonPhaseTimerCallback));
-            TimeSpan UpdateInterval = TimeSpan.FromSeconds(60);
             PreviousUpdateChanged = true;
-            UpdateMoonPhaseTimer.Change(UpdateInterval, UpdateInterval);
+            UpdateMoonPhaseTimer = SafeTimer.Create(OnUpdateMoonPhase, TimeSpan.FromSeconds(60), Logger);
         }
 
         /// <summary>
@@ -214,6 +220,8 @@
 
         private void OnUpdateMoonPhase()
         {
+            UpdateMoonPhaseTimer?.NotifyCallbackCalled();
+
             // IncreaseNow(); //Debug only
             PhaseCalculator.Update();
             NotifyPropertyChanged(nameof(TimeToNextPhaseText));
@@ -247,7 +255,7 @@
             PostSharedEvents();
         }
 
-        private Timer UpdateMoonPhaseTimer = new Timer(new TimerCallback((object? state) => { }));
+        private SafeTimer? UpdateMoonPhaseTimer;
         private bool PreviousUpdateChanged;
         #endregion
 
@@ -1110,10 +1118,7 @@
         /// </summary>
         private void DisposeNow()
         {
-            using (UpdateMoonPhaseTimer)
-            {
-                UpdateMoonPhaseTimer.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
-            }
+            SafeTimer.Destroy(ref UpdateMoonPhaseTimer);
 
             using (UpdateMushroomNameListTimer)
             {
