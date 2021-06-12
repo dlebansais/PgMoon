@@ -13,8 +13,8 @@
     <Product />
     <Description>Shows the moon phase in Project: Gorgon</Description>
     <Copyright>Copyright © David Le Bansais 2019</Copyright>
-    <AssemblyVersion>1.1.2.326</AssemblyVersion>
-    <FileVersion>1.1.2.326</FileVersion>
+    <AssemblyVersion>1.1.2.328</AssemblyVersion>
+    <FileVersion>1.1.2.328</FileVersion>
     <RepositoryUrl>https://github.com/dlebansais/PgMoon</RepositoryUrl>
     <NeutralLanguage>en-US</NeutralLanguage>
     <RootNamespace>PgMoon</RootNamespace>

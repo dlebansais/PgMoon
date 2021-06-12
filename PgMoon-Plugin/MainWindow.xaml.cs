@@ -211,11 +211,6 @@
             get { return PhaseCalculator.MoonPhase == MoonPhase.WaxingGibbousMoon; }
         }
 
-        private void UpdateMoonPhaseTimerCallback(object? parameter)
-        {
-            Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, new UpdateMoonPhaseHandler(OnUpdateMoonPhase));
-        }
-
         private delegate void UpdateMoonPhaseHandler();
 
         private void OnUpdateMoonPhase()
