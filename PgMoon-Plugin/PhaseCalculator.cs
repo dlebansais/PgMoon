@@ -1,8 +1,10 @@
 ﻿namespace PgMoon
 {
     using System;
+    using System.Collections.Generic;
     using System.ComponentModel;
     using System.Globalization;
+    using System.IO;
     using System.Runtime.CompilerServices;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
@@ -228,12 +230,13 @@
         private static int corrected_moon_phase(DateTime utcTime)
 #pragma warning restore SA1300 // Element should begin with upper-case letter
         {
-            // Reference is not GMT but GMT-4
-            utcTime -= TimeSpan.FromHours(4);
+            // Reference is not GMT but EST, subject to a daylight saving time different than local.
+            TimeZoneInfo EST = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+            DateTime estTime = TimeZoneInfo.ConvertTimeFromUtc(utcTime, EST);
 
             // Fallback for very early times.
-            if (utcTime < LunationTable[0].NewMoon)
-                return (7 - (int)((LunationTable[0].NewMoon - utcTime).TotalDays / OrbitalPeriod)) % 8;
+            if (estTime < LunationTable[0].NewMoon)
+                return (7 - (int)((LunationTable[0].NewMoon - estTime).TotalDays / OrbitalPeriod)) % 8;
 
             DateTime[] Moons = new DateTime[5];
 
@@ -256,10 +259,10 @@
                     if ((Moons[j].Hour == 0 && Moons[j].Minute < 10) || (Moons[j].Hour == 23 && Moons[j].Minute > 50))
                         WriteLimitMoon(Moons[j]);
 
-                    if (utcTime >= Moons[j] && utcTime < Moons[j + 1])
+                    if (estTime >= Moons[j] && estTime < Moons[j + 1])
                     {
                         // If we're in this particulary part of the cycle, gets a phase number. 0 if at start, 2 if at end, 1 if in the middle.
-                        int QuarterPhase = QuarterCycleMoonPhase(Moons[j], utcTime, Moons[j + 1]);
+                        int QuarterPhase = QuarterCycleMoonPhase(Moons[j], estTime, Moons[j + 1]);
 
                         // Four parts, this gives a value between 0 and 8. Round it to next cycle if 8.
                         return (QuarterPhase + (j * 2)) % 8;
@@ -268,7 +271,7 @@
             }
 
             // Fallback for very late times.
-            return ((int)((utcTime - Moons[4]).TotalDays / OrbitalPeriod)) % 8;
+            return ((int)((estTime - Moons[4]).TotalDays / OrbitalPeriod)) % 8;
         }
 
         private static int QuarterCycleMoonPhase(DateTime startTime, DateTime time, DateTime endTime)
@@ -326,8 +329,28 @@
         private static DateTime ParseDateTime(string s)
         {
             DateTime Result = DateTime.Parse(s, CultureInfo.InvariantCulture);
+            DateTime NewResult = DateTime.Parse(s, CultureInfo.GetCultureInfo("en-US"));
+
+#if DEBUGDATE
+            using FileStream Stream = new("lunation.txt", IsCreated ? FileMode.Append : FileMode.Create, FileAccess.Write);
+            using StreamWriter Writer = new StreamWriter(Stream);
+
+            if (!IsCreated)
+                IsCreated = true;
+
+            string Tag = string.Empty;
+            if (Result.Hour > 23 || Result.Hour < 1)
+                Tag = " <==";
+
+            string Line = $"Result: {Result}, New Result: {NewResult}{Tag}";
+            Writer.WriteLine(Line);
+#endif
             return Result;
         }
+
+#if DEBUGDATE
+        private static bool IsCreated;
+#endif
 
         private static TimeSpan ParseTimeSpan(string s)
         {

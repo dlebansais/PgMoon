@@ -353,7 +353,7 @@
             {
                 using (FileStream fs = new FileStream(SecretFileName, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
-                    ClientSecrets Secrets = GoogleClientSecrets.Load(fs).Secrets;
+                    ClientSecrets Secrets = GoogleClientSecrets.FromStream(fs).Secrets;
                     FileDataStore Store = new FileDataStore(CredentialFile, true);
                     string[] Scopes = { CalendarService.Scope.Calendar };
 
