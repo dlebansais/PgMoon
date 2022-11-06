@@ -1,78 +1,77 @@
-﻿namespace PgMoon
+﻿namespace PgMoon;
+
+using System;
+using System.Windows;
+
+/// <summary>
+/// Represents an application that automatically unblock files downloaded from the Internet.
+/// </summary>
+public partial class App : Application, IDisposable
 {
-    using System;
-    using System.Windows;
+    #region Init
+    /// <summary>
+    /// Initializes a new instance of the <see cref="App"/> class.
+    /// </summary>
+    public App()
+    {
+        Plugin = new PgMoonPlugin();
+        PluginApp = new TaskbarIconHost.App(this, Plugin, Plugin.AssemblyName);
+    }
+
+    private PgMoonPlugin Plugin;
+    private TaskbarIconHost.App PluginApp;
+    #endregion
+
+    #region Implementation of IDisposable
+    /// <summary>
+    /// Called when an object should release its resources.
+    /// </summary>
+    /// <param name="isDisposing">Indicates if resources must be disposed now.</param>
+    protected virtual void Dispose(bool isDisposing)
+    {
+        if (!IsDisposed)
+        {
+            IsDisposed = true;
+
+            if (isDisposing)
+                DisposeNow();
+        }
+    }
 
     /// <summary>
-    /// Represents an application that automatically unblock files downloaded from the Internet.
+    /// Called when an object should release its resources.
     /// </summary>
-    public partial class App : Application, IDisposable
+    public void Dispose()
     {
-        #region Init
-        /// <summary>
-        /// Initializes a new instance of the <see cref="App"/> class.
-        /// </summary>
-        public App()
-        {
-            Plugin = new PgMoonPlugin();
-            PluginApp = new TaskbarIconHost.App(this, Plugin, Plugin.AssemblyName);
-        }
-
-        private PgMoonPlugin Plugin;
-        private TaskbarIconHost.App PluginApp;
-        #endregion
-
-        #region Implementation of IDisposable
-        /// <summary>
-        /// Called when an object should release its resources.
-        /// </summary>
-        /// <param name="isDisposing">Indicates if resources must be disposed now.</param>
-        protected virtual void Dispose(bool isDisposing)
-        {
-            if (!IsDisposed)
-            {
-                IsDisposed = true;
-
-                if (isDisposing)
-                    DisposeNow();
-            }
-        }
-
-        /// <summary>
-        /// Called when an object should release its resources.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Finalizes an instance of the <see cref="App"/> class.
-        /// </summary>
-        ~App()
-        {
-            Dispose(false);
-        }
-
-        /// <summary>
-        /// True after <see cref="Dispose(bool)"/> has been invoked.
-        /// </summary>
-        private bool IsDisposed;
-
-        /// <summary>
-        /// Disposes of every reference that must be cleaned up.
-        /// </summary>
-        private void DisposeNow()
-        {
-            using (Plugin)
-            {
-            }
-
-            using (PluginApp)
-            {
-            }
-        }
-        #endregion
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
+
+    /// <summary>
+    /// Finalizes an instance of the <see cref="App"/> class.
+    /// </summary>
+    ~App()
+    {
+        Dispose(false);
+    }
+
+    /// <summary>
+    /// True after <see cref="Dispose(bool)"/> has been invoked.
+    /// </summary>
+    private bool IsDisposed;
+
+    /// <summary>
+    /// Disposes of every reference that must be cleaned up.
+    /// </summary>
+    private void DisposeNow()
+    {
+        using (Plugin)
+        {
+        }
+
+        using (PluginApp)
+        {
+        }
+    }
+    #endregion
 }
