@@ -3,6 +3,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Text;
 
 internal class Program
 {
@@ -18,7 +19,7 @@ internal class Program
         DateTime PreviousNewMoonTime = DateTime.MinValue;
 
         using FileStream Stream = new("PhaseCalculator.Lunations.cs", FileMode.Create, FileAccess.Write);
-        using StreamWriter StreamWriter = new(Stream);
+        using StreamWriter StreamWriter = new(Stream, Encoding.UTF8);
 
         StreamWriter.Write("""
 namespace PgMoon;
@@ -72,14 +73,8 @@ public partial class PhaseCalculator
     private static DateTime GetNextTimeForPhase(MoonPhase moonPhase, ref DateTime current)
     {
         while (Calculator.GetMoonPhase(current) != moonPhase)
-            current = AddOneHour(current);
+            current = current.AddHours(1);
 
         return current;
-    }
-
-    private static DateTime AddOneHour(DateTime current)
-    {
-        long TicksInSecond = 1000 * 1000 * 10;
-        return new DateTime(current.Ticks + (60 * 60 * TicksInSecond), current.Kind);
     }
 }

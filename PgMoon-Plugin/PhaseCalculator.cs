@@ -5,7 +5,6 @@
 
 using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
@@ -234,6 +233,7 @@ public partial class PhaseCalculator
 #pragma warning restore SA1300 // Element should begin with upper-case letter
     {
         // Reference is not GMT but EST, subject to a daylight saving time different than local.
+        // LunationTable is UTC time.
         TimeZoneInfo EST = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
         DateTime EstTime = TimeZoneInfo.ConvertTimeFromUtc(utcTime, EST);
 
@@ -252,25 +252,15 @@ public partial class PhaseCalculator
             Moons[3] = LunationTable[i].LastQuarterMoon;
             Moons[4] = i + 1 < LunationTable.Length ? LunationTable[i + 1].NewMoon : LunationTable[i].NewMoon + LunationTable[i].Duration;
 
-            // Apply this offset to all moon phases, the table is off for some reason.
-            double d = 17.75;
-            for (int j = 0; j < 5; j++)
-                Moons[j] -= TimeSpan.FromHours(d);
-
             for (int j = 0; j < 4; j++)
-            {
-                if ((Moons[j].Hour == 0 && Moons[j].Minute < 10) || (Moons[j].Hour == 23 && Moons[j].Minute > 50))
-                    WriteLimitMoon(Moons[j]);
-
-                if (EstTime >= Moons[j] && EstTime < Moons[j + 1])
+                if (utcTime >= Moons[j] && utcTime < Moons[j + 1])
                 {
                     // If we're in this particulary part of the cycle, gets a phase number. 0 if at start, 2 if at end, 1 if in the middle.
-                    int QuarterPhase = QuarterCycleMoonPhase(Moons[j], EstTime, Moons[j + 1]);
+                    int QuarterPhase = QuarterCycleMoonPhase(Moons[j], utcTime, Moons[j + 1]);
 
                     // Four parts, this gives a value between 0 and 8. Round it to next cycle if 8.
                     return (QuarterPhase + (j * 2)) % 8;
                 }
-            }
         }
 
         // Fallback for very late times.
@@ -280,7 +270,7 @@ public partial class PhaseCalculator
     private static int QuarterCycleMoonPhase(DateTime startTime, DateTime time, DateTime endTime)
     {
         // Gets the end time of the first phase of this quarter cycle.
-        DateTime FirstPhaseEndTime = new DateTime(startTime.Year, startTime.Month, startTime.Day) + TimeSpan.FromDays(3);
+        DateTime FirstPhaseEndTime = startTime + TimeSpan.FromDays(3);
 
         // Still within this first phase?
         if (time < FirstPhaseEndTime)
@@ -288,7 +278,7 @@ public partial class PhaseCalculator
         else
         {
             // Gets the start time of the last phase of this quarter cycle.
-            DateTime LastPhaseStartTime = new(endTime.Year, endTime.Month, endTime.Day);
+            DateTime LastPhaseStartTime = endTime;
 
             // Already within this last phase? If not, we're in between (a Waxing or Waning phase).
             if (time >= LastPhaseStartTime)
@@ -296,11 +286,6 @@ public partial class PhaseCalculator
             else
                 return 1;
         }
-    }
-
-    private static void WriteLimitMoon(DateTime t)
-    {
-        Debug.Assert(t.Ticks > 0,  "Can be ignored");
     }
 
 #pragma warning disable CA1822 // Mark members as static
