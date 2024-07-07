@@ -107,6 +107,16 @@ public class MoonPhase : INotifyPropertyChanged
     public static string WizardsMushroomShortName => "Wizard's";
     public static double WizardsMushroomRefresh => 1.5;
     public static string WizardsMushroomName(bool isLong) { return isLong ? WizardsMushroomLongName : WizardsMushroomShortName; }
+
+    public static string GranamurchLongName => "Granamurch Mushroom";
+    public static string GranamurchShortName => "Granamurch";
+    public static double GranamurchRefresh => 3.5;
+    public static string GranamurchName(bool isLong) { return isLong ? GranamurchLongName : GranamurchShortName; }
+
+    public static string GhostshroomLongName => "Ghostshroom";
+    public static string GhostshroomShortName => "GhossShroom";
+    public static double GhostshroomRefresh => 3.5;
+    public static string GhostshroomName(bool isLong) { return isLong ? GhostshroomLongName : GhostshroomShortName; }
     #endregion
 
     #region Init

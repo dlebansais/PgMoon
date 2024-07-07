@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
@@ -23,6 +24,7 @@ using System.Windows.Threading;
 using RegistryTools;
 using TaskbarIconHost;
 using Tracing;
+using BitmapImage = System.Windows.Media.Imaging.BitmapImage;
 
 /// <summary>
 /// Represents the application main window.
@@ -106,6 +108,39 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
 
             return Result;
         }
+    }
+
+    /// <summary>
+    /// Gets the BigLocked.png bitmap.
+    /// </summary>
+    public BitmapImage BigLocked { get; } = LoadImageResource();
+
+    /// <summary>
+    /// Gets the Close.png bitmap.
+    /// </summary>
+    public BitmapImage Close { get; } = LoadImageResource();
+
+    /// <summary>
+    /// Gets the LockedBlack.png bitmap.
+    /// </summary>
+    public BitmapImage LockedBlack { get; } = LoadImageResource();
+
+    /// <summary>
+    /// Gets the LockedWhite.png bitmap.
+    /// </summary>
+    public BitmapImage LockedWhite { get; } = LoadImageResource();
+
+    private static BitmapImage LoadImageResource([CallerMemberName] string resourceName = "")
+    {
+        _ = ResourceTools.ResourceLoader.LoadStream($"{resourceName}.png", string.Empty, out Stream ImageStream);
+
+        BitmapImage Source = new();
+        Source.BeginInit();
+        Source.StreamSource = ImageStream;
+        Source.EndInit();
+
+        ImageStream.Dispose();
+        return Source;
     }
     #endregion
 
@@ -512,34 +547,36 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     {
         List<MushroomInfo> NewList = new();
 
-        AddMushroomToList(NewList, MoonPhase.ParasolMushroomLongName, MoonPhase.FullMoon, MoonPhase.WaningCrescentMoon, keepComment);
-        AddMushroomToList(NewList, MoonPhase.MycenaMushroomLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.FirstQuarterMoon, keepComment);
-        AddMushroomToList(NewList, MoonPhase.BoletusMushroomLongName, MoonPhase.NewMoon, MoonPhase.WaningGibbousMoon, keepComment);
-        AddMushroomToList(NewList, MoonPhase.FieldMushroomLongName, MoonPhase.WaxingGibbousMoon, MoonPhase.LastQuarterMoon, keepComment);
-        AddMushroomToList(NewList, MoonPhase.BlusherMushroomLongName, MoonPhase.NewMoon, MoonPhase.WaningGibbousMoon, keepComment);
-        AddMushroomToList(NewList, MoonPhase.GoblinPuffballLongName, MoonPhase.NewMoon, MoonPhase.WaxingGibbousMoon, keepComment);
-        AddMushroomToList(NewList, MoonPhase.MilkCapMushroomLongName, MoonPhase.FullMoon, MoonPhase.WaningCrescentMoon, keepComment);
-        AddMushroomToList(NewList, MoonPhase.BloodMushroomLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.LastQuarterMoon, keepComment);
-        AddMushroomToList(NewList, MoonPhase.CoralMushroomLongName, MoonPhase.FirstQuarterMoon, MoonPhase.WaxingGibbousMoon, keepComment);
-        AddMushroomToList(NewList, MoonPhase.IocaineMushroomLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.FirstQuarterMoon, keepComment);
-        AddMushroomToList(NewList, MoonPhase.GroxmakMushroomLongName, MoonPhase.WaxingGibbousMoon, MoonPhase.LastQuarterMoon, keepComment);
-        AddMushroomToList(NewList, MoonPhase.PorciniMushroomLongName, MoonPhase.FullMoon, MoonPhase.WaningGibbousMoon, keepComment);
-        AddMushroomToList(NewList, MoonPhase.BlackFootMorelLongName, MoonPhase.NewMoon, MoonPhase.WaningCrescentMoon, keepComment);
-        AddMushroomToList(NewList, MoonPhase.PixiesParasolLongName, MoonPhase.FirstQuarterMoon, MoonPhase.WaxingGibbousMoon, keepComment);
-        AddMushroomToList(NewList, MoonPhase.FlyAmanitaLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.FullMoon, keepComment);
-        AddMushroomToList(NewList, MoonPhase.BlastcapMushroomLongName, MoonPhase.FullMoon, MoonPhase.WaningGibbousMoon, keepComment);
-        AddMushroomToList(NewList, MoonPhase.ChargedMyceliumLongName, MoonPhase.NewMoon, MoonPhase.WaxingGibbousMoon, keepComment);
-        AddMushroomToList(NewList, MoonPhase.FalseAgaricLongName, MoonPhase.WaningCrescentMoon, MoonPhase.LastQuarterMoon, keepComment);
-        AddMushroomToList(NewList, MoonPhase.WizardsMushroomLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.FirstQuarterMoon, keepComment);
+        AddMushroomToList(NewList, MoonPhase.ParasolMushroomLongName, MoonPhase.FullMoon, MoonPhase.WaningCrescentMoon, keepComment, "Organs");
+        AddMushroomToList(NewList, MoonPhase.MycenaMushroomLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.FirstQuarterMoon, keepComment, "Limbs");
+        AddMushroomToList(NewList, MoonPhase.BoletusMushroomLongName, MoonPhase.NewMoon, MoonPhase.WaningGibbousMoon, keepComment, "Exotic");
+        AddMushroomToList(NewList, MoonPhase.FieldMushroomLongName, MoonPhase.WaxingGibbousMoon, MoonPhase.LastQuarterMoon, keepComment, "Organs");
+        AddMushroomToList(NewList, MoonPhase.GoblinPuffballLongName, MoonPhase.NewMoon, MoonPhase.WaxingGibbousMoon, keepComment, "Exotic");
+        AddMushroomToList(NewList, MoonPhase.BlusherMushroomLongName, MoonPhase.NewMoon, MoonPhase.WaningGibbousMoon, keepComment, "Exotic");
+        AddMushroomToList(NewList, MoonPhase.MilkCapMushroomLongName, MoonPhase.FullMoon, MoonPhase.WaningCrescentMoon, keepComment, "Organs");
+        AddMushroomToList(NewList, MoonPhase.BlastcapMushroomLongName, MoonPhase.FullMoon, MoonPhase.WaningGibbousMoon, keepComment, "Organs");
+        AddMushroomToList(NewList, MoonPhase.BloodMushroomLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.LastQuarterMoon, keepComment, "Limbs");
+        AddMushroomToList(NewList, MoonPhase.CoralMushroomLongName, MoonPhase.FirstQuarterMoon, MoonPhase.WaxingGibbousMoon, keepComment, "Limbs");
+        AddMushroomToList(NewList, MoonPhase.IocaineMushroomLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.FirstQuarterMoon, keepComment, "Limbs");
+        AddMushroomToList(NewList, MoonPhase.GroxmakMushroomLongName, MoonPhase.WaxingGibbousMoon, MoonPhase.LastQuarterMoon, keepComment, "Organs");
+        AddMushroomToList(NewList, MoonPhase.PorciniMushroomLongName, MoonPhase.FullMoon, MoonPhase.WaningGibbousMoon, keepComment, "Exotic");
+        AddMushroomToList(NewList, MoonPhase.FalseAgaricLongName, MoonPhase.WaningCrescentMoon, MoonPhase.LastQuarterMoon, keepComment, "Limbs");
+        AddMushroomToList(NewList, MoonPhase.BlackFootMorelLongName, MoonPhase.NewMoon, MoonPhase.WaningCrescentMoon, keepComment, "Exotic");
+        AddMushroomToList(NewList, MoonPhase.PixiesParasolLongName, MoonPhase.FirstQuarterMoon, MoonPhase.WaxingGibbousMoon, keepComment, "Organs");
+        AddMushroomToList(NewList, MoonPhase.FlyAmanitaLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.FullMoon, keepComment, "Organs");
+        AddMushroomToList(NewList, MoonPhase.WizardsMushroomLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.FirstQuarterMoon, keepComment, "Organs");
+        AddMushroomToList(NewList, MoonPhase.ChargedMyceliumLongName, MoonPhase.NewMoon, MoonPhase.WaxingGibbousMoon, keepComment, "Exotic");
+        AddMushroomToList(NewList, MoonPhase.GranamurchLongName, MoonPhase.FullMoon, MoonPhase.NewMoon, keepComment, "Limbs");
+        AddMushroomToList(NewList, MoonPhase.GhostshroomLongName, MoonPhase.FullMoon, MoonPhase.NewMoon, keepComment, "Meat");
 
         MushroomInfoList.Clear();
         foreach (MushroomInfo Item in NewList)
             MushroomInfoList.Add(Item);
     }
 
-    private void AddMushroomToList(List<MushroomInfo> newList, string name, MoonPhase? robustGrowthPhase1, MoonPhase? robustGrowthPhase2, bool keepComment)
+    private void AddMushroomToList(List<MushroomInfo> newList, string name, MoonPhase? robustGrowthPhase1, MoonPhase? robustGrowthPhase2, bool keepComment, string defaultComment)
     {
-        string Comment = string.Empty;
+        string Comment = $"Very well in {defaultComment}";
 
         if (keepComment)
         {
