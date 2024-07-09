@@ -36,19 +36,20 @@ public partial class PhaseCalculator
 
         for (int Index = LunationIndex; Current < End; Index++)
         {
-            DateTime NewMoonTime = GetNextTimeForPhase(MoonPhase.NewMoon, ref Current);
-            DateTime QuarterMoonTime = GetNextTimeForPhase(MoonPhase.QuarterMoon, ref Current);
-            DateTime FullMoonTime = GetNextTimeForPhase(MoonPhase.FullMoon, ref Current);
-            DateTime LastQuarterMoonTime = GetNextTimeForPhase(MoonPhase.LastQuarterMoon, ref Current);
+            DateTime[] PhaseDateTimes = new DateTime[typeof(MoonPhase).GetEnumNames().Length];
+            for (int i = 0; i < PhaseDateTimes.Length; i++)
+                PhaseDateTimes[i] = GetNextTimeForPhase((MoonPhase)i, ref Current);
+
+            DateTime NewMoonTime = PhaseDateTimes[0];
             TimeSpan Duration = (PreviousNewMoonTime != DateTime.MinValue) ? NewMoonTime - PreviousNewMoonTime : TimeSpan.FromDays(29);
             PreviousNewMoonTime = NewMoonTime;
 
-            string Line = $"        new Lunation() {{ Index = {Index}, " +
-                          $"NewMoon = ParseDateTime(\"{GetDateString(NewMoonTime)}\"), " +
-                          $"FirstQuarterMoon = ParseDateTime(\"{GetDateString(QuarterMoonTime)}\"), " +
-                          $"FullMoon = ParseDateTime(\"{GetDateString(FullMoonTime)}\"), " +
-                          $"LastQuarterMoon = ParseDateTime(\"{GetDateString(LastQuarterMoonTime)}\"), " +
-                          $"Duration = ParseTimeSpan(\"{Duration}\") }},";
+            string Line = $"        new Lunation() {{ Index = {Index}, ";
+
+            for (int i = 0; i < PhaseDateTimes.Length; i++)
+                Line += $"{(MoonPhase)i} = ParseDateTime(\"{GetDateString(PhaseDateTimes[i])}\"), ";
+
+            Line += $"Duration = ParseTimeSpan(\"{Duration}\") }},";
 
             StreamWriter.WriteLine(Line);
         }

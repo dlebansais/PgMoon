@@ -241,26 +241,24 @@ public partial class PhaseCalculator
         if (EstTime < LunationTable[0].NewMoon)
             return (7 - (int)((LunationTable[0].NewMoon - EstTime).TotalDays / OrbitalPeriod)) % 8;
 
-        DateTime[] Moons = new DateTime[5];
+        DateTime[] Moons = new DateTime[9];
 
         for (int i = 0; i < LunationTable.Length; i++)
         {
             // Gets dates for this cycle.
             Moons[0] = LunationTable[i].NewMoon;
-            Moons[1] = LunationTable[i].FirstQuarterMoon;
-            Moons[2] = LunationTable[i].FullMoon;
-            Moons[3] = LunationTable[i].LastQuarterMoon;
-            Moons[4] = i + 1 < LunationTable.Length ? LunationTable[i + 1].NewMoon : LunationTable[i].NewMoon + LunationTable[i].Duration;
+            Moons[1] = LunationTable[i].WaxingCrescentMoon;
+            Moons[2] = LunationTable[i].QuarterMoon;
+            Moons[3] = LunationTable[i].WaxingGibbousMoon;
+            Moons[4] = LunationTable[i].FullMoon;
+            Moons[5] = LunationTable[i].WaningGibbousMoon;
+            Moons[6] = LunationTable[i].LastQuarterMoon;
+            Moons[7] = LunationTable[i].WaningCrescentMoon;
+            Moons[8] = i + 1 < LunationTable.Length ? LunationTable[i + 1].NewMoon : LunationTable[i].NewMoon + LunationTable[i].Duration;
 
-            for (int j = 0; j < 4; j++)
+            for (int j = 0; j < 8; j++)
                 if (utcTime >= Moons[j] && utcTime < Moons[j + 1])
-                {
-                    // If we're in this particulary part of the cycle, gets a phase number. 0 if at start, 2 if at end, 1 if in the middle.
-                    int QuarterPhase = QuarterCycleMoonPhase(Moons[j], utcTime, Moons[j + 1]);
-
-                    // Four parts, this gives a value between 0 and 8. Round it to next cycle if 8.
-                    return (QuarterPhase + (j * 2)) % 8;
-                }
+                    return j;
         }
 
         // Fallback for very late times.
