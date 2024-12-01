@@ -6,7 +6,7 @@ using System.Windows;
 /// <summary>
 /// Represents an application that automatically unblock files downloaded from the Internet.
 /// </summary>
-public partial class App : Application, IDisposable
+internal partial class App : Application, IDisposable
 {
     #region Init
     /// <summary>
@@ -15,11 +15,11 @@ public partial class App : Application, IDisposable
     public App()
     {
         Plugin = new PgMoonPlugin();
-        PluginApp = new TaskbarIconHost.App(this, Plugin, Plugin.AssemblyName);
+        PluginApp = new TaskbarIconHost.App(this, Plugin, PgMoonPlugin.AssemblyName);
     }
 
-    private PgMoonPlugin Plugin;
-    private TaskbarIconHost.App PluginApp;
+    private readonly PgMoonPlugin? Plugin;
+    private readonly TaskbarIconHost.App PluginApp;
     #endregion
 
     #region Implementation of IDisposable

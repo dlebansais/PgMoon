@@ -64,7 +64,7 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
     #region Properties
     public bool AddEvents
     {
-        get { return AddEventsInternal; }
+        get => AddEventsInternal;
         set
         {
             if (AddEventsInternal != value)
@@ -80,12 +80,10 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
 
     public string ApplicationName
     {
-        get { return ApplicationNameInternal; }
+        get => ApplicationNameInternal;
         set
         {
-            string NewName = value;
-            if (NewName is null)
-                NewName = DefaultApplicationName;
+            string NewName = value ?? DefaultApplicationName;
 
             if (ApplicationNameInternal != NewName)
             {
@@ -104,12 +102,13 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
     {
         IsListingInternal = false;
         IsListingCancelableInternal = true;
+        ListTimer.Dispose();
         ListTimer = new Timer(new TimerCallback(ListTimerCallback));
     }
 
     public bool IsListing
     {
-        get { return IsListingInternal; }
+        get => IsListingInternal;
         set
         {
             if (IsListingInternal != value)
@@ -124,7 +123,7 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
 
     public bool IsListingCancelable
     {
-        get { return IsListingCancelableInternal; }
+        get => IsListingCancelableInternal;
         set
         {
             if (IsListingCancelableInternal != value)
@@ -139,7 +138,7 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
 
     public SharedCalendarEntry SelectedCalendarEntry
     {
-        get { return SelectedCalendarEntryInternal; }
+        get => SelectedCalendarEntryInternal;
         set
         {
             if (SelectedCalendarEntryInternal != value)
@@ -154,7 +153,7 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
     private SharedCalendarEntry SelectedCalendarEntryInternal = SharedCalendarEntry.None;
     private string CalendarId;
 
-    public ObservableCollection<SharedCalendarEntry> SharedCalendarEntryList { get; } = new();
+    public ObservableCollection<SharedCalendarEntry> SharedCalendarEntryList { get; } = [];
 
     private void StartUpdatingCalendarList()
     {
@@ -180,11 +179,12 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
             requestCalendarList.MaxResults = 10;
 
             // List events.
+            ListTaskCancellation.Dispose();
             ListTaskCancellation = new CancellationTokenSource();
             ListTask = requestCalendarList.ExecuteAsync(ListTaskCancellation.Token);
             IsListing = true;
             IsListingCancelable = true;
-            ListTimer.Change(ListTimerStart, ListTimerInterval);
+            _ = ListTimer.Change(ListTimerStart, ListTimerInterval);
         }
         catch
         {
@@ -193,7 +193,7 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
 
     private void ListTimerCallback(object? parameter)
     {
-        Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, OnListTimer);
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, OnListTimer);
     }
 
     private void OnListTimer()
@@ -201,7 +201,7 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
         if (ListTask is null || !ListTask.Wait(0, ListTaskCancellation.Token))
             return;
 
-        ListTimer.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+        _ = ListTimer.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
         IsListing = false;
         IsListingCancelable = true;
 
@@ -225,12 +225,14 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
                     string Name = Entry.Summary;
                     if (Id is not null && Id.Length > 0 && Name is not null && Name.Length > 0)
                     {
-                        bool CanWrite = (Entry.AccessRole == "owner") || (Entry.AccessRole == "writer");
+                        bool CanWrite = Entry.AccessRole is "owner" or "writer";
                         SharedCalendarEntry NewEntry = new(Id, Name, CanWrite);
                         SharedCalendarEntryList.Add(NewEntry);
 
                         if (SelectedCalendarEntry != SharedCalendarEntry.None && NewEntry.Id == SelectedCalendarEntry.Id)
+                        {
                             ReselectedEntry = NewEntry;
+                        }
                         else if (SelectedCalendarEntry == SharedCalendarEntry.None && NewEntry.Id == CalendarId)
                         {
                             CalendarId = string.Empty;
@@ -280,7 +282,7 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
 
     public string SecretFileName
     {
-        get { return SecretFileNameInternal; }
+        get => SecretFileNameInternal;
         set
         {
             if (SecretFileNameInternal != value)
@@ -298,12 +300,12 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
             string ApplicationFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PgMoon");
 
             if (!Directory.Exists(ApplicationFolder))
-                Directory.CreateDirectory(ApplicationFolder);
+                _ = Directory.CreateDirectory(ApplicationFolder);
 
             string CredentialFolder = Path.Combine(ApplicationFolder, ".credentials");
 
             if (!Directory.Exists(CredentialFolder))
-                Directory.CreateDirectory(CredentialFolder);
+                _ = Directory.CreateDirectory(CredentialFolder);
 
             return Path.Combine(CredentialFolder, "pgmoon.json");
         }
@@ -328,9 +330,11 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
 
     private void OnBrowse(object sender, ExecutedRoutedEventArgs e)
     {
-        OpenFileDialog Dlg = new();
-        Dlg.FileName = SecretFileName;
-        Dlg.Filter = "Any secret client file (*.json)|*.json";
+        OpenFileDialog Dlg = new()
+        {
+            FileName = SecretFileName,
+            Filter = "Any secret client file (*.json)|*.json",
+        };
 
         bool? Result = Dlg.ShowDialog();
         if (Result.HasValue && Result.Value)
@@ -351,16 +355,14 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
     {
         try
         {
-            using (FileStream Stream = new(SecretFileName, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                ClientSecrets Secrets = GoogleClientSecrets.FromStream(Stream).Secrets;
-                FileDataStore Store = new(CredentialFile, true);
-                string[] Scopes = { CalendarService.Scope.Calendar };
+            using FileStream Stream = new(SecretFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+            ClientSecrets Secrets = GoogleClientSecrets.FromStream(Stream).Secrets;
+            FileDataStore Store = new(CredentialFile, true);
+            string[] Scopes = [CalendarService.Scope.Calendar];
 
-                CredentialToken = GoogleWebAuthorizationBroker.AuthorizeAsync(Secrets, Scopes, "user", CancellationToken.None, Store).Result;
+            CredentialToken = GoogleWebAuthorizationBroker.AuthorizeAsync(Secrets, Scopes, "user", CancellationToken.None, Store).Result;
 
-                NotifyPropertyChanged(nameof(IsCredentialConfirmed));
-            }
+            NotifyPropertyChanged(nameof(IsCredentialConfirmed));
         }
         catch
         {
@@ -380,7 +382,7 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
         UpdateStatus();
     }
 
-    public ObservableCollection<string> StatusList { get; } = new();
+    public ObservableCollection<string> StatusList { get; } = [];
     public bool IsEventActive { get; private set; }
 
     private void UpdateStatus()
@@ -405,12 +407,16 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
             StatusList.Add("Credential not confirmed.");
 
         if (SelectedCalendarEntry == SharedCalendarEntry.None)
+        {
             if (SharedCalendarEntryList.Count == 0)
                 StatusList.Add("The list of calendar names is empty.");
             else
                 StatusList.Add("Calendar Name is empty.");
+        }
         else if (!SelectedCalendarEntry.CanWrite)
+        {
             StatusList.Add("The selected calendar can only be read.");
+        }
 
         if (!WithPhaseName && !WithMushroomFarming && !WithRahuBoat && !WithDarkChapel && !WithFreeText)
             StatusList.Add("No information shared.");
@@ -438,7 +444,7 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
 
     public uint UpcomingDays
     {
-        get { return UpcomingDaysInternal; }
+        get => UpcomingDaysInternal;
         set
         {
             if (UpcomingDaysInternal != value)
@@ -504,11 +510,11 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
             return;
 
         DateTime Now = MainWindow.Now();
-        DateTime NextEventTime = ExistingEvents.Count > 0 ? ExistingEvents[ExistingEvents.Count - 1].PhaseEndTime + TimeSpan.FromHours(1) : Now;
+        DateTime NextEventTime = ExistingEvents.Count > 0 ? ExistingEvents[^1].PhaseEndTime + TimeSpan.FromHours(1) : Now;
         DateTime MaxEventTime = Now + TimeSpan.FromDays(UpcomingDays);
-        List<SharedCalendarEvent> MissingEvents = new();
+        List<SharedCalendarEvent> MissingEvents = [];
 
-        for (; ;)
+        while (true)
         {
             PhaseCalculator.DateTimeToMoonPhase(NextEventTime, out int MoonMonth, out MoonPhase MoonPhase, out DateTime PhaseStartTime, out DateTime PhaseEndTime, out _, out _);
 
@@ -530,7 +536,7 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
 
     private bool ReadExistingEvents(out List<SharedCalendarEvent> existingEvents)
     {
-        existingEvents = new List<SharedCalendarEvent>();
+        existingEvents = [];
 
         try
         {
@@ -550,7 +556,7 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
             if (events.Items is null)
                 return false;
 
-            foreach (var eventItem in events.Items)
+            foreach (Event eventItem in events.Items)
             {
                 DateTime? StartDate = eventItem.Start.DateTime;
                 DateTime? EndDate = eventItem.End.DateTime;
@@ -588,6 +594,7 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
                     string MushroomList = string.Empty;
 
                     foreach (MushroomInfo Info in mushroomInfoList)
+                    {
                         if (Event.MoonPhase == Info.RobustGrowthPhase1 || Event.MoonPhase == Info.RobustGrowthPhase2)
                         {
                             if (MushroomList.Length > 0)
@@ -597,6 +604,7 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
                             if (WithMushroomFarmingComments && Info.Comment is not null && Info.Comment.Length > 0)
                                 MushroomList += " (" + Info.Comment + ")";
                         }
+                    }
 
                     if (MushroomList.Length > 0)
                     {
@@ -627,12 +635,16 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
                     Description += FreeText;
                 }
 
-                Event body = new();
-                body.Summary = Event.MoonPhase.Name;
-                body.Start = new EventDateTime();
+                Event body = new()
+                {
+                    Summary = Event.MoonPhase.Name,
+                    Start = new EventDateTime(),
+                };
                 body.Start.DateTime = Event.PhaseStartTime;
-                body.End = new EventDateTime();
-                body.End.DateTime = Event.PhaseEndTime;
+                body.End = new EventDateTime
+                {
+                    DateTime = Event.PhaseEndTime,
+                };
 
                 if (Description.Length > 0)
                     body.Description = Description;

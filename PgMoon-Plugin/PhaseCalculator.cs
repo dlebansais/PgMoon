@@ -42,7 +42,7 @@ public partial class PhaseCalculator
     #region Properties
     public static int MoonMonth
     {
-        get { return MoonMonthInternal; }
+        get => MoonMonthInternal;
         set
         {
             if (MoonMonthInternal != value)
@@ -57,7 +57,7 @@ public partial class PhaseCalculator
 
     public static MoonPhase MoonPhase
     {
-        get { return MoonPhaseInternal; }
+        get => MoonPhaseInternal;
         set
         {
             if (MoonPhaseInternal != value)
@@ -74,7 +74,7 @@ public partial class PhaseCalculator
 
     public static double ProgressWithinPhase
     {
-        get { return ProgressWithinPhaseInternal; }
+        get => ProgressWithinPhaseInternal;
         set
         {
             if (ProgressWithinPhaseInternal != value)
@@ -89,7 +89,7 @@ public partial class PhaseCalculator
 
     public static double ProgressToFullMoon
     {
-        get { return ProgressToFullMoonInternal; }
+        get => ProgressToFullMoonInternal;
         set
         {
             if (ProgressToFullMoonInternal != value)
@@ -104,7 +104,7 @@ public partial class PhaseCalculator
 
     public static TimeSpan TimeToNextPhase
     {
-        get { return TimeToNextPhaseInternal; }
+        get => TimeToNextPhaseInternal;
         set
         {
             if (TimeToNextPhaseInternal != value)
@@ -119,7 +119,7 @@ public partial class PhaseCalculator
 
     public static TimeSpan TimeToFullMoon
     {
-        get { return TimeToFullMoonInternal; }
+        get => TimeToFullMoonInternal;
         set
         {
             if (TimeToFullMoonInternal != value)
@@ -211,14 +211,20 @@ public partial class PhaseCalculator
     private static readonly DateTime UnixReferenceTime = new(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
 #pragma warning disable SA1300 // Element should begin with upper-case letter
+#pragma warning disable IDE1006 // Naming Styles
     private static long to_time_t(DateTime time)
+#pragma warning restore IDE1006 // Naming Styles
 #pragma warning restore SA1300 // Element should begin with upper-case letter
     {
         return (long)(time - UnixReferenceTime).TotalSeconds;
     }
 
 #pragma warning disable SA1300 // Element should begin with upper-case letter
+#pragma warning disable IDE0051 // Remove unused private members
+#pragma warning disable IDE1006 // Naming Styles
     private static DateTime from_time_t(long time_t)
+#pragma warning restore IDE1006 // Naming Styles
+#pragma warning restore IDE0051 // Remove unused private members
 #pragma warning restore SA1300 // Element should begin with upper-case letter
     {
         return UnixReferenceTime + TimeSpan.FromSeconds(time_t);
@@ -229,7 +235,9 @@ public partial class PhaseCalculator
     private const double OrbitalPeriod = 27.321661;
 
 #pragma warning disable SA1300 // Element should begin with upper-case letter
+#pragma warning disable IDE1006 // Naming Styles
     private static int corrected_moon_phase(DateTime utcTime)
+#pragma warning restore IDE1006 // Naming Styles
 #pragma warning restore SA1300 // Element should begin with upper-case letter
     {
         // Reference is not GMT but EST, subject to a daylight saving time different than local.
@@ -257,32 +265,35 @@ public partial class PhaseCalculator
             Moons[8] = i + 1 < LunationTable.Length ? LunationTable[i + 1].NewMoon : LunationTable[i].NewMoon + LunationTable[i].Duration;
 
             for (int j = 0; j < 8; j++)
+            {
                 if (utcTime >= Moons[j] && utcTime < Moons[j + 1])
                     return j;
+            }
         }
 
         // Fallback for very late times.
         return ((int)((EstTime - Moons[4]).TotalDays / OrbitalPeriod)) % 8;
     }
 
+#pragma warning disable IDE0051 // Remove unused private members
     private static int QuarterCycleMoonPhase(DateTime startTime, DateTime time, DateTime endTime)
+#pragma warning restore IDE0051 // Remove unused private members
     {
         // Gets the end time of the first phase of this quarter cycle.
         DateTime FirstPhaseEndTime = startTime + TimeSpan.FromDays(3);
 
         // Still within this first phase?
         if (time < FirstPhaseEndTime)
+        {
             return 0;
+        }
         else
         {
             // Gets the start time of the last phase of this quarter cycle.
             DateTime LastPhaseStartTime = endTime;
 
             // Already within this last phase? If not, we're in between (a Waxing or Waning phase).
-            if (time >= LastPhaseStartTime)
-                return 2;
-            else
-                return 1;
+            return time >= LastPhaseStartTime ? 2 : 1;
         }
     }
 

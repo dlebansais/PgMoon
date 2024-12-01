@@ -4,20 +4,12 @@ using System;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 #pragma warning disable SA1600 // Elements should be documented
-public class SharedCalendarEvent
+public class SharedCalendarEvent(MoonPhase moonPhase, int moonMonth, DateTime phaseStartTime, DateTime phaseEndTime)
 {
-    public SharedCalendarEvent(MoonPhase moonPhase, int moonMonth, DateTime phaseStartTime, DateTime phaseEndTime)
-    {
-        MoonPhase = moonPhase;
-        MoonMonth = moonMonth;
-        PhaseStartTime = phaseStartTime;
-        PhaseEndTime = phaseEndTime;
-    }
-
-    public MoonPhase MoonPhase { get; }
-    public int MoonMonth { get; }
-    public DateTime PhaseStartTime { get; }
-    public DateTime PhaseEndTime { get; }
+    public MoonPhase MoonPhase { get; } = moonPhase;
+    public int MoonMonth { get; } = moonMonth;
+    public DateTime PhaseStartTime { get; } = phaseStartTime;
+    public DateTime PhaseEndTime { get; } = phaseEndTime;
 
     public static bool TryParse(DateTime? startDate, DateTime? endDate, out SharedCalendarEvent? calendarEvent)
     {

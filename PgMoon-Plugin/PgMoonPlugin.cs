@@ -6,10 +6,10 @@ using System.Drawing;
 using System.Globalization;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Microsoft.Extensions.Logging;
 using RegistryTools;
 using ResourceTools;
 using TaskbarIconHost;
-using Tracing;
 
 /// <summary>
 /// Represents a plugin that automatically unblock files downloaded from the Internet.
@@ -25,12 +25,12 @@ public class PgMoonPlugin : IPluginClient, IDisposable
     /// <summary>
     /// Gets the plugin unique ID.
     /// </summary>
-    public Guid Guid => new("{AA25BA4F-9922-4018-B1B4-588A6B59CE62}");
+    public Guid PluginGuid => new("{AA25BA4F-9922-4018-B1B4-588A6B59CE62}");
 
     /// <summary>
     /// Gets the plugin assembly name.
     /// </summary>
-    public string AssemblyName => "PgMoon-Plugin";
+    public static string AssemblyName => "PgMoon-Plugin";
 
     /// <summary>
     ///  Gets a value indicating whether the plugin require elevated (administrator) mode to operate.
@@ -49,13 +49,14 @@ public class PgMoonPlugin : IPluginClient, IDisposable
     /// <param name="dispatcher">A dispatcher that can be used to synchronize with the UI.</param>
     /// <param name="settings">An interface to read and write settings in the registry.</param>
     /// <param name="logger">An interface to log events asynchronously.</param>
-    public void Initialize(bool isElevated, Dispatcher dispatcher, Settings settings, ITracer logger)
+    public void Initialize(bool isElevated, Dispatcher dispatcher, Settings settings, ILogger logger)
     {
         IsElevated = isElevated;
         Dispatcher = dispatcher;
         Settings = settings;
         Logger = logger;
 
+        MainPopup?.Dispose();
         MainPopup = new MainWindow(Settings, Logger);
 
         InitializeCommand("ShowCalendar",
@@ -82,7 +83,7 @@ public class PgMoonPlugin : IPluginClient, IDisposable
                           isCheckedHandler: () => MainPopup.ShowDarkChapel,
                           commandHandler: OnShowDarkChapel);
 
-        CommandList.Add(new RoutedCommand());
+        CommandListInternal.Add(new RoutedCommand());
 
         InitializeCommand("ShareCalendar",
                           isVisibleHandler: () => true,
@@ -96,7 +97,7 @@ public class PgMoonPlugin : IPluginClient, IDisposable
         string LocalizedText = Properties.Resources.ResourceManager.GetString(header, CultureInfo.CurrentCulture)!;
         ICommand Command = new RoutedUICommand(LocalizedText, header, GetType());
 
-        CommandList.Add(Command);
+        CommandListInternal.Add(Command);
         MenuHeaderTable.Add(Command, LocalizedText);
         MenuIsVisibleTable.Add(Command, isVisibleHandler);
         MenuIsEnabledTable.Add(Command, isEnabledHandler);
@@ -107,7 +108,9 @@ public class PgMoonPlugin : IPluginClient, IDisposable
     /// <summary>
     /// Gets the list of commands that the plugin can receive when an item is clicked in the context menu.
     /// </summary>
-    public List<ICommand> CommandList { get; } = new();
+    public IReadOnlyCollection<ICommand?> CommandList => CommandListInternal.AsReadOnly();
+
+    private readonly List<ICommand?> CommandListInternal = [];
 
     /// <summary>
     /// Reads a flag indicating if the state of a menu item has changed. The flag should be reset upon return until another change occurs.
@@ -207,7 +210,7 @@ public class PgMoonPlugin : IPluginClient, IDisposable
     {
         get
         {
-            ResourceLoader.LoadIcon("Taskbar.ico", string.Empty, out Icon Result);
+            _ = ResourceLoader.LoadIcon("Taskbar.ico", string.Empty, out Icon Result);
             return Result;
         }
     }
@@ -219,7 +222,7 @@ public class PgMoonPlugin : IPluginClient, IDisposable
     {
         get
         {
-            ResourceLoader.LoadBitmap("PgMoon.png", string.Empty, out Bitmap Result);
+            _ = ResourceLoader.LoadBitmap("PgMoon.png", string.Empty, out Bitmap Result);
             return Result;
         }
     }
@@ -305,21 +308,15 @@ public class PgMoonPlugin : IPluginClient, IDisposable
         if (MainPopup is not null)
         {
             MainPopup.IsOpen = false;
-
-            using (MainWindow Popup = MainPopup)
-            {
-                MainPopup = null;
-            }
+            MainPopup.Dispose();
+            MainPopup = null;
         }
     }
 
     /// <summary>
     /// Gets a value indicating whether the plugin is closed.
     /// </summary>
-    public bool IsClosed
-    {
-        get { return true; }
-    }
+    public bool IsClosed => true;
 
     /// <summary>
     /// Gets a value indicating whether the caller is executing in administrator mode.
@@ -339,23 +336,25 @@ public class PgMoonPlugin : IPluginClient, IDisposable
     /// <summary>
     /// Gets an interface to log events asynchronously.
     /// </summary>
-    public ITracer Logger { get; private set; } = null!;
+    public ILogger Logger { get; private set; } = null!;
 
+    /*
     private void AddLog(string message)
     {
-        Logger.Write(Category.Information, message);
+        LoggerMessage.Define(LogLevel.Information, 0, message)(Logger, null);
     }
+    */
 
     /// <summary>
     /// Gets the main window popup.
     /// </summary>
     public MainWindow? MainPopup { get; private set; }
 
-    private Dictionary<ICommand, string> MenuHeaderTable = new();
-    private Dictionary<ICommand, Func<bool>> MenuIsVisibleTable = new();
-    private Dictionary<ICommand, Func<bool>> MenuIsEnabledTable = new();
-    private Dictionary<ICommand, Func<bool>> MenuIsCheckedTable = new();
-    private Dictionary<ICommand, Action> MenuHandlerTable = new();
+    private readonly Dictionary<ICommand, string> MenuHeaderTable = [];
+    private readonly Dictionary<ICommand, Func<bool>> MenuIsVisibleTable = [];
+    private readonly Dictionary<ICommand, Func<bool>> MenuIsEnabledTable = [];
+    private readonly Dictionary<ICommand, Func<bool>> MenuIsCheckedTable = [];
+    private readonly Dictionary<ICommand, Action> MenuHandlerTable = [];
     private bool IsIconChanged;
     private bool IsMenuChanged;
     #endregion
@@ -446,9 +445,7 @@ public class PgMoonPlugin : IPluginClient, IDisposable
     /// </summary>
     private void DisposeNow()
     {
-        using (Settings)
-        {
-        }
+        MainPopup?.Dispose();
     }
     #endregion
 }

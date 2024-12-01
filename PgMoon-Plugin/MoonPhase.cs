@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 /// <summary>
 /// Represents a phase of the Moon.
 /// </summary>
-public class MoonPhase : INotifyPropertyChanged
+public class MoonPhase(string name, string darkChapelTip) : INotifyPropertyChanged
 {
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 #pragma warning disable SA1600 // Elements should be documented
@@ -130,8 +130,10 @@ public class MoonPhase : INotifyPropertyChanged
     public static MoonPhase WaningCrescentMoon { get; } = new("Waning Crescent Moon", "South of the waterfall");
     public static MoonPhase NullMoonPhase { get; } = new("(Unselect)", string.Empty);
 
-    public static List<MoonPhase> MoonPhaseList { get; } = new()
-    {
+#pragma warning disable CA1002 // Do not expose generic lists
+    public static List<MoonPhase> MoonPhaseList { get; } =
+#pragma warning restore CA1002 // Do not expose generic lists
+    [
         NewMoon,
         WaxingCrescentMoon,
         FirstQuarterMoon,
@@ -141,56 +143,30 @@ public class MoonPhase : INotifyPropertyChanged
         LastQuarterMoon,
         WaningCrescentMoon,
         NullMoonPhase,
-    };
-
-    public MoonPhase(string name, string darkChapelTip)
-    {
-        Name = name;
-        DarkChapelTip = darkChapelTip;
-    }
+    ];
     #endregion
 
     #region Properties
-    public string Name { get; private set; }
+    public string Name { get; } = name;
+    public string DarkChapelTip { get; } = darkChapelTip;
 
     public bool IsCurrent => PhaseCalculator.MoonPhase == this;
     public string FastPortMushroomLongText => FastPortMushroomText(true);
     public string FastPortMushroomShortText => FastPortMushroomText(false);
-    public string DarkChapelTip { get; }
 
     public string FastPortMushroomText(bool isLong)
     {
-        string FastPortMushroomText;
-
-        switch (MoonPhaseList.IndexOf(this))
+        string FastPortMushroomText = MoonPhaseList.IndexOf(this) switch
         {
-            default:
-            case 0:
-                FastPortMushroomText = $"{GoblinPuffballName(isLong)} ({NeutralCultureDouble(GoblinPuffballRefresh)}h), {CoralMushroomName(isLong)} ({NeutralCultureDouble(CoralMushroomRefresh)}h)";
-                break;
-            case 1:
-                FastPortMushroomText = $"{IocaineMushroomName(isLong)} ({NeutralCultureDouble(IocaineMushroomRefresh)}h)";
-                break;
-            case 2:
-                FastPortMushroomText = $"{MycenaMushroomName(isLong)} ({NeutralCultureDouble(MycenaMushroomRefresh)}h), {GroxmakMushroomName(isLong)} ({NeutralCultureDouble(GroxmakMushroomRefresh)}h), {BlastcapMushroomName(isLong)} ({NeutralCultureDouble(BlastcapMushroomRefresh)}h)";
-                break;
-            case 3:
-                FastPortMushroomText = $"{BoletusMushroomName(isLong)} ({NeutralCultureDouble(BoletusMushroomRefresh)}h), {PorciniMushroomName(isLong)} ({NeutralCultureDouble(PorciniMushroomRefresh)}h)";
-                break;
-            case 4:
-                FastPortMushroomText = $"{FieldMushroomName(isLong)} ({NeutralCultureDouble(FieldMushroomRefresh)}h), {BlackFootMorelName(isLong)} ({NeutralCultureDouble(BlackFootMorelRefresh)}h), {FalseAgaricName(isLong)} ({NeutralCultureDouble(FalseAgaricRefresh)}h)";
-                break;
-            case 5:
-                FastPortMushroomText = $"{BlusherMushroomName(isLong)} ({NeutralCultureDouble(BlusherMushroomRefresh)}h), {PixiesParasolName(isLong)} ({NeutralCultureDouble(PixiesParasolRefresh)}h)";
-                break;
-            case 6:
-                FastPortMushroomText = $"{MilkCapMushroomName(isLong)} ({NeutralCultureDouble(MilkCapMushroomRefresh)}h), {FlyAmanitaName(isLong)} ({NeutralCultureDouble(FlyAmanitaRefresh)}h), {WizardsMushroomName(isLong)} ({NeutralCultureDouble(WizardsMushroomRefresh)}h)";
-                break;
-            case 7:
-                FastPortMushroomText = $"{BloodMushroomName(isLong)} ({NeutralCultureDouble(BloodMushroomRefresh)}h), {ChargedMyceliumName(isLong)} ({NeutralCultureDouble(ChargedMyceliumRefresh)}h)";
-                break;
-        }
-
+            1 => $"{IocaineMushroomName(isLong)} ({NeutralCultureDouble(IocaineMushroomRefresh)}h)",
+            2 => $"{MycenaMushroomName(isLong)} ({NeutralCultureDouble(MycenaMushroomRefresh)}h), {GroxmakMushroomName(isLong)} ({NeutralCultureDouble(GroxmakMushroomRefresh)}h), {BlastcapMushroomName(isLong)} ({NeutralCultureDouble(BlastcapMushroomRefresh)}h)",
+            3 => $"{BoletusMushroomName(isLong)} ({NeutralCultureDouble(BoletusMushroomRefresh)}h), {PorciniMushroomName(isLong)} ({NeutralCultureDouble(PorciniMushroomRefresh)}h)",
+            4 => $"{FieldMushroomName(isLong)} ({NeutralCultureDouble(FieldMushroomRefresh)}h), {BlackFootMorelName(isLong)} ({NeutralCultureDouble(BlackFootMorelRefresh)}h), {FalseAgaricName(isLong)} ({NeutralCultureDouble(FalseAgaricRefresh)}h)",
+            5 => $"{BlusherMushroomName(isLong)} ({NeutralCultureDouble(BlusherMushroomRefresh)}h), {PixiesParasolName(isLong)} ({NeutralCultureDouble(PixiesParasolRefresh)}h)",
+            6 => $"{MilkCapMushroomName(isLong)} ({NeutralCultureDouble(MilkCapMushroomRefresh)}h), {FlyAmanitaName(isLong)} ({NeutralCultureDouble(FlyAmanitaRefresh)}h), {WizardsMushroomName(isLong)} ({NeutralCultureDouble(WizardsMushroomRefresh)}h)",
+            7 => $"{BloodMushroomName(isLong)} ({NeutralCultureDouble(BloodMushroomRefresh)}h), {ChargedMyceliumName(isLong)} ({NeutralCultureDouble(ChargedMyceliumRefresh)}h)",
+            0 or _ => $"{GoblinPuffballName(isLong)} ({NeutralCultureDouble(GoblinPuffballRefresh)}h), {CoralMushroomName(isLong)} ({NeutralCultureDouble(CoralMushroomRefresh)}h)",
+        };
         return FastPortMushroomText;
     }
 
@@ -203,27 +179,12 @@ public class MoonPhase : INotifyPropertyChanged
     {
         get
         {
-            string RahuBoatDestination;
-
-            switch (MoonPhaseList.IndexOf(this))
+            string RahuBoatDestination = MoonPhaseList.IndexOf(this) switch
             {
-                default:
-                case 0:
-                case 1:
-                case 2:
-                    RahuBoatDestination = "Serbule";
-                    break;
-                case 3:
-                case 4:
-                case 5:
-                    RahuBoatDestination = "Kur Moutains";
-                    break;
-                case 6:
-                case 7:
-                    RahuBoatDestination = "Sun Vale";
-                    break;
-            }
-
+                3 or 4 or 5 => "Kur Moutains",
+                6 or 7 => "Sun Vale",
+                0 or 1 or 2 or _ => "Serbule",
+            };
             return RahuBoatDestination;
         }
     }

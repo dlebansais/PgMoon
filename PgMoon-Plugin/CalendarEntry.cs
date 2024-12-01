@@ -9,7 +9,12 @@ using System.Runtime.CompilerServices;
 /// <summary>
 /// Represents a moment in time defined by its moon phase.
 /// </summary>
-public class CalendarEntry : INotifyPropertyChanged
+/// <param name="moonMonth">The Moon month.</param>
+/// <param name="moonPhase">The Moon phase.</param>
+/// <param name="startTime">The start time.</param>
+/// <param name="endTime">The end time.</param>
+/// <param name="mushroomInfoList">The list of mushroom info.</param>
+public class CalendarEntry(int moonMonth, MoonPhase moonPhase, DateTime startTime, DateTime endTime, ICollection<MushroomInfo> mushroomInfoList) : INotifyPropertyChanged
 {
     #region Constants
     /// <summary>
@@ -33,55 +38,36 @@ public class CalendarEntry : INotifyPropertyChanged
     public static string PortToCircleShortText => "Circle";
     #endregion
 
-    #region Init
-    /// <summary>
-    /// Initializes a new instance of the <see cref="CalendarEntry"/> class.
-    /// </summary>
-    /// <param name="moonMonth">The Moon month.</param>
-    /// <param name="moonPhase">The Moon phase.</param>
-    /// <param name="startTime">The start time.</param>
-    /// <param name="endTime">The end time.</param>
-    /// <param name="mushroomInfoList">The list of mushroom info.</param>
-    public CalendarEntry(int moonMonth, MoonPhase moonPhase, DateTime startTime, DateTime endTime, ICollection<MushroomInfo> mushroomInfoList)
-    {
-        MoonMonth = moonMonth;
-        MoonPhase = moonPhase;
-        StartTime = startTime;
-        EndTime = endTime;
-        MushroomInfoList = mushroomInfoList;
-    }
-    #endregion
-
     #region Properties
     /// <summary>
     /// Gets the Moon month.
     /// </summary>
-    public int MoonMonth { get; }
+    public int MoonMonth { get; } = moonMonth;
 
     /// <summary>
     /// Gets the Moon phase.
     /// </summary>
-    public MoonPhase MoonPhase { get; }
+    public MoonPhase MoonPhase { get; } = moonPhase;
 
     /// <summary>
     /// Gets the start time.
     /// </summary>
-    public DateTime StartTime { get; }
+    public DateTime StartTime { get; } = startTime;
 
     /// <summary>
     /// Gets the end time.
     /// </summary>
-    public DateTime EndTime { get; }
+    public DateTime EndTime { get; } = endTime;
 
     /// <summary>
     /// Gets the list of mushroom info.
     /// </summary>
-    public ICollection<MushroomInfo> MushroomInfoList { get; }
+    public ICollection<MushroomInfo> MushroomInfoList { get; } = mushroomInfoList;
 
     /// <summary>
     /// Gets a value indicating whether this entry is the current one.
     /// </summary>
-    public bool IsCurrent { get { return PhaseCalculator.IsCurrent(MoonMonth, MoonPhase); } }
+    public bool IsCurrent => PhaseCalculator.IsCurrent(MoonMonth, MoonPhase);
 
     /// <summary>
     /// Gets the entry summary.
@@ -94,6 +80,7 @@ public class CalendarEntry : INotifyPropertyChanged
             string GrowingRobustly = string.Empty;
 
             foreach (MushroomInfo Item in MushroomInfoList)
+            {
                 if (Item.RobustGrowthPhase1 == MoonPhase || Item.RobustGrowthPhase2 == MoonPhase)
                 {
                     if (GrowingRobustly.Length > 0)
@@ -101,6 +88,7 @@ public class CalendarEntry : INotifyPropertyChanged
 
                     GrowingRobustly += Item.Name;
                 }
+            }
 
             if (GrowingRobustly.Length > 0)
                 Result += $"Growing Robustly: {GrowingRobustly}\r\n";

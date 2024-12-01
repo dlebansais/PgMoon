@@ -6,25 +6,14 @@ using System.Windows.Threading;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 #pragma warning disable SA1600 // Elements should be documented
-public class MushroomInfo : INotifyPropertyChanged
+public class MushroomInfo(Dispatcher dispatcher, string name, string comment, MoonPhase? robustGrowthPhase1, MoonPhase? robustGrowthPhase2) : INotifyPropertyChanged
 {
-    #region Init
-    public MushroomInfo(Dispatcher dispatcher, string name, string comment, MoonPhase? robustGrowthPhase1, MoonPhase? robustGrowthPhase2)
-    {
-        Dispatcher = dispatcher;
-        NameInternal = name;
-        CommentInternal = comment;
-        SelectedMoonPhase1Internal = robustGrowthPhase1 is not null ? MoonPhase.MoonPhaseList.IndexOf(robustGrowthPhase1) : -1;
-        SelectedMoonPhase2Internal = robustGrowthPhase2 is not null ? MoonPhase.MoonPhaseList.IndexOf(robustGrowthPhase2) : -1;
-    }
-
-    public Dispatcher Dispatcher { get; }
-    #endregion
-
     #region Properties
+    public Dispatcher Dispatcher { get; } = dispatcher;
+
     public string Name
     {
-        get { return NameInternal; }
+        get => NameInternal;
         set
         {
             if (NameInternal != value)
@@ -41,11 +30,11 @@ public class MushroomInfo : INotifyPropertyChanged
         }
     }
 
-    private string NameInternal;
+    private string NameInternal = name;
 
     public string Comment
     {
-        get { return CommentInternal; }
+        get => CommentInternal;
         set
         {
             if (CommentInternal != value)
@@ -56,11 +45,11 @@ public class MushroomInfo : INotifyPropertyChanged
         }
     }
 
-    private string CommentInternal;
+    private string CommentInternal = comment;
 
     public int SelectedMoonPhase1
     {
-        get { return SelectedMoonPhase1Internal; }
+        get => SelectedMoonPhase1Internal;
         set
         {
             if (SelectedMoonPhase1Internal != value)
@@ -74,11 +63,11 @@ public class MushroomInfo : INotifyPropertyChanged
         }
     }
 
-    private int SelectedMoonPhase1Internal;
+    private int SelectedMoonPhase1Internal = robustGrowthPhase1 is not null ? MoonPhase.MoonPhaseList.IndexOf(robustGrowthPhase1) : -1;
 
     public int SelectedMoonPhase2
     {
-        get { return SelectedMoonPhase2Internal; }
+        get => SelectedMoonPhase2Internal;
         set
         {
             if (SelectedMoonPhase2Internal != value)
@@ -92,7 +81,7 @@ public class MushroomInfo : INotifyPropertyChanged
         }
     }
 
-    private int SelectedMoonPhase2Internal;
+    private int SelectedMoonPhase2Internal = robustGrowthPhase2 is not null ? MoonPhase.MoonPhaseList.IndexOf(robustGrowthPhase2) : -1;
 
     public MoonPhase? RobustGrowthPhase1 => (SelectedMoonPhase1 >= 0) ? MoonPhase.MoonPhaseList[SelectedMoonPhase1] : null;
     public MoonPhase? RobustGrowthPhase2 => (SelectedMoonPhase2 >= 0) ? MoonPhase.MoonPhaseList[SelectedMoonPhase2] : null;
@@ -101,12 +90,12 @@ public class MushroomInfo : INotifyPropertyChanged
     #region Implementation
     private void ResetSelectedMoonPhase1()
     {
-        Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, OnResetSelectedMoonPhase1);
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, OnResetSelectedMoonPhase1);
     }
 
     private void ResetSelectedMoonPhase2()
     {
-        Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, OnResetSelectedMoonPhase2);
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, OnResetSelectedMoonPhase2);
     }
 
     private void OnResetSelectedMoonPhase1()

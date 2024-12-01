@@ -21,14 +21,16 @@ public class DoubleToThicknessConverter : IValueConverter
                 Length = 0;
         }
         else
+        {
             Length = (double)parameter;
+        }
 
         return new Thickness(0, 0, (1.0 - DoubleValue) * Length, 0);
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return null !;
+        throw new NotImplementedException();
     }
 }
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member

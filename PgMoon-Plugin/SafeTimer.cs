@@ -3,8 +3,7 @@
 using System;
 using System.Diagnostics;
 using System.Threading;
-using System.Windows.Threading;
-using Tracing;
+using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Execute an action regularly at a given time interval, with safeguards.
@@ -18,7 +17,7 @@ public class SafeTimer : IDisposable
     /// <param name="action">The action to execute.</param>
     /// <param name="timeInterval">The time interval.</param>
     /// <param name="logger">an interface to log events asynchronously.</param>
-    public static SafeTimer Create(Action action, TimeSpan timeInterval, ITracer logger)
+    public static SafeTimer Create(Action action, TimeSpan timeInterval, ILogger logger)
     {
         return new SafeTimer(action, timeInterval, logger);
     }
@@ -29,7 +28,7 @@ public class SafeTimer : IDisposable
     /// <param name="action">The action to execute.</param>
     /// <param name="timeInterval">The time interval.</param>
     /// <param name="logger">an interface to log events asynchronously.</param>
-    protected SafeTimer(Action action, TimeSpan timeInterval, ITracer logger)
+    protected SafeTimer(Action action, TimeSpan timeInterval, ILogger logger)
     {
         Action = action;
         TimeInterval = timeInterval;
@@ -42,8 +41,8 @@ public class SafeTimer : IDisposable
 
         Action();
 
-        UpdateTimer.Change(TimeInterval, TimeInterval);
-        FullRestartTimer.Change(FullRestartInterval, Timeout.InfiniteTimeSpan);
+        _ = UpdateTimer.Change(TimeInterval, TimeInterval);
+        _ = FullRestartTimer.Change(FullRestartInterval, Timeout.InfiniteTimeSpan);
     }
     #endregion
 
@@ -54,11 +53,7 @@ public class SafeTimer : IDisposable
     /// <param name="instance">The instance to destroy.</param>
     public static void Destroy(ref SafeTimer? instance)
     {
-        if (instance is not null)
-        {
-            using SafeTimer DisposedObject = instance;
-            instance = null;
-        }
+        instance = null;
     }
     #endregion
 
@@ -76,7 +71,7 @@ public class SafeTimer : IDisposable
     /// <summary>
     /// Gets an interface to log events asynchronously.
     /// </summary>
-    public ITracer Logger { get; }
+    public ILogger Logger { get; }
     #endregion
 
     #region Client Interface
@@ -100,14 +95,14 @@ public class SafeTimer : IDisposable
         int NewTimerDispatcherCount = Interlocked.Increment(ref TimerDispatcherCount);
         if (NewTimerDispatcherCount > 2)
         {
-            Interlocked.Decrement(ref TimerDispatcherCount);
+            _ = Interlocked.Decrement(ref TimerDispatcherCount);
             return;
         }
 
         // For debug purpose.
         LastTotalElapsed = Math.Round(UpdateWatch.Elapsed.TotalSeconds, 0);
 
-        System.Windows.Application.Current.Dispatcher.BeginInvoke(Action);
+        _ = System.Windows.Application.Current.Dispatcher.BeginInvoke(Action);
     }
 
     private void FullRestartTimerCallback(object? parameter)
@@ -117,29 +112,33 @@ public class SafeTimer : IDisposable
             AddLog("Restarting the timer");
 
             // Restart the update timer from scratch.
-            UpdateTimer.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+            _ = UpdateTimer.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
 
+            UpdateTimer.Dispose();
             UpdateTimer = new Timer(new TimerCallback(UpdateTimerCallback));
-            UpdateTimer.Change(TimeInterval, TimeInterval);
+
+            _ = UpdateTimer.Change(TimeInterval, TimeInterval);
 
             AddLog("Timer restarted");
         }
         else
+        {
             AddLog("No timer to restart");
+        }
 
-        FullRestartTimer?.Change(FullRestartInterval, Timeout.InfiniteTimeSpan);
+        _ = FullRestartTimer?.Change(FullRestartInterval, Timeout.InfiniteTimeSpan);
         AddLog($"Next check scheduled at {DateTime.UtcNow + FullRestartInterval}");
     }
 
     private void AddLog(string message)
     {
-        Logger.Write(Category.Information, message);
+        LoggerMessage.Define(LogLevel.Information, 0, message)(Logger, null);
     }
 
     private readonly TimeSpan FullRestartInterval = TimeSpan.FromHours(1);
     private Timer UpdateTimer;
-    private Timer FullRestartTimer;
-    private Stopwatch UpdateWatch;
+    private readonly Timer FullRestartTimer;
+    private readonly Stopwatch UpdateWatch;
     private int TimerDispatcherCount = 1;
     private double LastTotalElapsed = double.NaN;
     #endregion

@@ -5,12 +5,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Text;
 using System.Threading;
@@ -21,9 +18,8 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
+using Microsoft.Extensions.Logging;
 using RegistryTools;
-using TaskbarIconHost;
-using Tracing;
 using BitmapImage = System.Windows.Media.Imaging.BitmapImage;
 
 /// <summary>
@@ -37,7 +33,7 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     /// </summary>
     /// <param name="settings">The registry settings.</param>
     /// <param name="logger">an interface to log events asynchronously.</param>
-    public MainWindow(Settings settings, ITracer logger)
+    public MainWindow(Settings settings, ILogger logger)
     {
         InitializeComponent();
         DataContext = this;
@@ -63,7 +59,7 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     /// <summary>
     /// Gets an interface to log events asynchronously.
     /// </summary>
-    public ITracer Logger { get; private set; }
+    public ILogger Logger { get; private set; }
     #endregion
 
     #region Properties
@@ -83,7 +79,9 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
                     IsElevatedInternal = wp.IsInRole(WindowsBuiltInRole.Administrator);
                 }
                 else
+                {
                     IsElevatedInternal = false;
+                }
             }
 
             return IsElevatedInternal.Value;
@@ -148,28 +146,24 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     private void InitMoonPhase()
     {
         PreviousUpdateChanged = true;
-        UpdateMoonPhaseTimer = SafeTimer.Create(OnUpdateMoonPhase, TimeSpan.FromSeconds(60), Logger);
+
+        UpdateMoonPhaseTimer?.Dispose();
+        _ = UpdateMoonPhaseTimer = SafeTimer.Create(OnUpdateMoonPhase, TimeSpan.FromSeconds(60), Logger);
     }
 
     /// <summary>
     /// Gets the time to next phase.
     /// </summary>
 #pragma warning disable CA1822 // Mark members as static
-    public string TimeToNextPhaseText
+    public string TimeToNextPhaseText => FriendlyTimeString(PhaseCalculator.TimeToNextPhase, "Changing soon");
 #pragma warning restore CA1822 // Mark members as static
-    {
-        get { return FriendlyTimeString(PhaseCalculator.TimeToNextPhase, "Changing soon"); }
-    }
 
     /// <summary>
     /// Gets the time to full moon.
     /// </summary>
 #pragma warning disable CA1822 // Mark members as static
-    public string TimeToFullMoonText
+    public string TimeToFullMoonText => FriendlyTimeString(PhaseCalculator.TimeToFullMoon, "Soon");
 #pragma warning restore CA1822 // Mark members as static
-    {
-        get { return FriendlyTimeString(PhaseCalculator.TimeToFullMoon, "Soon"); }
-    }
 
     private static string FriendlyTimeString(TimeSpan duration, string soonText)
     {
@@ -189,7 +183,6 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
         if (duration.TotalHours >= 1)
         {
             int Hours = (int)duration.TotalHours;
-            duration -= TimeSpan.FromHours(Hours);
 
             if (Result.Length > 0)
                 Result += ", ";
@@ -200,27 +193,23 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
                 Result += $"{Hours.ToString(CultureInfo.InvariantCulture)} hour";
         }
 
-        if (Result.Length == 0)
-            return soonText;
-        else
-            return $"{Result} left";
+        return Result.Length == 0 ? soonText : $"{Result} left";
     }
 
     /// <summary>
     /// Gets a value indicating whether the current Moon phase is Full Moon.
     /// </summary>
 #pragma warning disable CA1822 // Mark members as static
-    public bool IsFullMoon
+    public bool IsFullMoon => PhaseCalculator.MoonPhase == MoonPhase.FullMoon;
 #pragma warning restore CA1822 // Mark members as static
-    {
-        get { return PhaseCalculator.MoonPhase == MoonPhase.FullMoon; }
-    }
 
     /// <summary>
     /// Gets a value indicating whether the tooltip changed asn resets this flag.
     /// </summary>
     /// <returns>True if the tooltip changed; otherwise, false.</returns>
+#pragma warning disable CA1024 // Use properties where appropriate
     public bool GetIsToolTipChanged()
+#pragma warning restore CA1024 // Use properties where appropriate
     {
         bool Result = IsToolTipChanged;
         IsToolTipChanged = false;
@@ -239,11 +228,8 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     /// Gets a value indicating whether the next Moon phase is Full Moon.
     /// </summary>
 #pragma warning disable CA1822 // Mark members as static
-    public bool IsNextPhaseFullMoon
+    public bool IsNextPhaseFullMoon => PhaseCalculator.MoonPhase == MoonPhase.WaxingGibbousMoon;
 #pragma warning restore CA1822 // Mark members as static
-    {
-        get { return PhaseCalculator.MoonPhase == MoonPhase.WaxingGibbousMoon; }
-    }
 
     private delegate void UpdateMoonPhaseHandler();
 
@@ -301,7 +287,7 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     /// </summary>
     public bool ShowCalendar
     {
-        get { return ShowCalendarInternal; }
+        get => ShowCalendarInternal;
         set
         {
             if (ShowCalendarInternal != value)
@@ -321,7 +307,7 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     /// </summary>
     public DateTime CalendarStartTime
     {
-        get { return CalendarStartTimeInternal; }
+        get => CalendarStartTimeInternal;
         set
         {
             if (CalendarStartTimeInternal != value)
@@ -344,17 +330,14 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
         {
             int Year = CalendarStartTime.Year;
 
-            if (Year == Now().Year)
-                return string.Empty;
-            else
-                return CalendarStartTime.Year.ToString(CultureInfo.InvariantCulture);
+            return Year == Now().Year ? string.Empty : CalendarStartTime.Year.ToString(CultureInfo.InvariantCulture);
         }
     }
 
     /// <summary>
     /// Gets the list of calendar entries.
     /// </summary>
-    public ObservableCollection<CalendarEntry> CalendarEntryList { get; private set; } = new ObservableCollection<CalendarEntry>();
+    public ObservableCollection<CalendarEntry> CalendarEntryList { get; private set; } = [];
 
     private void BuildCalendar()
     {
@@ -395,7 +378,7 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
 
     private void OnCalendarUpPage(object sender, MouseButtonEventArgs e)
     {
-        CalendarStartTime = CalendarEntryList[0].StartTime - (CalendarEntryList[CalendarEntryList.Count - 1].StartTime - CalendarEntryList[0].EndTime);
+        CalendarStartTime = CalendarEntryList[0].StartTime - (CalendarEntryList[^1].StartTime - CalendarEntryList[0].EndTime);
         BuildCalendar();
         PreviousUpdateChanged = true;
     }
@@ -409,7 +392,7 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
 
     private void OnCalendarDownPage(object sender, MouseButtonEventArgs e)
     {
-        CalendarStartTime = CalendarEntryList[CalendarEntryList.Count - 1].StartTime + TimeSpan.FromHours(1);
+        CalendarStartTime = CalendarEntryList[^1].StartTime + TimeSpan.FromHours(1);
         BuildCalendar();
         PreviousUpdateChanged = true;
     }
@@ -436,7 +419,7 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     }
 
     private const string ShowCalendarSettingName = "ShowCalendar";
-    private Dictionary<DateTime, CalendarEntry> CalendarEntryTable = new();
+    private readonly Dictionary<DateTime, CalendarEntry> CalendarEntryTable = [];
     #endregion
 
     #region Mushroom Farming
@@ -459,8 +442,11 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
 
         string ApplicationFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PgJsonParse");
         MushroomNameFile = Path.Combine(ApplicationFolder, "Mushrooms.txt");
+
+        UpdateMushroomNameListTimer.Dispose();
         UpdateMushroomNameListTimer = new Timer(new TimerCallback(UpdateMushroomNameListTimerCallback));
-        UpdateMushroomNameListTimer.Change(TimeSpan.Zero, Timeout.InfiniteTimeSpan);
+
+        _ = UpdateMushroomNameListTimer.Change(TimeSpan.Zero, Timeout.InfiniteTimeSpan);
     }
 
     private void LoadMushroomInfoList()
@@ -482,15 +468,13 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
                         int SelectedPhase1, SelectedPhase2;
                         if (Line.Length >= 3)
                         {
-                            if (int.TryParse(Line[1].Trim(), out int PhaseIndex1) && PhaseIndex1 >= 0 && PhaseIndex1 + 1 < MoonPhase.MoonPhaseList.Count)
-                                SelectedPhase1 = PhaseIndex1;
-                            else
-                                SelectedPhase1 = -1;
+                            SelectedPhase1 = int.TryParse(Line[1].Trim(), out int PhaseIndex1) && PhaseIndex1 >= 0 && PhaseIndex1 + 1 < MoonPhase.MoonPhaseList.Count
+                                ? PhaseIndex1
+                                : -1;
 
-                            if (int.TryParse(Line[2].Trim(), out int PhaseIndex2) && PhaseIndex2 >= 0 && PhaseIndex2 + 1 < MoonPhase.MoonPhaseList.Count)
-                                SelectedPhase2 = PhaseIndex2;
-                            else
-                                SelectedPhase2 = -1;
+                            SelectedPhase2 = int.TryParse(Line[2].Trim(), out int PhaseIndex2) && PhaseIndex2 >= 0 && PhaseIndex2 + 1 < MoonPhase.MoonPhaseList.Count
+                                ? PhaseIndex2
+                                : -1;
                         }
                         else
                         {
@@ -545,7 +529,7 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
 
     private void ResetMushroomListToDefault(bool keepComment)
     {
-        List<MushroomInfo> NewList = new();
+        List<MushroomInfo> NewList = [];
 
         AddMushroomToList(NewList, MoonPhase.ParasolMushroomLongName, MoonPhase.FullMoon, MoonPhase.WaningCrescentMoon, keepComment, "Organs");
         AddMushroomToList(NewList, MoonPhase.MycenaMushroomLongName, MoonPhase.WaxingCrescentMoon, MoonPhase.FirstQuarterMoon, keepComment, "Limbs");
@@ -581,11 +565,13 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
         if (keepComment)
         {
             foreach (MushroomInfo Item in MushroomInfoList)
+            {
                 if (Item.Name == name)
                 {
                     Comment = Item.Comment;
                     break;
                 }
+            }
         }
 
         newList.Add(new MushroomInfo(Dispatcher, name, Comment, robustGrowthPhase1, robustGrowthPhase2));
@@ -596,7 +582,7 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     /// </summary>
     public bool ShowMushroomFarming
     {
-        get { return ShowMushroomFarmingInternal; }
+        get => ShowMushroomFarmingInternal;
         set
         {
             if (ShowMushroomFarmingInternal != value)
@@ -614,17 +600,14 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     /// <summary>
     /// Gets a value indicating whether the mushroom list is small.
     /// </summary>
-    public bool IsMushroomListSmall
-    {
-        get { return MushroomInfoList.Count < 2; }
-    }
+    public bool IsMushroomListSmall => MushroomInfoList.Count < 2;
 
     /// <summary>
     /// Gets or sets a value indicating whether the mushroom list is large.
     /// </summary>
     public bool IsMushroomListLarge
     {
-        get { return IsMushroomListLargeInternal; }
+        get => IsMushroomListLargeInternal;
         set
         {
             if (IsMushroomListLargeInternal != value)
@@ -642,7 +625,7 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     /// </summary>
     public bool IsLocked
     {
-        get { return IsLockedInternal; }
+        get => IsLockedInternal;
         set
         {
             if (IsLockedInternal != value)
@@ -658,7 +641,7 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     /// <summary>
     /// Gets the mushroom info list.
     /// </summary>
-    public ObservableCollection<MushroomInfo> MushroomInfoList { get; } = new();
+    public ObservableCollection<MushroomInfo> MushroomInfoList { get; } = [];
 
     /// <summary>
     /// Gets the mushroom name list.
@@ -667,37 +650,34 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
 
     private void OnMushroomNameFileChanged(object sender, FileSystemEventArgs e)
     {
-        UpdateMushroomNameListTimer.Change(TimeSpan.FromSeconds(1), Timeout.InfiniteTimeSpan);
+        _ = UpdateMushroomNameListTimer.Change(TimeSpan.FromSeconds(1), Timeout.InfiniteTimeSpan);
     }
 
     private void UpdateMushroomNameListTimerCallback(object? parameter)
     {
-        Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, OnUpdateMushroomNameList);
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, OnUpdateMushroomNameList);
     }
 
     private void OnUpdateMushroomNameList()
     {
-        if (MushroomNameList is not null)
-            MushroomNameList.Clear();
+        MushroomNameList?.Clear();
 
         if (!File.Exists(MushroomNameFile))
             return;
 
         try
         {
-            using (FileStream Stream = new(MushroomNameFile, FileMode.Open, FileAccess.Read, FileShare.Read))
-            using (StreamReader Reader = new(Stream, Encoding.ASCII))
+            using FileStream Stream = new(MushroomNameFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using StreamReader Reader = new(Stream, Encoding.ASCII);
 
-            for (; ;)
+            while (true)
             {
                 string? MushroomName = Reader.ReadLine();
 
                 if (MushroomName is null || MushroomName.Length == 0)
                     break;
 
-                if (MushroomNameList is null)
-                    MushroomNameList = new ObservableCollection<string>();
-
+                MushroomNameList ??= [];
                 MushroomNameList.Add(MushroomName);
             }
 
@@ -706,8 +686,10 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
                 Contracts.Contract.RequireNotNull(Path.GetDirectoryName(MushroomNameFile), out string FolderPath);
                 Contracts.Contract.RequireNotNull(Path.GetFileName(MushroomNameFile), out string FileName);
 
-                MushroomNameFileWatcher = new FileSystemWatcher(FolderPath, FileName);
-                MushroomNameFileWatcher.NotifyFilter = NotifyFilters.LastWrite;
+                MushroomNameFileWatcher = new FileSystemWatcher(FolderPath, FileName)
+                {
+                    NotifyFilter = NotifyFilters.LastWrite,
+                };
                 MushroomNameFileWatcher.Changed += new FileSystemEventHandler(OnMushroomNameFileChanged);
                 MushroomNameFileWatcher.EnableRaisingEvents = true;
             }
@@ -794,7 +776,7 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
                 SiblingElement = LogicalTreeHelper.FindLogicalNode(CurrentElement, elementName);
         }
 
-        return SiblingElement !;
+        return SiblingElement!;
     }
 
     private void OnMushroomListSizeChanged(object sender, SizeChangedEventArgs e)
@@ -814,10 +796,12 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
 
     private void OnMushroomNameLostFocus(object sender, RoutedEventArgs e)
     {
-        if (MushroomInfoList.Count > 0 && MushroomInfoList.Count < MaxMushroomRows)
+        if (MushroomInfoList.Count is > 0 and < MaxMushroomRows)
         {
-            if (MushroomInfoList[MushroomInfoList.Count - 1].Name.Length > 0)
+            if (MushroomInfoList[^1].Name.Length > 0)
+            {
                 MushroomInfoList.Add(new MushroomInfo(Dispatcher, string.Empty, string.Empty, null, null));
+            }
             else
             {
                 bool Continue = true;
@@ -831,7 +815,7 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
                         MushroomInfo Item = MushroomInfoList[i];
                         if (Item.Name.Length == 0 && Item.SelectedMoonPhase1 < 0 && Item.SelectedMoonPhase2 < 0)
                         {
-                            MushroomInfoList.Remove(Item);
+                            _ = MushroomInfoList.Remove(Item);
                             Continue = true;
                             break;
                         }
@@ -880,7 +864,7 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     /// </summary>
     public bool ShowRahuBoat
     {
-        get { return ShowRahuBoatInternal; }
+        get => ShowRahuBoatInternal;
         set
         {
             if (ShowRahuBoatInternal != value)
@@ -910,7 +894,7 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     /// </summary>
     public bool ShowDarkChapel
     {
-        get { return ShowDarkChapelInternal; }
+        get => ShowDarkChapelInternal;
         set
         {
             if (ShowDarkChapelInternal != value)
@@ -972,7 +956,7 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
 
         string SharedCalendarPost = Settings.GetString("SharedCalendarPost", string.Empty);
         if (SharedCalendarPost is not null)
-            DateTime.TryParse(SharedCalendarPost, CultureInfo.InvariantCulture, DateTimeStyles.None, out PostTime);
+            _ = DateTime.TryParse(SharedCalendarPost, CultureInfo.InvariantCulture, DateTimeStyles.None, out PostTime);
     }
 
     private void PostSharedEvents()
@@ -1011,10 +995,10 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
         if (!IsTopMostSet)
         {
             IsTopMostSet = true;
-            NativeMethods.SetWindowPos(source.Handle, NativeMethods.HWND_TOPMOST, 0, 0, 0, 0, NativeMethods.SWP_NOMOVE | NativeMethods.SWP_NOSIZE | NativeMethods.SWP_SHOWWINDOW | NativeMethods.SWP_NOACTIVATE);
+            _ = NativeMethods.SetWindowPos(source.Handle, NativeMethods.HWND_TOPMOST, 0, 0, 0, 0, NativeMethods.SWP_NOMOVE | NativeMethods.SWP_NOSIZE | NativeMethods.SWP_SHOWWINDOW | NativeMethods.SWP_NOACTIVATE);
         }
 
-        NativeMethods.SetForegroundWindow(source.Handle);
+        _ = NativeMethods.SetForegroundWindow(source.Handle);
     }
 
     private void OnClosed(object sender, EventArgs e)
@@ -1150,12 +1134,11 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     /// </summary>
     private void DisposeNow()
     {
+        UpdateMoonPhaseTimer?.Dispose();
         SafeTimer.Destroy(ref UpdateMoonPhaseTimer);
 
-        using (UpdateMushroomNameListTimer)
-        {
-            UpdateMushroomNameListTimer.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
-        }
+        _ = UpdateMushroomNameListTimer.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+        UpdateMushroomNameListTimer.Dispose();
 
         if (MushroomNameFileWatcher is not null)
         {

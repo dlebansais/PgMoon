@@ -9,6 +9,7 @@ public static class NativeMethods
 {
     #region Window Handle Management
     [DllImport("User32.dll")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     internal static extern bool SetForegroundWindow(IntPtr hWnd);
 
 #pragma warning disable CA1707 // Identifiers should not contain underscores
@@ -20,6 +21,7 @@ public static class NativeMethods
 #pragma warning restore CA1707 // Identifiers should not contain underscores
 
     [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     internal static extern IntPtr SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int x, int Y, int cx, int cy, int wFlags);
     #endregion
 }
