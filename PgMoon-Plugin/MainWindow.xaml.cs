@@ -1,4 +1,7 @@
-﻿namespace PgMoon;
+﻿#pragma warning disable CA1024 // Use properties where appropriate
+#pragma warning disable CA1822 // Mark members as static
+
+namespace PgMoon;
 
 using System;
 using System.Collections.Generic;
@@ -154,16 +157,12 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     /// <summary>
     /// Gets the time to next phase.
     /// </summary>
-#pragma warning disable CA1822 // Mark members as static
     public string TimeToNextPhaseText => FriendlyTimeString(PhaseCalculator.TimeToNextPhase, "Changing soon");
-#pragma warning restore CA1822 // Mark members as static
 
     /// <summary>
     /// Gets the time to full moon.
     /// </summary>
-#pragma warning disable CA1822 // Mark members as static
     public string TimeToFullMoonText => FriendlyTimeString(PhaseCalculator.TimeToFullMoon, "Soon");
-#pragma warning restore CA1822 // Mark members as static
 
     private static string FriendlyTimeString(TimeSpan duration, string soonText)
     {
@@ -199,17 +198,13 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     /// <summary>
     /// Gets a value indicating whether the current Moon phase is Full Moon.
     /// </summary>
-#pragma warning disable CA1822 // Mark members as static
     public bool IsFullMoon => PhaseCalculator.MoonPhase == MoonPhase.FullMoon;
-#pragma warning restore CA1822 // Mark members as static
 
     /// <summary>
     /// Gets a value indicating whether the tooltip changed asn resets this flag.
     /// </summary>
     /// <returns>True if the tooltip changed; otherwise, false.</returns>
-#pragma warning disable CA1024 // Use properties where appropriate
     public bool GetIsToolTipChanged()
-#pragma warning restore CA1024 // Use properties where appropriate
     {
         bool Result = IsToolTipChanged;
         IsToolTipChanged = false;
@@ -227,9 +222,7 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     /// <summary>
     /// Gets a value indicating whether the next Moon phase is Full Moon.
     /// </summary>
-#pragma warning disable CA1822 // Mark members as static
     public bool IsNextPhaseFullMoon => PhaseCalculator.MoonPhase == MoonPhase.WaxingGibbousMoon;
-#pragma warning restore CA1822 // Mark members as static
 
     private delegate void UpdateMoonPhaseHandler();
 
