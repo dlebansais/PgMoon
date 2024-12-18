@@ -28,15 +28,9 @@ public partial class PhaseCalculator
     #endregion
 
     #region Client Interface
-    public static void Update()
-    {
-        Singleton.CalculateBasicMoonPhase(MainWindow.Now());
-    }
+    public static void Update() => Singleton.CalculateBasicMoonPhase(MainWindow.Now());
 
-    public static bool IsCurrent(int checkMoonMonth, MoonPhase checkMoonPhase)
-    {
-        return checkMoonMonth == MoonMonth && checkMoonPhase == MoonPhase;
-    }
+    public static bool IsCurrent(int checkMoonMonth, MoonPhase checkMoonPhase) => checkMoonMonth == MoonMonth && checkMoonPhase == MoonPhase;
     #endregion
 
     #region Properties
@@ -212,23 +206,17 @@ public partial class PhaseCalculator
 
 #pragma warning disable SA1300 // Element should begin with upper-case letter
 #pragma warning disable IDE1006 // Naming Styles
-    private static long to_time_t(DateTime time)
+    private static long to_time_t(DateTime time) => (long)(time - UnixReferenceTime).TotalSeconds;
 #pragma warning restore IDE1006 // Naming Styles
 #pragma warning restore SA1300 // Element should begin with upper-case letter
-    {
-        return (long)(time - UnixReferenceTime).TotalSeconds;
-    }
 
 #pragma warning disable SA1300 // Element should begin with upper-case letter
 #pragma warning disable IDE0051 // Remove unused private members
 #pragma warning disable IDE1006 // Naming Styles
-    private static DateTime from_time_t(long time_t)
+    private static DateTime from_time_t(long time_t) => UnixReferenceTime + TimeSpan.FromSeconds(time_t);
 #pragma warning restore IDE1006 // Naming Styles
 #pragma warning restore IDE0051 // Remove unused private members
 #pragma warning restore SA1300 // Element should begin with upper-case letter
-    {
-        return UnixReferenceTime + TimeSpan.FromSeconds(time_t);
-    }
     #endregion
 
     #region Calculator
@@ -356,16 +344,10 @@ public partial class PhaseCalculator
     /// </summary>
     public static event EventHandler<PropertyChangedEventArgs>? StaticPropertyChanged;
 
-    internal static void NotifyPropertyChanged(string propertyName)
-    {
-        StaticPropertyChanged?.Invoke(null, new PropertyChangedEventArgs(propertyName));
-    }
+    internal static void NotifyPropertyChanged(string propertyName) => StaticPropertyChanged?.Invoke(null, new PropertyChangedEventArgs(propertyName));
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed", Justification = "Default parameter is mandatory with [CallerMemberName]")]
-    internal static void NotifyThisPropertyChanged([CallerMemberName] string propertyName = "")
-    {
-        StaticPropertyChanged?.Invoke(null, new PropertyChangedEventArgs(propertyName));
-    }
+    internal static void NotifyThisPropertyChanged([CallerMemberName] string propertyName = "") => StaticPropertyChanged?.Invoke(null, new PropertyChangedEventArgs(propertyName));
     #endregion
 }
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member

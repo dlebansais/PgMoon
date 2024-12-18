@@ -17,10 +17,7 @@ public class SafeTimer : IDisposable
     /// <param name="action">The action to execute.</param>
     /// <param name="timeInterval">The time interval.</param>
     /// <param name="logger">an interface to log events asynchronously.</param>
-    public static SafeTimer Create(Action action, TimeSpan timeInterval, ILogger logger)
-    {
-        return new SafeTimer(action, timeInterval, logger);
-    }
+    public static SafeTimer Create(Action action, TimeSpan timeInterval, ILogger logger) => new(action, timeInterval, logger);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SafeTimer"/> class.
@@ -51,10 +48,7 @@ public class SafeTimer : IDisposable
     /// Destroys an instance of the <see cref="SafeTimer"/> class.
     /// </summary>
     /// <param name="instance">The instance to destroy.</param>
-    public static void Destroy(ref SafeTimer? instance)
-    {
-        instance = null;
-    }
+    public static void Destroy(ref SafeTimer? instance) => instance = null;
     #endregion
 
     #region Properties
@@ -130,10 +124,7 @@ public class SafeTimer : IDisposable
         AddLog($"Next check scheduled at {DateTime.UtcNow + FullRestartInterval}");
     }
 
-    private void AddLog(string message)
-    {
-        LoggerMessage.Define(LogLevel.Information, 0, message)(Logger, null);
-    }
+    private void AddLog(string message) => LoggerMessage.Define(LogLevel.Information, 0, message)(Logger, null);
 
     private readonly TimeSpan FullRestartInterval = TimeSpan.FromHours(1);
     private Timer UpdateTimer;

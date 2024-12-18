@@ -2,8 +2,8 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFrameworks>net8.0-windows</TargetFrameworks>
-        <LangVersion>12</LangVersion>
+        <TargetFrameworks>net8.0-windows;net9.0-windows</TargetFrameworks>
+        <LangVersion>13</LangVersion>
         <Nullable>enable</Nullable>
         <Platforms>x64</Platforms>
     </PropertyGroup>

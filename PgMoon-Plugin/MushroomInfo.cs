@@ -88,15 +88,9 @@ public class MushroomInfo(Dispatcher dispatcher, string name, string comment, Mo
     #endregion
 
     #region Implementation
-    private void ResetSelectedMoonPhase1()
-    {
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, OnResetSelectedMoonPhase1);
-    }
+    private void ResetSelectedMoonPhase1() => _ = Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, OnResetSelectedMoonPhase1);
 
-    private void ResetSelectedMoonPhase2()
-    {
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, OnResetSelectedMoonPhase2);
-    }
+    private void ResetSelectedMoonPhase2() => _ = Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, OnResetSelectedMoonPhase2);
 
     private void OnResetSelectedMoonPhase1()
     {
@@ -123,19 +117,13 @@ public class MushroomInfo(Dispatcher dispatcher, string name, string comment, Mo
     /// Invoke handlers of the <see cref="PropertyChanged"/> event.
     /// </summary>
     /// <param name="propertyName">Name of the property that changed.</param>
-    protected void NotifyPropertyChanged(string propertyName)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
+    protected void NotifyPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
     /// <summary>
     /// Invoke handlers of the <see cref="PropertyChanged"/> event.
     /// </summary>
     /// <param name="propertyName">Name of the property that changed.</param>
-    protected void NotifyThisPropertyChanged([CallerMemberName] string propertyName = "")
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
+    protected void NotifyThisPropertyChanged([CallerMemberName] string propertyName = "") => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     #endregion
 }
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member

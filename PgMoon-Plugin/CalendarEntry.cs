@@ -105,10 +105,7 @@ public class CalendarEntry(int moonMonth, MoonPhase moonPhase, DateTime startTim
     /// <summary>
     /// Updates properties.
     /// </summary>
-    public void Update()
-    {
-        NotifyPropertyChanged(nameof(IsCurrent));
-    }
+    public void Update() => NotifyPropertyChanged(nameof(IsCurrent));
     #endregion
 
     #region Implementation
@@ -116,10 +113,7 @@ public class CalendarEntry(int moonMonth, MoonPhase moonPhase, DateTime startTim
     /// Returns a string that represents the current object.
     /// </summary>
     /// <returns>A string that represents the current object.</returns>
-    public override string ToString()
-    {
-        return $"{MoonPhase} - {EndTime.ToLocalTime().ToString(CultureInfo.CurrentCulture)}";
-    }
+    public override string ToString() => $"{MoonPhase} - {EndTime.ToLocalTime().ToString(CultureInfo.CurrentCulture)}";
     #endregion
 
     #region Implementation of INotifyPropertyChanged
@@ -132,18 +126,12 @@ public class CalendarEntry(int moonMonth, MoonPhase moonPhase, DateTime startTim
     /// Invoke handlers of the <see cref="PropertyChanged"/> event.
     /// </summary>
     /// <param name="propertyName">Name of the property that changed.</param>
-    protected void NotifyPropertyChanged(string propertyName)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
+    protected void NotifyPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
     /// <summary>
     /// Invoke handlers of the <see cref="PropertyChanged"/> event.
     /// </summary>
     /// <param name="propertyName">Name of the property that changed.</param>
-    protected void NotifyThisPropertyChanged([CallerMemberName] string propertyName = "")
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
+    protected void NotifyThisPropertyChanged([CallerMemberName] string propertyName = "") => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     #endregion
 }

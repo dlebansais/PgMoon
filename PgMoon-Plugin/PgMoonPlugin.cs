@@ -130,50 +130,35 @@ public class PgMoonPlugin : IPluginClient, IDisposable
     /// </summary>
     /// <param name="command">The command associated to the menu item.</param>
     /// <returns>The menu text.</returns>
-    public string GetMenuHeader(ICommand command)
-    {
-        return MenuHeaderTable[command];
-    }
+    public string GetMenuHeader(ICommand command) => MenuHeaderTable[command];
 
     /// <summary>
     /// Reads the state of a menu item associated to command.
     /// </summary>
     /// <param name="command">The command associated to the menu item.</param>
     /// <returns>True if the menu item should be visible to the user, false if it should be hidden.</returns>
-    public bool GetMenuIsVisible(ICommand command)
-    {
-        return MenuIsVisibleTable[command]();
-    }
+    public bool GetMenuIsVisible(ICommand command) => MenuIsVisibleTable[command]();
 
     /// <summary>
     /// Reads the state of a menu item associated to command.
     /// </summary>
     /// <param name="command">The command associated to the menu item.</param>
     /// <returns>True if the menu item should appear enabled, false if it should be disabled.</returns>
-    public bool GetMenuIsEnabled(ICommand command)
-    {
-        return MenuIsEnabledTable[command]();
-    }
+    public bool GetMenuIsEnabled(ICommand command) => MenuIsEnabledTable[command]();
 
     /// <summary>
     /// Reads the state of a menu item associated to command.
     /// </summary>
     /// <param name="command">The command associated to the menu item.</param>
     /// <returns>True if the menu item is checked, false otherwise.</returns>
-    public bool GetMenuIsChecked(ICommand command)
-    {
-        return MenuIsCheckedTable[command]();
-    }
+    public bool GetMenuIsChecked(ICommand command) => MenuIsCheckedTable[command]();
 
     /// <summary>
     /// Reads the icon of a menu item associated to command.
     /// </summary>
     /// <param name="command">The command associated to the menu item.</param>
     /// <returns>The icon to display with the menu text, null if none.</returns>
-    public Bitmap? GetMenuIcon(ICommand command)
-    {
-        return null;
-    }
+    public Bitmap? GetMenuIcon(ICommand command) => null;
 
     /// <summary>
     /// This method is called before the menu is displayed, but after changes in the menu have been evaluated.
@@ -186,10 +171,7 @@ public class PgMoonPlugin : IPluginClient, IDisposable
     /// Requests for command to be executed.
     /// </summary>
     /// <param name="command">The command to execute.</param>
-    public void OnExecuteCommand(ICommand command)
-    {
-        MenuHandlerTable[command]();
-    }
+    public void OnExecuteCommand(ICommand command) => MenuHandlerTable[command]();
 
     /// <summary>
     /// Reads a flag indicating if the plugin icon, that might reflect the state of the plugin, has changed.
@@ -230,10 +212,7 @@ public class PgMoonPlugin : IPluginClient, IDisposable
     /// <summary>
     /// Requests for the main plugin operation to be executed.
     /// </summary>
-    public void OnIconClicked()
-    {
-        MainPopup?.IconClicked();
-    }
+    public void OnIconClicked() => MainPopup?.IconClicked();
 
     /// <summary>
     /// Reads a flag indicating if the plugin tooltip, that might reflect the state of the plugin, has changed.
@@ -285,20 +264,14 @@ public class PgMoonPlugin : IPluginClient, IDisposable
     /// <summary>
     /// Called when the taskbar is loosing the application focus.
     /// </summary>
-    public void OnDeactivated()
-    {
-        MainPopup?.OnDeactivated();
-    }
+    public void OnDeactivated() => MainPopup?.OnDeactivated();
 
     /// <summary>
     /// Requests to close and terminate a plugin.
     /// </summary>
     /// <param name="canClose">True if no plugin called before this one has returned false, false if one of them has.</param>
     /// <returns>True if the plugin can be safely terminated, false if the request is denied.</returns>
-    public bool CanClose(bool canClose)
-    {
-        return true;
-    }
+    public bool CanClose(bool canClose) => true;
 
     /// <summary>
     /// Requests to begin closing the plugin.
@@ -396,10 +369,7 @@ public class PgMoonPlugin : IPluginClient, IDisposable
         }
     }
 
-    private void OnSharedCalendar()
-    {
-        MainPopup?.OnSharedCalendar();
-    }
+    private void OnSharedCalendar() => MainPopup?.OnSharedCalendar();
     #endregion
 
     #region Implementation of IDisposable
@@ -443,9 +413,6 @@ public class PgMoonPlugin : IPluginClient, IDisposable
     /// <summary>
     /// Disposes of every reference that must be cleaned up.
     /// </summary>
-    private void DisposeNow()
-    {
-        MainPopup?.Dispose();
-    }
+    private void DisposeNow() => MainPopup?.Dispose();
     #endregion
 }

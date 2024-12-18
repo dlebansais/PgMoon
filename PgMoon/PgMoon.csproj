@@ -2,9 +2,9 @@
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <TargetFrameworks>net481;net8.0-windows7.0</TargetFrameworks>
+        <TargetFrameworks>net481;net8.0-windows7.0;net9.0-windows7.0</TargetFrameworks>
         <UseWPF>true</UseWPF>
-        <LangVersion>12</LangVersion>
+        <LangVersion>13</LangVersion>
         <Nullable>enable</Nullable>
         <Platforms>x64</Platforms>
         <RuntimeIdentifier>win-x64</RuntimeIdentifier>
@@ -16,7 +16,7 @@
         <Product>PgMoon</Product>
         <Description>Shows the moon phase in Project: Gorgon</Description>
         <Copyright>Copyright © 2024 David Le Bansais</Copyright>
-        <AssemblyVersion>1.2.1.340</AssemblyVersion>
+        <AssemblyVersion>1.2.1.341</AssemblyVersion>
         <FileVersion>1.2.1.338</FileVersion>
         <RepositoryUrl>https://github.com/dlebansais/PgMoon</RepositoryUrl>
         <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
@@ -60,8 +60,8 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
-        <PackageReference Include="TaskbarIconHost-Debug" Version="2.0.0" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
-        <PackageReference Include="TaskbarIconHost" Version="2.0.0" Condition="'$(Configuration)|$(Platform)'!='Debug|x64'" />
+        <PackageReference Include="TaskbarIconHost-Debug" Version="2.0.1" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+        <PackageReference Include="TaskbarIconHost" Version="2.0.1" Condition="'$(Configuration)|$(Platform)'!='Debug|x64'" />
 
         <!-- System.Net.Http is added to mitigate vulnerability. -->
         <!-- Remove as soon as one of the packages above no longer depends on the vulnerable version -->

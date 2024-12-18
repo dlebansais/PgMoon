@@ -191,10 +191,7 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
         }
     }
 
-    private void ListTimerCallback(object? parameter)
-    {
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, OnListTimer);
-    }
+    private void ListTimerCallback(object? parameter) => _ = Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, OnListTimer);
 
     private void OnListTimer()
     {
@@ -251,10 +248,7 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
         UpdateStatus();
     }
 
-    private void OnList(object sender, ExecutedRoutedEventArgs e)
-    {
-        StartUpdatingCalendarList();
-    }
+    private void OnList(object sender, ExecutedRoutedEventArgs e) => StartUpdatingCalendarList();
 
     private void OnCancelList(object sender, ExecutedRoutedEventArgs e)
     {
@@ -377,10 +371,7 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
     #endregion
 
     #region Status
-    private void InitStatus()
-    {
-        UpdateStatus();
-    }
+    private void InitStatus() => UpdateStatus();
 
     public ObservableCollection<string> StatusList { get; } = [];
     public bool IsEventActive { get; private set; }
@@ -458,10 +449,7 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
 
     private uint UpcomingDaysInternal;
 
-    private void OnInfoChanged(object sender, RoutedEventArgs e)
-    {
-        UpdateStatus();
-    }
+    private void OnInfoChanged(object sender, RoutedEventArgs e) => UpdateStatus();
     #endregion
 
     #region Save/Cancel
@@ -673,19 +661,13 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
     /// Invoke handlers of the <see cref="PropertyChanged"/> event.
     /// </summary>
     /// <param name="propertyName">Name of the property that changed.</param>
-    protected void NotifyPropertyChanged(string propertyName)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
+    protected void NotifyPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
     /// <summary>
     /// Invoke handlers of the <see cref="PropertyChanged"/> event.
     /// </summary>
     /// <param name="propertyName">Name of the property that changed.</param>
-    protected void NotifyThisPropertyChanged([CallerMemberName] string propertyName = "")
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
+    protected void NotifyThisPropertyChanged([CallerMemberName] string propertyName = "") => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     #endregion
 
     #region Implementation of IDisposable

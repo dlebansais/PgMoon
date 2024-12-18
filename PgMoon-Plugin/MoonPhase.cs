@@ -16,107 +16,107 @@ public class MoonPhase(string name, string darkChapelTip) : INotifyPropertyChang
     public static string ParasolMushroomLongName => "Parasol Mushroom";
     public static string ParasolMushroomShortName => "Parasol";
     public static double ParasolMushroomRefresh => double.NaN;
-    public static string ParasolMushroomName(bool isLong) { return isLong ? ParasolMushroomLongName : ParasolMushroomShortName; }
+    public static string ParasolMushroomName(bool isLong) => isLong ? ParasolMushroomLongName : ParasolMushroomShortName;
 
     public static string MycenaMushroomLongName => "Mycena Mushroom";
     public static string MycenaMushroomShortName => "Mycena";
     public static double MycenaMushroomRefresh => 24.0;
-    public static string MycenaMushroomName(bool isLong) { return isLong ? MycenaMushroomLongName : MycenaMushroomShortName; }
+    public static string MycenaMushroomName(bool isLong) => isLong ? MycenaMushroomLongName : MycenaMushroomShortName;
 
     public static string BoletusMushroomLongName => "Boletus Mushroom";
     public static string BoletusMushroomShortName => "Boletus";
     public static double BoletusMushroomRefresh => 20.0;
-    public static string BoletusMushroomName(bool isLong) { return isLong ? BoletusMushroomLongName : BoletusMushroomShortName; }
+    public static string BoletusMushroomName(bool isLong) => isLong ? BoletusMushroomLongName : BoletusMushroomShortName;
 
     public static string FieldMushroomLongName => "Field Mushroom";
     public static string FieldMushroomShortName => "Field";
     public static double FieldMushroomRefresh => 16.0;
-    public static string FieldMushroomName(bool isLong) { return isLong ? FieldMushroomLongName : FieldMushroomShortName; }
+    public static string FieldMushroomName(bool isLong) => isLong ? FieldMushroomLongName : FieldMushroomShortName;
 
     public static string BlusherMushroomLongName => "Blusher Mushroom";
     public static string BlusherMushroomShortName => "Blusher";
     public static double BlusherMushroomRefresh => 12.0;
-    public static string BlusherMushroomName(bool isLong) { return isLong ? BlusherMushroomLongName : BlusherMushroomShortName; }
+    public static string BlusherMushroomName(bool isLong) => isLong ? BlusherMushroomLongName : BlusherMushroomShortName;
 
     public static string GoblinPuffballLongName => "Goblin Puffball";
     public static string GoblinPuffballShortName => "Goblin Puffball";
     public static double GoblinPuffballRefresh => 10.0;
-    public static string GoblinPuffballName(bool isLong) { return isLong ? GoblinPuffballLongName : GoblinPuffballShortName; }
+    public static string GoblinPuffballName(bool isLong) => isLong ? GoblinPuffballLongName : GoblinPuffballShortName;
 
     public static string MilkCapMushroomLongName => "Milk Cap Mushroom";
     public static string MilkCapMushroomShortName => "Milk Cap";
     public static double MilkCapMushroomRefresh => 9.0;
-    public static string MilkCapMushroomName(bool isLong) { return isLong ? MilkCapMushroomLongName : MilkCapMushroomShortName; }
+    public static string MilkCapMushroomName(bool isLong) => isLong ? MilkCapMushroomLongName : MilkCapMushroomShortName;
 
     public static string BloodMushroomLongName => "Blood Mushroom";
     public static string BloodMushroomShortName => "Blood";
     public static double BloodMushroomRefresh => 8.0;
-    public static string BloodMushroomName(bool isLong) { return isLong ? BloodMushroomLongName : BloodMushroomShortName; }
+    public static string BloodMushroomName(bool isLong) => isLong ? BloodMushroomLongName : BloodMushroomShortName;
 
     public static string CoralMushroomLongName => "Coral Mushroom";
     public static string CoralMushroomShortName => "Coral";
     public static double CoralMushroomRefresh => 7.0;
-    public static string CoralMushroomName(bool isLong) { return isLong ? CoralMushroomLongName : CoralMushroomShortName; }
+    public static string CoralMushroomName(bool isLong) => isLong ? CoralMushroomLongName : CoralMushroomShortName;
 
     public static string IocaineMushroomLongName => "Iocaine Mushroom";
     public static string IocaineMushroomShortName => "Iocaine";
     public static double IocaineMushroomRefresh => 6.5;
-    public static string IocaineMushroomName(bool isLong) { return isLong ? IocaineMushroomLongName : IocaineMushroomShortName; }
+    public static string IocaineMushroomName(bool isLong) => isLong ? IocaineMushroomLongName : IocaineMushroomShortName;
 
     public static string GroxmakMushroomLongName => "Groxmak Mushroom";
     public static string GroxmakMushroomShortName => "Groxmak";
     public static double GroxmakMushroomRefresh => 6.0;
-    public static string GroxmakMushroomName(bool isLong) { return isLong ? GroxmakMushroomLongName : GroxmakMushroomShortName; }
+    public static string GroxmakMushroomName(bool isLong) => isLong ? GroxmakMushroomLongName : GroxmakMushroomShortName;
 
     public static string PorciniMushroomLongName => "Porcini Mushroom";
     public static string PorciniMushroomShortName => "Porcini";
     public static double PorciniMushroomRefresh => 5.5;
-    public static string PorciniMushroomName(bool isLong) { return isLong ? PorciniMushroomLongName : PorciniMushroomShortName; }
+    public static string PorciniMushroomName(bool isLong) => isLong ? PorciniMushroomLongName : PorciniMushroomShortName;
 
     public static string BlackFootMorelLongName => "Black Foot Morel";
     public static string BlackFootMorelShortName => "Black Foot Morel";
     public static double BlackFootMorelRefresh => 5.0;
-    public static string BlackFootMorelName(bool isLong) { return isLong ? BlackFootMorelLongName : BlackFootMorelShortName; }
+    public static string BlackFootMorelName(bool isLong) => isLong ? BlackFootMorelLongName : BlackFootMorelShortName;
 
     public static string PixiesParasolLongName => "Pixie's Parasol";
     public static string PixiesParasolShortName => "Pixie's Parasol";
     public static double PixiesParasolRefresh => 4.5;
-    public static string PixiesParasolName(bool isLong) { return isLong ? PixiesParasolLongName : PixiesParasolShortName; }
+    public static string PixiesParasolName(bool isLong) => isLong ? PixiesParasolLongName : PixiesParasolShortName;
 
     public static string FlyAmanitaLongName => "Fly Amanita";
     public static string FlyAmanitaShortName => "Fly Amanita";
     public static double FlyAmanitaRefresh => 4.0;
-    public static string FlyAmanitaName(bool isLong) { return isLong ? FlyAmanitaLongName : FlyAmanitaShortName; }
+    public static string FlyAmanitaName(bool isLong) => isLong ? FlyAmanitaLongName : FlyAmanitaShortName;
 
     public static string BlastcapMushroomLongName => "Blastcap Mushroom";
     public static string BlastcapMushroomShortName => "Blastcap";
     public static double BlastcapMushroomRefresh => 3.5;
-    public static string BlastcapMushroomName(bool isLong) { return isLong ? BlastcapMushroomLongName : BlastcapMushroomShortName; }
+    public static string BlastcapMushroomName(bool isLong) => isLong ? BlastcapMushroomLongName : BlastcapMushroomShortName;
 
     public static string ChargedMyceliumLongName => "Charged Mycelium";
     public static string ChargedMyceliumShortName => "Charged Mycelium";
     public static double ChargedMyceliumRefresh => 3.5;
-    public static string ChargedMyceliumName(bool isLong) { return isLong ? ChargedMyceliumLongName : ChargedMyceliumShortName; }
+    public static string ChargedMyceliumName(bool isLong) => isLong ? ChargedMyceliumLongName : ChargedMyceliumShortName;
 
     public static string FalseAgaricLongName => "False Agaric";
     public static string FalseAgaricShortName => "False Agaric";
     public static double FalseAgaricRefresh => 2.5;
-    public static string FalseAgaricName(bool isLong) { return isLong ? FalseAgaricLongName : FalseAgaricShortName; }
+    public static string FalseAgaricName(bool isLong) => isLong ? FalseAgaricLongName : FalseAgaricShortName;
 
     public static string WizardsMushroomLongName => "Wizard's Mushroom";
     public static string WizardsMushroomShortName => "Wizard's";
     public static double WizardsMushroomRefresh => 1.5;
-    public static string WizardsMushroomName(bool isLong) { return isLong ? WizardsMushroomLongName : WizardsMushroomShortName; }
+    public static string WizardsMushroomName(bool isLong) => isLong ? WizardsMushroomLongName : WizardsMushroomShortName;
 
     public static string GranamurchLongName => "Granamurch Mushroom";
     public static string GranamurchShortName => "Granamurch";
     public static double GranamurchRefresh => 3.5;
-    public static string GranamurchName(bool isLong) { return isLong ? GranamurchLongName : GranamurchShortName; }
+    public static string GranamurchName(bool isLong) => isLong ? GranamurchLongName : GranamurchShortName;
 
     public static string GhostshroomLongName => "Ghostshroom";
     public static string GhostshroomShortName => "GhossShroom";
     public static double GhostshroomRefresh => 3.5;
-    public static string GhostshroomName(bool isLong) { return isLong ? GhostshroomLongName : GhostshroomShortName; }
+    public static string GhostshroomName(bool isLong) => isLong ? GhostshroomLongName : GhostshroomShortName;
     #endregion
 
     #region Init
@@ -170,10 +170,7 @@ public class MoonPhase(string name, string darkChapelTip) : INotifyPropertyChang
         return FastPortMushroomText;
     }
 
-    private static string NeutralCultureDouble(double d)
-    {
-        return d.ToString(CultureInfo.InvariantCulture);
-    }
+    private static string NeutralCultureDouble(double d) => d.ToString(CultureInfo.InvariantCulture);
 
     public string RahuBoatDestination
     {
@@ -197,10 +194,7 @@ public class MoonPhase(string name, string darkChapelTip) : INotifyPropertyChang
             Item.Update();
     }
 
-    private void Update()
-    {
-        NotifyPropertyChanged(nameof(IsCurrent));
-    }
+    private void Update() => NotifyPropertyChanged(nameof(IsCurrent));
     #endregion
 
     #region Implementation of INotifyPropertyChanged
@@ -213,19 +207,13 @@ public class MoonPhase(string name, string darkChapelTip) : INotifyPropertyChang
     /// Invoke handlers of the <see cref="PropertyChanged"/> event.
     /// </summary>
     /// <param name="propertyName">Name of the property that changed.</param>
-    protected void NotifyPropertyChanged(string propertyName)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
+    protected void NotifyPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
     /// <summary>
     /// Invoke handlers of the <see cref="PropertyChanged"/> event.
     /// </summary>
     /// <param name="propertyName">Name of the property that changed.</param>
-    protected void NotifyThisPropertyChanged([CallerMemberName] string propertyName = "")
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
+    protected void NotifyThisPropertyChanged([CallerMemberName] string propertyName = "") => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     #endregion
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 #pragma warning restore SA1600 // Elements should be documented

@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net481;net8.0-windows7.0</TargetFrameworks>
+        <TargetFrameworks>net481;net8.0-windows7.0;net9.0-windows7.0</TargetFrameworks>
         <UseWPF>true</UseWPF>
-        <LangVersion>12</LangVersion>
+        <LangVersion>13</LangVersion>
         <Nullable>enable</Nullable>
         <Platforms>x64</Platforms>
 
@@ -14,8 +14,8 @@
         <Product />
         <Description>Shows the moon phase in Project: Gorgon</Description>
         <Copyright>Copyright © 2024 David Le Bansais</Copyright>
-        <AssemblyVersion>1.2.1.340</AssemblyVersion>
-        <FileVersion>1.2.1.339</FileVersion>
+        <AssemblyVersion>1.2.1.341</AssemblyVersion>
+        <FileVersion>1.2.1.340</FileVersion>
         <RepositoryUrl>https://github.com/dlebansais/PgMoon</RepositoryUrl>
         <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
 
@@ -72,18 +72,19 @@
         <PackageReference Include="Google.Apis.Calendar.v3" Version="1.57.0.2759" />
         <PackageReference Include="System.Drawing.Common" Version="9.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
-        <PackageReference Include="Method.Contracts-Debug" Version="1.9.0" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
-        <PackageReference Include="Method.Contracts" Version="1.9.0" Condition="'$(Configuration)|$(Platform)'!='Debug|x64'" />
-        <PackageReference Include="ResourceTools-Debug" Version="2.0.0" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
-        <PackageReference Include="ResourceTools" Version="2.0.0" Condition="'$(Configuration)|$(Platform)'!='Debug|x64'" />
-        <PackageReference Include="RegistryTools-Debug" Version="2.0.0" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
-        <PackageReference Include="RegistryTools" Version="2.0.0" Condition="'$(Configuration)|$(Platform)'!='Debug|x64'" />
-        <PackageReference Include="TaskbarIconHost-Debug" Version="2.0.0" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
-        <PackageReference Include="TaskbarIconHost" Version="2.0.0" Condition="'$(Configuration)|$(Platform)'!='Debug|x64'" />
-        <PackageReference Include="TaskbarTools-Debug" Version="1.4.6" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
-        <PackageReference Include="TaskbarTools" Version="1.4.6" Condition="'$(Configuration)|$(Platform)'!='Debug|x64'" />
-        <PackageReference Include="XamlConverterLibrary-Debug" Version="1.0.12" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
-        <PackageReference Include="XamlConverterLibrary" Version="1.0.12" Condition="'$(Configuration)|$(Platform)'!='Debug|x64'" />
+        <PackageReference Include="TaskScheduler" Version="2.11.0" />
+        <PackageReference Include="Method.Contracts-Debug" Version="1.9.1" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+        <PackageReference Include="Method.Contracts" Version="1.9.1" Condition="'$(Configuration)|$(Platform)'!='Debug|x64'" />
+        <PackageReference Include="ResourceTools-Debug" Version="2.0.1" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+        <PackageReference Include="ResourceTools" Version="2.0.1" Condition="'$(Configuration)|$(Platform)'!='Debug|x64'" />
+        <PackageReference Include="RegistryTools-Debug" Version="2.0.1" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+        <PackageReference Include="RegistryTools" Version="2.0.1" Condition="'$(Configuration)|$(Platform)'!='Debug|x64'" />
+        <PackageReference Include="TaskbarIconHost-Debug" Version="2.0.1" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+        <PackageReference Include="TaskbarIconHost" Version="2.0.1" Condition="'$(Configuration)|$(Platform)'!='Debug|x64'" />
+        <PackageReference Include="TaskbarTools-Debug" Version="1.4.7" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+        <PackageReference Include="TaskbarTools" Version="1.4.7" Condition="'$(Configuration)|$(Platform)'!='Debug|x64'" />
+        <PackageReference Include="XamlConverterLibrary-Debug" Version="1.0.13" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+        <PackageReference Include="XamlConverterLibrary" Version="1.0.13" Condition="'$(Configuration)|$(Platform)'!='Debug|x64'" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)'=='net481'">

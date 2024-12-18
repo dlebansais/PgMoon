@@ -648,15 +648,9 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     /// </summary>
     public ObservableCollection<string>? MushroomNameList { get; private set; }
 
-    private void OnMushroomNameFileChanged(object sender, FileSystemEventArgs e)
-    {
-        _ = UpdateMushroomNameListTimer.Change(TimeSpan.FromSeconds(1), Timeout.InfiniteTimeSpan);
-    }
+    private void OnMushroomNameFileChanged(object sender, FileSystemEventArgs e) => _ = UpdateMushroomNameListTimer.Change(TimeSpan.FromSeconds(1), Timeout.InfiniteTimeSpan);
 
-    private void UpdateMushroomNameListTimerCallback(object? parameter)
-    {
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, OnUpdateMushroomNameList);
-    }
+    private void UpdateMushroomNameListTimerCallback(object? parameter) => _ = Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, OnUpdateMushroomNameList);
 
     private void OnUpdateMushroomNameList()
     {
@@ -699,10 +693,7 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
         }
     }
 
-    private void OnMushroomInfoListChanged(object? sender, NotifyCollectionChangedEventArgs e)
-    {
-        NotifyPropertyChanged(nameof(IsMushroomListSmall));
-    }
+    private void OnMushroomInfoListChanged(object? sender, NotifyCollectionChangedEventArgs e) => NotifyPropertyChanged(nameof(IsMushroomListSmall));
 
     private void OnMushroomListUp(object sender, MouseButtonEventArgs e)
     {
@@ -737,15 +728,9 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
         ContextMenu.Closed += OnContextMenuClosed;
     }
 
-    private void OnLock(object sender, ExecutedRoutedEventArgs e)
-    {
-        IsLocked = true;
-    }
+    private void OnLock(object sender, ExecutedRoutedEventArgs e) => IsLocked = true;
 
-    private void OnUnlock(object sender, ExecutedRoutedEventArgs e)
-    {
-        IsLocked = false;
-    }
+    private void OnUnlock(object sender, ExecutedRoutedEventArgs e) => IsLocked = false;
 
     private void OnResetToDefaultKeepComment(object sender, ExecutedRoutedEventArgs e)
     {
@@ -854,10 +839,7 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     #endregion
 
     #region Rahu Boat
-    private void InitRahuBoat()
-    {
-        ShowRahuBoatInternal = Settings.GetBool(ShowRahuBoatSettingName, true);
-    }
+    private void InitRahuBoat() => ShowRahuBoatInternal = Settings.GetBool(ShowRahuBoatSettingName, true);
 
     /// <summary>
     /// Gets or sets a value indicating whether the rahu boat should be shown.
@@ -884,10 +866,7 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     #endregion
 
     #region Dark Chapel
-    private void InitDarkChapel()
-    {
-        ShowDarkChapelInternal = Settings.GetBool(ShowDarkChapelSettingName, true);
-    }
+    private void InitDarkChapel() => ShowDarkChapelInternal = Settings.GetBool(ShowDarkChapelSettingName, true);
 
     /// <summary>
     /// Gets or sets a value indicating whether the dark chapel statue should be shown.
@@ -913,15 +892,9 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     #endregion
 
     #region Shared Calendar
-    private void InitSharedCalendar()
-    {
-        ReadPostTime();
-    }
+    private void InitSharedCalendar() => ReadPostTime();
 
-    private void OnSharedCalendar(object sender, ExecutedRoutedEventArgs e)
-    {
-        OnSharedCalendar();
-    }
+    private void OnSharedCalendar(object sender, ExecutedRoutedEventArgs e) => OnSharedCalendar();
 
     /// <summary>
     /// Handles the shared calendar event.
@@ -1011,15 +984,9 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     /// <summary>
     /// Handles the deactivated event.
     /// </summary>
-    public void OnDeactivated()
-    {
-        IsOpen = false;
-    }
+    public void OnDeactivated() => IsOpen = false;
 
-    private void OnClose(object sender, ExecutedRoutedEventArgs e)
-    {
-        IsOpen = false;
-    }
+    private void OnClose(object sender, ExecutedRoutedEventArgs e) => IsOpen = false;
 
     private void OnExit(object sender, ExecutedRoutedEventArgs e)
     {
@@ -1050,18 +1017,12 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     /// <summary>
     /// Use this for debugging purpose only.
     /// </summary>
-    public static void IncreaseNow()
-    {
-        TimeOffset += TimeSpan.FromDays(1);
-    }
+    public static void IncreaseNow() => TimeOffset += TimeSpan.FromDays(1);
 
     /// <summary>
     /// Gets the current time with the offset applied.
     /// </summary>
-    public static DateTime Now()
-    {
-        return DateTime.UtcNow + TimeOffset;
-    }
+    public static DateTime Now() => DateTime.UtcNow + TimeOffset;
 
     private static TimeSpan TimeOffset = TimeSpan.Zero;
     #endregion
@@ -1076,19 +1037,13 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     /// Invoke handlers of the <see cref="PropertyChanged"/> event.
     /// </summary>
     /// <param name="propertyName">Name of the property that changed.</param>
-    protected void NotifyPropertyChanged(string propertyName)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
+    protected void NotifyPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
     /// <summary>
     /// Invoke handlers of the <see cref="PropertyChanged"/> event.
     /// </summary>
     /// <param name="propertyName">Name of the property that changed.</param>
-    protected void NotifyThisPropertyChanged([CallerMemberName] string propertyName = "")
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
+    protected void NotifyThisPropertyChanged([CallerMemberName] string propertyName = "") => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     #endregion
 
     #region Implementation of IDisposable
