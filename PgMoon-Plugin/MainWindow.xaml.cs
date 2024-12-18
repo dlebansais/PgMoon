@@ -1,4 +1,5 @@
 ﻿#pragma warning disable CA1024 // Use properties where appropriate
+#pragma warning disable CA1721 // Property names should not match get methods
 #pragma warning disable CA1822 // Mark members as static
 
 namespace PgMoon;
@@ -215,9 +216,7 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     /// <summary>
     /// Gets or sets a value indicating whether the tooltip changed.
     /// </summary>
-#pragma warning disable CA1721 // Property names should not match get methods
     public bool IsToolTipChanged { get; set; }
-#pragma warning restore CA1721 // Property names should not match get methods
 
     /// <summary>
     /// Gets a value indicating whether the next Moon phase is Full Moon.
