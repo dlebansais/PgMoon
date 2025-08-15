@@ -44,11 +44,19 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="dlebansais.IDisposableAnalyzers" Version="4.0.8.9">
+        <PackageReference Include="dlebansais.IDisposableAnalyzers" Version="4.0.8.16">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="dlebansais.CSharpLatest" Version="2.1.2">
+        <PackageReference Include="dlebansais.CSharpLatest" Version="2.1.3">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Method.Contracts.Analyzers-Debug" Version="2.0.4" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Method.Contracts.Analyzers" Version="2.0.4" Condition="'$(Configuration)|$(Platform)'!='Debug|x64'">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -63,9 +71,9 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.5" />
-        <PackageReference Include="TaskbarIconHost-Debug" Version="3.0.0" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
-        <PackageReference Include="TaskbarIconHost" Version="3.0.0" Condition="'$(Configuration)|$(Platform)'!='Debug|x64'" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.8" />
+        <PackageReference Include="TaskbarIconHost-Debug" Version="3.0.2" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+        <PackageReference Include="TaskbarIconHost" Version="3.0.2" Condition="'$(Configuration)|$(Platform)'!='Debug|x64'" />
 
         <!-- System.Net.Http is added to mitigate vulnerability. -->
         <!-- Remove as soon as one of the packages above no longer depends on the vulnerable version -->

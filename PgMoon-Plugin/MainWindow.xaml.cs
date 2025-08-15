@@ -827,7 +827,7 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     private const char MushroomSeparator = '\u2550';
     private string MushroomNameFile = string.Empty;
     private FileSystemWatcher? MushroomNameFileWatcher;
-    private Timer UpdateMushroomNameListTimer = new(new TimerCallback((object? state) => { }));
+    private Timer UpdateMushroomNameListTimer = new(new TimerCallback(state => { }));
     #endregion
 
     #region Rahu Boat

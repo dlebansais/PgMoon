@@ -256,7 +256,7 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
         IsListingCancelable = false;
     }
 
-    private Timer ListTimer = new(new TimerCallback((object? state) => { }));
+    private Timer ListTimer = new(new TimerCallback(state => { }));
     private static readonly TimeSpan ListTimerStart = TimeSpan.FromSeconds(3);
     private static readonly TimeSpan ListTimerInterval = TimeSpan.FromSeconds(1);
     private Task<CalendarList>? ListTask;
