@@ -64,37 +64,33 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
     #region Properties
     public bool AddEvents
     {
-        get => AddEventsInternal;
+        get;
         set
         {
-            if (AddEventsInternal != value)
+            if (field != value)
             {
-                AddEventsInternal = value;
+                field = value;
                 NotifyThisPropertyChanged();
                 UpdateStatus();
             }
         }
     }
 
-    private bool AddEventsInternal;
-
     public string ApplicationName
     {
-        get => ApplicationNameInternal;
+        get;
         set
         {
             string NewName = value ?? DefaultApplicationName;
 
-            if (ApplicationNameInternal != NewName)
+            if (field != NewName)
             {
-                ApplicationNameInternal = NewName;
+                field = NewName;
                 NotifyThisPropertyChanged();
                 UpdateStatus();
             }
         }
-    }
-
-    private string ApplicationNameInternal = string.Empty;
+    } = string.Empty;
     #endregion
 
     #region Calendar List
@@ -138,19 +134,18 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
 
     public SharedCalendarEntry SelectedCalendarEntry
     {
-        get => SelectedCalendarEntryInternal;
+        get;
         set
         {
-            if (SelectedCalendarEntryInternal != value)
+            if (field != value)
             {
-                SelectedCalendarEntryInternal = value;
+                field = value;
                 NotifyThisPropertyChanged();
                 UpdateStatus();
             }
         }
-    }
+    } = SharedCalendarEntry.None;
 
-    private SharedCalendarEntry SelectedCalendarEntryInternal = SharedCalendarEntry.None;
     private string CalendarId;
 
     public ObservableCollection<SharedCalendarEntry> SharedCalendarEntryList { get; } = [];
@@ -276,16 +271,16 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
 
     public string SecretFileName
     {
-        get => SecretFileNameInternal;
+        get;
         set
         {
-            if (SecretFileNameInternal != value)
+            if (field != value)
             {
-                SecretFileNameInternal = value;
+                field = value;
                 NotifyThisPropertyChanged();
             }
         }
-    }
+    } = string.Empty;
 
     private static string CredentialFile
     {
@@ -311,16 +306,14 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
         {
             bool Result;
 
-            Result = SecretFileNameInternal.Length > 0 &&
+            Result = SecretFileName.Length > 0 &&
                      ApplicationName.Length > 0 &&
-                     File.Exists(SecretFileNameInternal) &&
+                     File.Exists(SecretFileName) &&
                      (File.Exists(CredentialFile) || Directory.Exists(CredentialFile));
 
             return Result;
         }
     }
-
-    private string SecretFileNameInternal = string.Empty;
 
     private void OnBrowse(object sender, ExecutedRoutedEventArgs e)
     {
@@ -435,19 +428,17 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
 
     public uint UpcomingDays
     {
-        get => UpcomingDaysInternal;
+        get;
         set
         {
-            if (UpcomingDaysInternal != value)
+            if (field != value)
             {
-                UpcomingDaysInternal = value;
+                field = value;
                 NotifyThisPropertyChanged();
                 UpdateStatus();
             }
         }
     }
-
-    private uint UpcomingDaysInternal;
 
     private void OnInfoChanged(object sender, RoutedEventArgs e) => UpdateStatus();
     #endregion
@@ -652,9 +643,7 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
     #endregion
 
     #region Implementation of INotifyPropertyChanged
-    /// <summary>
-    /// Implements the PropertyChanged event.
-    /// </summary>
+    /// <inheritdoc cref="INotifyPropertyChanged.PropertyChanged" />
     public event PropertyChangedEventHandler? PropertyChanged;
 
     /// <summary>
@@ -686,9 +675,7 @@ public partial class ShareCalendarWindow : Window, INotifyPropertyChanged, IDisp
         }
     }
 
-    /// <summary>
-    /// Called when an object should release its resources.
-    /// </summary>
+    /// <inheritdoc cref="IDisposable.Dispose" />
     public void Dispose()
     {
         Dispose(true);

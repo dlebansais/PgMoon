@@ -17,14 +17,10 @@ using TaskbarIconHost;
 public class PgMoonPlugin : IPluginClient, IDisposable
 {
     #region Plugin
-    /// <summary>
-    /// Gets the plugin name.
-    /// </summary>
+    /// <inheritdoc cref="IPluginClient.Name" />
     public string Name => "PgMoon";
 
-    /// <summary>
-    /// Gets the plugin unique ID.
-    /// </summary>
+    /// <inheritdoc cref="IPluginClient.PluginGuid" />
     public Guid PluginGuid => new("{AA25BA4F-9922-4018-B1B4-588A6B59CE62}");
 
     /// <summary>
@@ -32,23 +28,13 @@ public class PgMoonPlugin : IPluginClient, IDisposable
     /// </summary>
     public static string AssemblyName => "PgMoon-Plugin";
 
-    /// <summary>
-    ///  Gets a value indicating whether the plugin require elevated (administrator) mode to operate.
-    /// </summary>
+    /// <inheritdoc cref="IPluginClient.RequireElevated" />
     public bool RequireElevated => false;
 
-    /// <summary>
-    /// Gets a value indicating whether the plugin want to handle clicks on the taskbar icon.
-    /// </summary>
+    /// <inheritdoc cref="IPluginClient.HasClickHandler" />
     public bool HasClickHandler => false;
 
-    /// <summary>
-    /// Called once at startup, to initialize the plugin.
-    /// </summary>
-    /// <param name="isElevated">True if the caller is executing in administrator mode.</param>
-    /// <param name="dispatcher">A dispatcher that can be used to synchronize with the UI.</param>
-    /// <param name="settings">An interface to read and write settings in the registry.</param>
-    /// <param name="logger">An interface to log events asynchronously.</param>
+    /// <inheritdoc cref="IPluginClient.Initialize(bool, Dispatcher, Settings, ILogger)" />
     public void Initialize(bool isElevated, Dispatcher dispatcher, Settings settings, ILogger logger)
     {
         IsElevated = isElevated;
@@ -94,7 +80,11 @@ public class PgMoonPlugin : IPluginClient, IDisposable
 
     private void InitializeCommand(string header, Func<bool> isVisibleHandler, Func<bool> isEnabledHandler, Func<bool> isCheckedHandler, Action commandHandler)
     {
+#if NETFRAMEWORK
+        string LocalizedText = Properties.Resources.ResourceManager.GetString(header, CultureInfo.CurrentCulture);
+#else
         string LocalizedText = Properties.Resources.ResourceManager.GetString(header, CultureInfo.CurrentCulture)!;
+#endif
         ICommand Command = new RoutedUICommand(LocalizedText, header, GetType());
 
         CommandListInternal.Add(Command);
@@ -105,18 +95,12 @@ public class PgMoonPlugin : IPluginClient, IDisposable
         MenuHandlerTable.Add(Command, commandHandler);
     }
 
-    /// <summary>
-    /// Gets the list of commands that the plugin can receive when an item is clicked in the context menu.
-    /// </summary>
+    /// <inheritdoc cref="IPluginClient.CommandList" />
     public IReadOnlyCollection<ICommand?> CommandList => CommandListInternal.AsReadOnly();
 
     private readonly List<ICommand?> CommandListInternal = [];
 
-    /// <summary>
-    /// Reads a flag indicating if the state of a menu item has changed. The flag should be reset upon return until another change occurs.
-    /// </summary>
-    /// <param name="beforeMenuOpening">True if this function is called right before the context menu is opened by the user; otherwise, false.</param>
-    /// <returns>True if a menu item state has changed since the last call; otherwise, false.</returns>
+    /// <inheritdoc cref="IPluginClient.GetIsMenuChanged(bool)" />
     public bool GetIsMenuChanged(bool beforeMenuOpening)
     {
         bool Result = IsMenuChanged;
@@ -125,58 +109,30 @@ public class PgMoonPlugin : IPluginClient, IDisposable
         return Result;
     }
 
-    /// <summary>
-    /// Reads the text of a menu item associated to command.
-    /// </summary>
-    /// <param name="command">The command associated to the menu item.</param>
-    /// <returns>The menu text.</returns>
+    /// <inheritdoc cref="IPluginClient.GetMenuHeader(ICommand)" />
     public string GetMenuHeader(ICommand command) => MenuHeaderTable[command];
 
-    /// <summary>
-    /// Reads the state of a menu item associated to command.
-    /// </summary>
-    /// <param name="command">The command associated to the menu item.</param>
-    /// <returns>True if the menu item should be visible to the user, false if it should be hidden.</returns>
+    /// <inheritdoc cref="IPluginClient.GetMenuIsVisible(ICommand)" />
     public bool GetMenuIsVisible(ICommand command) => MenuIsVisibleTable[command]();
 
-    /// <summary>
-    /// Reads the state of a menu item associated to command.
-    /// </summary>
-    /// <param name="command">The command associated to the menu item.</param>
-    /// <returns>True if the menu item should appear enabled, false if it should be disabled.</returns>
+    /// <inheritdoc cref="IPluginClient.GetMenuIsEnabled(ICommand)" />
     public bool GetMenuIsEnabled(ICommand command) => MenuIsEnabledTable[command]();
 
-    /// <summary>
-    /// Reads the state of a menu item associated to command.
-    /// </summary>
-    /// <param name="command">The command associated to the menu item.</param>
-    /// <returns>True if the menu item is checked, false otherwise.</returns>
+    /// <inheritdoc cref="IPluginClient.GetMenuIsChecked(ICommand)" />
     public bool GetMenuIsChecked(ICommand command) => MenuIsCheckedTable[command]();
 
-    /// <summary>
-    /// Reads the icon of a menu item associated to command.
-    /// </summary>
-    /// <param name="command">The command associated to the menu item.</param>
-    /// <returns>The icon to display with the menu text, null if none.</returns>
+    /// <inheritdoc cref="IPluginClient.GetMenuIcon(ICommand)" />
     public Bitmap? GetMenuIcon(ICommand command) => null;
 
-    /// <summary>
-    /// This method is called before the menu is displayed, but after changes in the menu have been evaluated.
-    /// </summary>
+    /// <inheritdoc cref="IPluginClient.OnMenuOpening" />
     public void OnMenuOpening()
     {
     }
 
-    /// <summary>
-    /// Requests for command to be executed.
-    /// </summary>
-    /// <param name="command">The command to execute.</param>
+    /// <inheritdoc cref="IPluginClient.OnExecuteCommand(ICommand)" />
     public void OnExecuteCommand(ICommand command) => MenuHandlerTable[command]();
 
-    /// <summary>
-    /// Reads a flag indicating if the plugin icon, that might reflect the state of the plugin, has changed.
-    /// </summary>
-    /// <returns>True if the icon has changed since the last call, false otherwise.</returns>
+    /// <inheritdoc cref="IPluginClient.GetIsIconChanged" />
     public bool GetIsIconChanged()
     {
         bool Result = IsIconChanged;
@@ -185,9 +141,7 @@ public class PgMoonPlugin : IPluginClient, IDisposable
         return Result;
     }
 
-    /// <summary>
-    /// Gets the icon displayed in the taskbar.
-    /// </summary>
+    /// <inheritdoc cref="IPluginClient.Icon" />
     public Icon Icon
     {
         get
@@ -197,9 +151,7 @@ public class PgMoonPlugin : IPluginClient, IDisposable
         }
     }
 
-    /// <summary>
-    /// Gets the bitmap displayed in the preferred plugin menu.
-    /// </summary>
+    /// <inheritdoc cref="IPluginClient.SelectionBitmap" />
     public Bitmap SelectionBitmap
     {
         get
@@ -209,15 +161,10 @@ public class PgMoonPlugin : IPluginClient, IDisposable
         }
     }
 
-    /// <summary>
-    /// Requests for the main plugin operation to be executed.
-    /// </summary>
+    /// <inheritdoc cref="IPluginClient.OnIconClicked" />
     public void OnIconClicked() => MainPopup?.IconClicked();
 
-    /// <summary>
-    /// Reads a flag indicating if the plugin tooltip, that might reflect the state of the plugin, has changed.
-    /// </summary>
-    /// <returns>True if the tooltip has changed since the last call, false otherwise.</returns>
+    /// <inheritdoc cref="IPluginClient.GetIsToolTipChanged" />
     public bool GetIsToolTipChanged()
     {
         bool Result = false;
@@ -231,9 +178,7 @@ public class PgMoonPlugin : IPluginClient, IDisposable
         return Result;
     }
 
-    /// <summary>
-    /// Gets the free text that indicate the state of the plugin.
-    /// </summary>
+    /// <inheritdoc cref="IPluginClient.ToolTip" />
     public string ToolTip
     {
         get
@@ -254,28 +199,18 @@ public class PgMoonPlugin : IPluginClient, IDisposable
         }
     }
 
-    /// <summary>
-    /// Called when the taskbar is getting the application focus.
-    /// </summary>
+    /// <inheritdoc cref="IPluginClient.OnActivated" />
     public void OnActivated()
     {
     }
 
-    /// <summary>
-    /// Called when the taskbar is loosing the application focus.
-    /// </summary>
+    /// <inheritdoc cref="IPluginClient.OnDeactivated" />
     public void OnDeactivated() => MainPopup?.OnDeactivated();
 
-    /// <summary>
-    /// Requests to close and terminate a plugin.
-    /// </summary>
-    /// <param name="canClose">True if no plugin called before this one has returned false, false if one of them has.</param>
-    /// <returns>True if the plugin can be safely terminated, false if the request is denied.</returns>
+    /// <inheritdoc cref="IPluginClient.CanClose(bool)" />
     public bool CanClose(bool canClose) => true;
 
-    /// <summary>
-    /// Requests to begin closing the plugin.
-    /// </summary>
+    /// <inheritdoc cref="IPluginClient.BeginClose" />
     public void BeginClose()
     {
         if (MainPopup is not null)
@@ -286,9 +221,7 @@ public class PgMoonPlugin : IPluginClient, IDisposable
         }
     }
 
-    /// <summary>
-    /// Gets a value indicating whether the plugin is closed.
-    /// </summary>
+    /// <inheritdoc cref="IPluginClient.Icon" />
     public bool IsClosed => true;
 
     /// <summary>
@@ -388,9 +321,7 @@ public class PgMoonPlugin : IPluginClient, IDisposable
         }
     }
 
-    /// <summary>
-    /// Called when an object should release its resources.
-    /// </summary>
+    /// <inheritdoc cref="IDisposable.Dispose" />
     public void Dispose()
     {
         Dispose(true);

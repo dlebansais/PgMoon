@@ -36,95 +36,83 @@ public partial class PhaseCalculator
     #region Properties
     public static int MoonMonth
     {
-        get => MoonMonthInternal;
+        get;
         set
         {
-            if (MoonMonthInternal != value)
+            if (field != value)
             {
-                MoonMonthInternal = value;
+                field = value;
                 NotifyThisPropertyChanged();
             }
         }
     }
 
-    private static int MoonMonthInternal;
-
     public static MoonPhase MoonPhase
     {
-        get => MoonPhaseInternal;
+        get;
         set
         {
-            if (MoonPhaseInternal != value)
+            if (field != value)
             {
-                MoonPhaseInternal = value;
+                field = value;
                 NotifyThisPropertyChanged();
 
                 MoonPhase.UpdateCurrent();
             }
         }
-    }
-
-    private static MoonPhase MoonPhaseInternal = MoonPhase.NullMoonPhase;
+    } = MoonPhase.NullMoonPhase;
 
     public static double ProgressWithinPhase
     {
-        get => ProgressWithinPhaseInternal;
+        get;
         set
         {
-            if (ProgressWithinPhaseInternal != value)
+            if (field != value)
             {
-                ProgressWithinPhaseInternal = value;
+                field = value;
                 NotifyThisPropertyChanged();
             }
         }
     }
-
-    private static double ProgressWithinPhaseInternal;
 
     public static double ProgressToFullMoon
     {
-        get => ProgressToFullMoonInternal;
+        get;
         set
         {
-            if (ProgressToFullMoonInternal != value)
+            if (field != value)
             {
-                ProgressToFullMoonInternal = value;
+                field = value;
                 NotifyThisPropertyChanged();
             }
         }
     }
-
-    private static double ProgressToFullMoonInternal;
 
     public static TimeSpan TimeToNextPhase
     {
-        get => TimeToNextPhaseInternal;
+        get;
         set
         {
-            if (TimeToNextPhaseInternal != value)
+            if (field != value)
             {
-                TimeToNextPhaseInternal = value;
+                field = value;
                 NotifyThisPropertyChanged();
             }
         }
     }
-
-    private static TimeSpan TimeToNextPhaseInternal;
 
     public static TimeSpan TimeToFullMoon
     {
-        get => TimeToFullMoonInternal;
+        get;
         set
         {
-            if (TimeToFullMoonInternal != value)
+            if (field != value)
             {
-                TimeToFullMoonInternal = value;
+                field = value;
                 NotifyThisPropertyChanged();
             }
         }
     }
-
-    private static TimeSpan TimeToFullMoonInternal;
     #endregion
 
     #region Client Interface

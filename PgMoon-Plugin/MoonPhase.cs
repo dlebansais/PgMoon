@@ -198,9 +198,7 @@ public class MoonPhase(string name, string darkChapelTip) : INotifyPropertyChang
     #endregion
 
     #region Implementation of INotifyPropertyChanged
-    /// <summary>
-    /// Implements the PropertyChanged event.
-    /// </summary>
+    /// <inheritdoc cref="INotifyPropertyChanged.PropertyChanged" />
     public event PropertyChangedEventHandler? PropertyChanged;
 
     /// <summary>

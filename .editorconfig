@@ -59,6 +59,9 @@ dotnet_diagnostic.SA1312.severity = silent
 # SA1405: Debug.Assert should provide message text
 dotnet_diagnostic.SA1405.severity = silent
 
+# SA1500: Braces for multi-line statement should not share line.
+dotnet_diagnostic.SA1500.severity = silent
+
 # SA1502: Element should not be on a single line
 dotnet_diagnostic.SA1502.severity = silent
 
@@ -67,6 +70,9 @@ dotnet_diagnostic.SA1503.severity = silent
 
 # SA1504: All accessors should be single-line or multi-line
 dotnet_diagnostic.SA1504.severity = silent
+
+# SA1513: Closing brace should be followed by blank line.
+dotnet_diagnostic.SA1513.severity = silent
 
 # SA1514: Element documentation header should be preceded by blank line
 dotnet_diagnostic.SA1514.severity = silent

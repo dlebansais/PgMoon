@@ -13,39 +13,35 @@ public class MushroomInfo(Dispatcher dispatcher, string name, string comment, Mo
 
     public string Name
     {
-        get => NameInternal;
+        get;
         set
         {
-            if (NameInternal != value)
+            if (field != value)
             {
-                NameInternal = value;
+                field = value;
                 NotifyThisPropertyChanged();
 
-                if (NameInternal is null || NameInternal.Length == 0)
+                if (field is null || field.Length == 0)
                 {
                     ResetSelectedMoonPhase1();
                     ResetSelectedMoonPhase2();
                 }
             }
         }
-    }
-
-    private string NameInternal = name;
+    } = name;
 
     public string Comment
     {
-        get => CommentInternal;
+        get;
         set
         {
-            if (CommentInternal != value)
+            if (field != value)
             {
-                CommentInternal = value;
+                field = value;
                 NotifyThisPropertyChanged();
             }
         }
-    }
-
-    private string CommentInternal = comment;
+    } = comment;
 
     public int SelectedMoonPhase1
     {
@@ -108,9 +104,7 @@ public class MushroomInfo(Dispatcher dispatcher, string name, string comment, Mo
     #endregion
 
     #region Implementation of INotifyPropertyChanged
-    /// <summary>
-    /// Implements the PropertyChanged event.
-    /// </summary>
+    /// <inheritdoc cref="INotifyPropertyChanged.PropertyChanged" />
     public event PropertyChangedEventHandler? PropertyChanged;
 
     /// <summary>

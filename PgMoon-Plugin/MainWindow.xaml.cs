@@ -1020,9 +1020,7 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
     #endregion
 
     #region Implementation of INotifyPropertyChanged
-    /// <summary>
-    /// Implements the PropertyChanged event.
-    /// </summary>
+    /// <inheritdoc cref="INotifyPropertyChanged.PropertyChanged" />
     public event PropertyChangedEventHandler? PropertyChanged;
 
     /// <summary>
@@ -1054,9 +1052,7 @@ public partial class MainWindow : Popup, INotifyPropertyChanged, IDisposable
         }
     }
 
-    /// <summary>
-    /// Called when an object should release its resources.
-    /// </summary>
+    /// <inheritdoc cref="IDisposable.Dispose" />
     public void Dispose()
     {
         Dispose(true);

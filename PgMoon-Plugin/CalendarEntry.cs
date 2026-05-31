@@ -109,17 +109,12 @@ public class CalendarEntry(int moonMonth, MoonPhase moonPhase, DateTime startTim
     #endregion
 
     #region Implementation
-    /// <summary>
-    /// Returns a string that represents the current object.
-    /// </summary>
-    /// <returns>A string that represents the current object.</returns>
+    /// <inheritdoc cref="object.ToString" />
     public override string ToString() => $"{MoonPhase} - {EndTime.ToLocalTime().ToString(CultureInfo.CurrentCulture)}";
     #endregion
 
     #region Implementation of INotifyPropertyChanged
-    /// <summary>
-    /// Implements the PropertyChanged event.
-    /// </summary>
+    /// <inheritdoc cref="INotifyPropertyChanged.PropertyChanged" />
     public event PropertyChangedEventHandler? PropertyChanged;
 
     /// <summary>
