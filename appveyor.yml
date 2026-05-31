@@ -19,8 +19,6 @@ image: Visual Studio 2026
 init:
   - git config --global core.autocrlf input
 
-environment:
-
 matrix:
   fast_finish: true     # set this flag to immediately finish build once one of the jobs fails.
 
